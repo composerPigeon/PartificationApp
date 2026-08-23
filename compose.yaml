@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - server/.env
+    environment:
+      DEBUG: "false"
+    volumes:
+      - partification-data:/data
+    restart: unless-stopped
+
+volumes:
+  partification-data:
