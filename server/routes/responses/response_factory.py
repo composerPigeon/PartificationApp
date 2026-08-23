@@ -1,12 +1,12 @@
 from flask import Response
 
-from . import ErrorResponse, ProfileResponse, OkResponse
+from . import OperationResultResponse, ProfileResponse
 from model import User
 
 class ResponseFactory:
     @staticmethod
     def ok() -> Response:
-        resp = OkResponse()
+        resp = OperationResultResponse(ok=True)
         return resp.to_flask_response(200)
 
     @staticmethod
@@ -16,15 +16,15 @@ class ResponseFactory:
 
     @staticmethod
     def bad_request(message: str) -> Response:
-        resp = ErrorResponse(message=message)
+        resp = OperationResultResponse(ok=False, error_message=message)
         return resp.to_flask_response(400)
 
     @staticmethod
     def internal_server_error() -> Response:
-        resp = ErrorResponse(message="Internal Server Error")
+        resp = OperationResultResponse(ok=False, error_message="Internal Server Error")
         return resp.to_flask_response(500)
 
     @staticmethod
     def error(status: int, message: str | None = None, exception: Exception | None = None) -> Response:
-        resp = ErrorResponse(message, exception)
+        resp = OperationResultResponse(ok=False, error_message=message, exception=exception)
         return resp.to_flask_response(status)

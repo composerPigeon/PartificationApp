@@ -44,4 +44,4 @@ def serve_frontend():
 
 
 if __name__ == "__main__":
-    app.run(debug=settings.DEBUG)
+    app.run(debug=config.DEBUG)
