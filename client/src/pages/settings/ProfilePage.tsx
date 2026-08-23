@@ -11,46 +11,25 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import type { ProfileResponse } from '../../server_proxy/responses'
+import type { ProfileData } from '../../server_proxy/responses'
+import {serverProxy} from "../../server_proxy/ServerProxy.ts";
 
-function isProfileResponse(value: unknown): value is ProfileResponse {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'first_name' in value &&
-    typeof value.first_name === 'string' &&
-    'last_name' in value &&
-    typeof value.last_name === 'string' &&
-    'email' in value &&
-    typeof value.email === 'string' &&
-    'created_at' in value &&
-    typeof value.created_at === 'string'
-  )
-}
-
-function getErrorMessage(value: unknown): string | null {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    'message' in value &&
-    typeof value.message === 'string'
-  ) {
-    return value.message
+function formatCreatedAt(value?: Date | string): string {
+  if (value === undefined) {
+    return 'Unknown'
   }
 
-  return null
-}
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown'
+  }
 
-function formatCreatedAt(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(date)
+  return Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(date)
 }
 
 function ProfilePage() {
   const navigate = useNavigate()
-  const [profile, setProfile] = useState<ProfileResponse | null>(null)
+  const [profile, setProfile] = useState<ProfileData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -59,27 +38,20 @@ function ProfilePage() {
     setError(null)
 
     try {
-      const response = await fetch('/settings/profile', {
-        credentials: 'include',
-        signal,
-      })
+      const result = await serverProxy.getProfile()
 
-      if (response.status === 401) {
+      if (!result.ok && result.error) {
+        setError(result.error)
+      }
+
+      /*
+      if (result.status === 401) {
         await navigate({ to: '/login' })
         return
       }
+      */
 
-      const body: unknown = await response.json().catch(() => null)
-
-      if (!response.ok) {
-        throw new Error(getErrorMessage(body) ?? 'Unable to load your profile.')
-      }
-
-      if (!isProfileResponse(body)) {
-        throw new Error('The server returned an invalid profile response.')
-      }
-
-      setProfile(body)
+      setProfile(result)
     } catch (caughtError) {
       if (caughtError instanceof DOMException && caughtError.name === 'AbortError') {
         return
@@ -145,7 +117,7 @@ function ProfilePage() {
                     Name
                   </Typography>
                   <Typography variant="h6">
-                    {profile.first_name} {profile.last_name}
+                    {profile.firstName} {profile.lastName}
                   </Typography>
                 </Box>
                 <Box>
@@ -158,7 +130,7 @@ function ProfilePage() {
                   <Typography variant="caption" color="text.secondary">
                     Member since
                   </Typography>
-                  <Typography>{formatCreatedAt(profile.created_at)}</Typography>
+                  <Typography>{formatCreatedAt(profile.createdAt)}</Typography>
                 </Box>
               </Stack>
             </Paper>

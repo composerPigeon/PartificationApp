@@ -11,7 +11,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import type { ErrorResponseData } from '../../server_proxy/responses'
 import {serverProxy} from "../../server_proxy/ServerProxy.ts";
 
 function LoginPage() {
@@ -27,12 +26,10 @@ function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await serverProxy.executeLogin(email, password)
+      const result = await serverProxy.executeLogin(email, password)
 
-      let errorData = response.getData<ErrorResponseData>()
-
-      if (errorData) {
-        setError(errorData.message)
+      if (!result.ok && result.error) {
+        setError(result.error)
       }
 
       await navigate({ to: '/profile' })

@@ -15,10 +15,13 @@
     "@mui/material": "^9.2.0",
     "@tanstack/react-router": "^1.170.18",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "reflect-metadata": "^0.2.2",
+    "ts-jackson": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@babel/plugin-proposal-decorators": "^7.28.6",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/babel__core": "^7.20.5",
