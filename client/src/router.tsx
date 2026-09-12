@@ -3,6 +3,9 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
 import SignUpPage from './pages/auth/SignUpPage'
 import ProfilePage from './pages/settings/ProfilePage'
+import ProjectsPage from './pages/ProjectsPage'
+import CreateProjectPage from './pages/CreateProjectPage'
+import DetailProjectPage from './pages/DetailProjectPage'
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -32,7 +35,25 @@ const profileRoute = createRoute({
   component: ProfilePage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, profileRoute])
+const projectsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects',
+  component: ProjectsPage,
+})
+
+const createProjectRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/new',
+  component: CreateProjectPage,
+})
+
+const detailProjectRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/projects/$projectId',
+  component: DetailProjectPage,
+})
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute])
 
 export const router = createRouter({ routeTree })
 

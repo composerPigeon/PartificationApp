@@ -94,3 +94,5 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+# Generated from pdfjs-dist by the client predev/prebuild scripts.
+client/public/pdfjs/

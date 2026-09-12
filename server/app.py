@@ -1,3 +1,4 @@
+from idlelib import testing
 from pathlib import Path
 
 from flask import Flask, Response, send_from_directory
@@ -44,4 +45,4 @@ def serve_frontend():
 
 
 if __name__ == "__main__":
-    app.run(debug=config.DEBUG)
+    app.run(testing=config.TESTING)
