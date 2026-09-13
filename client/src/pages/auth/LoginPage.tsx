@@ -4,16 +4,19 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Alert,
   Box,
-  Button,
   Container,
   Link as MuiLink,
   Paper,
-  TextField,
   Typography,
 } from '@mui/material'
 import {serverProxy} from "../../server_proxy/ServerProxy.ts";
 import { projectManager } from '../../projects/ProjectManager'
 import type { DirectoryState } from '../../projects/ProjectManager'
+import DirectoryPicker from "../../components/DirectoryPicker.tsx";
+import EmailField from "../../components/auth/EmailField.tsx";
+import Form from "../../components/Form.tsx";
+import PasswordField from "../../components/auth/PasswordField.tsx";
+import { ActionButton } from '../../components/buttons/ActionButton'
 
 function LoginPage() {
   const navigate = useNavigate()
@@ -118,77 +121,24 @@ function LoginPage() {
             </Alert>
           )}
 
-          <Box sx={{ my: 2 }}>
-            <Typography variant="subtitle2">Project folder</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }} aria-live="polite">
-              {directoryBusy ? 'Checking folder…' : directory
-                ? `${directory.name}${directory.granted ? '' : ' — access required'}`
-                : 'Choose where your project images will be saved.'}
-            </Typography>
-            {supportsDirectoryPicker ? (
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                <Button type="button" variant="outlined" disabled={directoryBusy || isSubmitting}
-                  onClick={() => void handleDirectory(false)}>
-                  {directory ? 'Change folder' : 'Choose folder'}
-                </Button>
-                {directory && !directory.granted && (
-                  <Button type="button" disabled={directoryBusy || isSubmitting}
-                    onClick={() => void handleDirectory(true)}>
-                    Allow access
-                  </Button>
-                )}
-              </Box>
-            ) : (
-              <Alert severity="info" sx={{ mt: 1 }}>Folder selection is unavailable in this browser. Try desktop Chrome or Edge.</Alert>
-            )}
-            {directoryError && <Alert severity="warning" sx={{ mt: 1 }}>{directoryError}</Alert>}
-          </Box>
+          <DirectoryPicker
+              directoryBusy={directoryBusy}
+              directory={directory}
+              supportsDirectoryPicker={supportsDirectoryPicker}
+              isSubmitting={isSubmitting}
+              directoryError={directoryError}
+              handleDirectory={handleDirectory}/>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              autoComplete="email"
-              autoFocus
-              disabled={isSubmitting}
-              fullWidth
-              id="email"
-              label="Email address"
-              margin="normal"
-              name="email"
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              type="email"
-              value={email}
-            />
-            <TextField
-              autoComplete="current-password"
-              disabled={isSubmitting}
-              fullWidth
-              id="password"
-              label="Password"
-              margin="normal"
-              name="password"
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              type="password"
-              value={password}
-            />
-            <Button
-              disabled={isSubmitting || directoryBusy || !directory?.granted || !email.trim() || !password}
-              fullWidth
-              size="large"
-              sx={{ mt: 3 }}
-              type="submit"
-              variant="contained"
-            >
-              {isSubmitting ? 'Logging in…' : 'Log in'}
-            </Button>
-          </Box>
+          <Form submitButtonText="Log in" submittingText="Logging in…" noValidate isSubmitting={isSubmitting} isSubmitButtonDisabled={directoryBusy || !directory?.granted || !email.trim() || !password} handleSubmit={handleSubmit}>
+              <EmailField autoFocus setValue={setEmail} value={email}/>
+              <PasswordField setValue={setPassword} value={password}/>
+          </Form>
 
-          <Button fullWidth type="button" variant="outlined" sx={{ mt: 2 }}
-            disabled={isSubmitting || directoryBusy || !directory?.granted}
+          <ActionButton fullWidth sx={{ mt: 2 }} busy={isSubmitting}
+            disabled={directoryBusy || !directory?.granted}
             onClick={() => void handleGuest()}>
             Continue as guest
-          </Button>
+          </ActionButton>
           {!directory?.granted && (
             <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
               Select a project folder and allow access to continue.

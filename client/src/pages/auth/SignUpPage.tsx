@@ -4,15 +4,17 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Alert,
   Box,
-  Button,
   Container,
   Link as MuiLink,
   Paper,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material'
 import { serverProxy } from '../../server_proxy/ServerProxy.ts'
+import Form from "../../components/Form.tsx";
+import { FullField } from '../../components/FullField'
+import PasswordField from '../../components/auth/PasswordField'
+import EmailField from "../../components/auth/EmailField.tsx";
 
 function SignUpPage() {
   const navigate = useNavigate()
@@ -91,89 +93,19 @@ function SignUpPage() {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit}>
+          <Form submitButtonText="Create account" submittingText="Creating account…" isSubmitting={isSubmitting} isSubmitButtonDisabled={isIncomplete} handleSubmit={handleSubmit}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ sm: 2 }}>
-              <TextField
-                autoComplete="given-name"
-                autoFocus
-                disabled={isSubmitting}
-                fullWidth
-                slotProps={{ htmlInput: { minLength: 3, maxLength: 80 } }}
-                label="First name"
-                margin="normal"
-                name="firstName"
-                onChange={(event) => setFirstName(event.target.value)}
-                required
-                value={firstName}
-              />
-              <TextField
-                autoComplete="family-name"
-                disabled={isSubmitting}
-                fullWidth
-                slotProps={{ htmlInput: { minLength: 3, maxLength: 80 } }}
-                label="Last name"
-                margin="normal"
-                name="lastName"
-                onChange={(event) => setLastName(event.target.value)}
-                required
-                value={lastName}
-              />
+              <FullField label="First name" name="firstName" autoComplete="given-name" autoFocus
+                minLength={3} maxLength={80} value={firstName} setValue={setFirstName} />
+              <FullField label="Last name" name="lastName" autoComplete="family-name"
+                minLength={3} maxLength={80} value={lastName} setValue={setLastName} />
             </Stack>
-            <TextField
-              autoComplete="email"
-              disabled={isSubmitting}
-              fullWidth
-              slotProps={{ htmlInput: { maxLength: 120 } }}
-              label="Email address"
-              margin="normal"
-              name="email"
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              type="email"
-              value={email}
-            />
-            <TextField
-              autoComplete="new-password"
-              disabled={isSubmitting}
-              fullWidth
-              slotProps={{ htmlInput: { maxLength: 1024 } }}
-              label="Password"
-              margin="normal"
-              name="password"
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              type="password"
-              value={password}
-            />
-            <TextField
-              autoComplete="new-password"
-              disabled={isSubmitting}
-              error={Boolean(confirmPassword) && password !== confirmPassword}
-              fullWidth
-              helperText={
-                confirmPassword && password !== confirmPassword
-                  ? 'Passwords do not match.'
-                  : ' '
-              }
-              label="Confirm password"
-              margin="normal"
-              name="confirmPassword"
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-              type="password"
-              value={confirmPassword}
-            />
-            <Button
-              disabled={isSubmitting || isIncomplete}
-              fullWidth
-              size="large"
-              sx={{ mt: 2 }}
-              type="submit"
-              variant="contained"
-            >
-              {isSubmitting ? 'Creating account…' : 'Create account'}
-            </Button>
-          </Box>
+            <EmailField setValue={setEmail} value={email}/>
+            <PasswordField newPassword value={password} setValue={setPassword} />
+            <PasswordField newPassword label="Confirm password" name="confirmPassword"
+              value={confirmPassword} setValue={setConfirmPassword}
+              error={confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : undefined} />
+          </Form>
 
           <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>
             Already have an account?{' '}
