@@ -6,6 +6,7 @@ import ProfilePage from './pages/settings/ProfilePage'
 import ProjectsPage from './pages/projects/ProjectsPage.tsx'
 import CreateProjectPage from './pages/projects/CreateProjectPage.tsx'
 import DetailProjectPage from './pages/projects/DetailProjectPage.tsx'
+import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -27,6 +28,12 @@ const signUpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/signup',
   component: SignUpPage,
+})
+
+const mapDirectoryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/mapDirectory',
+  component: MapDirectoryPage,
 })
 
 const profileRoute = createRoute({
@@ -53,7 +60,7 @@ const detailProjectRoute = createRoute({
   component: DetailProjectPage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute])
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute])
 
 export const router = createRouter({ routeTree })
 
