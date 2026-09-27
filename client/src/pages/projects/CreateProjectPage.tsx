@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { Alert, Box, Button, Container, Paper, Stack, Typography } from '@mui/material'
-import { useCreateProject } from '../hooks/useCreateProject'
-import { FullField } from '../components/FullField'
-import { PdfFileField } from '../components/PdfFileField'
-import { SubmitButton } from '../components/buttons/SubmitButton'
+import { useCreateProject } from '../../hooks/useCreateProject.ts'
+import { FullField } from '../../components/FullField.tsx'
+import { PdfFileField } from '../../components/PdfFileField.tsx'
+import { SubmitButton } from '../../components/buttons/SubmitButton.tsx'
 
 export default function CreateProjectPage() {
   const model = useCreateProject()

@@ -1,7 +1,7 @@
 import { Link, useParams } from '@tanstack/react-router'
 import { Alert, Box, Button, CircularProgress, Container, IconButton, Paper, Stack, Typography } from '@mui/material'
-import { useProjectDetail } from '../hooks/useProjectDetail'
-import { ProjectPageImage } from '../components/projects/ProjectPageImage'
+import { useProjectDetail } from '../../hooks/useProjectDetail.ts'
+import { ProjectPageImage } from '../../components/projects/ProjectPageImage.tsx'
 
 function ProjectDetail({ projectId }: { projectId: string }) {
   const model = useProjectDetail(projectId)

@@ -4,8 +4,8 @@ import {
   Alert, Box, Button, CircularProgress, Container, List, ListItem,
   ListItemButton, ListItemText, Paper, Stack, Typography,
 } from '@mui/material'
-import { projectManager } from '../projects/ProjectManager'
-import type { Project } from '../projects/Project'
+import { projectManager } from '../../projects/ProjectManager.ts'
+import type { Project } from '../../projects/Project.ts'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])

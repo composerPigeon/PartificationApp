@@ -3,9 +3,9 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
 import SignUpPage from './pages/auth/SignUpPage'
 import ProfilePage from './pages/settings/ProfilePage'
-import ProjectsPage from './pages/ProjectsPage'
-import CreateProjectPage from './pages/CreateProjectPage'
-import DetailProjectPage from './pages/DetailProjectPage'
+import ProjectsPage from './pages/projects/ProjectsPage.tsx'
+import CreateProjectPage from './pages/projects/CreateProjectPage.tsx'
+import DetailProjectPage from './pages/projects/DetailProjectPage.tsx'
 
 const rootRoute = createRootRoute({
   component: Outlet,
