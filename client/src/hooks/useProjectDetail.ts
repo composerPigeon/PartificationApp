@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { projectManager } from '../projects/ProjectManager'
-import type { Project } from '../projects/Project'
+import { projectManager } from '../services/projects/ProjectManager.ts'
+import type { Project } from '../domain/Project.ts'
 
 export function useProjectDetail(projectId: string) {
   const [project, setProject] = useState<Project | null>(null)

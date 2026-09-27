@@ -1,6 +1,6 @@
 import {Alert, Box, Typography } from "@mui/material";
 import {ActionButton} from './buttons/ActionButton';
-import type {DirectoryState} from "../projects/ProjectManager.ts";
+import type {DirectoryState} from "../services/projects/ProjectManager.ts";
 
 interface DirectoryPickerProps {
     directoryBusy: boolean,

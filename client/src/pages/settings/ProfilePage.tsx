@@ -11,8 +11,8 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import type { ProfileData } from '../../server_proxy/responses'
-import {serverProxy} from "../../server_proxy/ServerProxy.ts";
+import type { ProfileData } from '../../services/server/responses'
+import {serverProxy} from "../../services/server/ServerProxy.ts";
 
 function formatCreatedAt(value?: Date | string): string {
   if (value === undefined) {

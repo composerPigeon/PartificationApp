@@ -1,6 +1,6 @@
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
-import {serverProxy} from "../../server_proxy/ServerProxy.ts";
+import {serverProxy} from "../../services/server/ServerProxy.ts";
 import type {PropertyState} from "../states/PropertyState.ts";
 import type {FormBaseState} from "../states/FormBaseState.ts";
 

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { projectManager } from '../projects/ProjectManager'
+import { projectManager } from '../services/projects/ProjectManager.ts'
 
 export function useCreateProject() {
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ export function useCreateProject() {
     try {
       const directory = await projectManager.restoreDirectory()
       if (!directory?.granted) throw new Error('Choose a project folder and allow access on the login page first.')
-      const { pdfPages } = await import('../projects/pdfPages')
+      const { pdfPages } = await import('../services/projects/pdfPages.ts')
       await projectManager.createProject(name, file, pdfPages(file, (page, total) => {
         setProgress(`Saving page ${page} of ${total}…`)
       }))

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Alert, Box, Button, CircularProgress } from '@mui/material'
-import { projectManager } from '../../projects/ProjectManager'
-import type { ProjectImage } from '../../projects/Project'
+import { projectManager } from '../../services/projects/ProjectManager.ts'
+import type { ProjectImage } from '../../domain/Project.ts'
 
 export function ProjectPageImage({ projectId, image, projectName }: {
   projectId: string; image: ProjectImage; projectName: string;

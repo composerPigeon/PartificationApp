@@ -1,5 +1,5 @@
-import type {Project, ProjectImage} from './Project.ts';
-import {storedDirectory} from './directoryStorage';
+import type {Project, ProjectImage} from '../../domain/Project.ts';
+import {storedDirectory} from './directoryStorage.ts';
 
 type WritableDirectory = FileSystemDirectoryHandle & {
     queryPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
@@ -187,5 +187,3 @@ export class ProjectManager implements IProjectManager {
         return file.getFile();
     }
 }
-
-export const projectManager: IProjectManager = new ProjectManager();

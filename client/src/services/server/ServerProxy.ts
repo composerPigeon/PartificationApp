@@ -12,7 +12,7 @@ export interface IServerProxy {
   getProfile(): Promise<ProfileData>
 }
 
-class ServerProxy implements IServerProxy {
+export class ServerProxy implements IServerProxy {
   getFullAddress(relativeUrl: string): string {
     relativeUrl = relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`
     return `${relativeUrl}`
@@ -109,5 +109,3 @@ class ServerProxy implements IServerProxy {
     return this.parseData(jsonResponse, (data: Record<string, any>) => deserialize(data, ProfileData));
   }
 }
-
-export const serverProxy: IServerProxy = new ServerProxy()
