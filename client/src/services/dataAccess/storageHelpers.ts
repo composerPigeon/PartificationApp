@@ -11,12 +11,18 @@ type PickerWindow = Window & {
 */
 
 
-export function getProjectId(projectName: string) {
-    return `PartificationApp.${projectName.toLowerCase()}`;
-}
+export class FileSystemEntryNames {
+    static readonly musicorpusFile: string = 'musicorpus.json';
+    static readonly imageFile: string = 'image.png';
+    static readonly projectFile = 'partification-app-project.json';
 
-export function getPageDirectoryName(pageNumber: number): string {
-    return `page-${pageNumber}`;
+    static getProjectId(projectName: string): string {
+        return `partification-app.${projectName.toLowerCase()}`
+    }
+
+    static getPageDirName(projectId: string, pageNumber: number): string {
+        return `${projectId}.page-${pageNumber}`;
+    }
 }
 
 export function browserSupportsOriginPrivateFileSystem(): boolean {

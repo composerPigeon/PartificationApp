@@ -1,6 +1,8 @@
 import type {StorageService} from "./StorageService.ts";
-import type {Project, ProjectPage} from "../../domain";
-import {getPageDirectoryName} from "./storageHelpers.ts";
+import {Project, type ProjectPage} from "../../domain";
+import {FileSystemEntryNames} from "./storageHelpers.ts";
+import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
+import {deserialize, serialize} from "ts-jackson";
 
 type WritableDirectory = FileSystemDirectoryHandle & {
     queryPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
@@ -37,12 +39,12 @@ export class FileSystemStorageService implements StorageService {
         }
     }
 
-    private async readJsonFileAs<TOut>(directory: FileSystemDirectoryHandle, fileName: string): Promise<TOut> {
+    private async readJsonFileAs<TOut>(directory: FileSystemDirectoryHandle, fileName: string, serializableClass: new() => TOut): Promise<TOut> {
         let result: TOut;
         try {
             let fileHandler = await directory.getFileHandle(fileName);
             let fileContent = await (await fileHandler.getFile()).text()
-            result = JSON.parse(fileContent)
+            result = deserialize(JSON.parse(fileContent), serializableClass);
         }
         catch (error) {
             throw new Error(`Unable to read file ${fileName} in folder ${directory.name}.`, {cause: error})
@@ -58,7 +60,11 @@ export class FileSystemStorageService implements StorageService {
         const projectDir = await this.rootDir.getDirectoryHandle(project.id);
 
         try {
-            await this.writeFile(projectDir, 'project.json', JSON.stringify(project, null, 2));
+            await this.writeFile(
+                projectDir,
+                FileSystemEntryNames.projectFile,
+                JSON.stringify(serialize(project), null, 2)
+            );
         } catch (error) {
             try {
                 await this.rootDir.removeEntry(project.id, {recursive: true});
@@ -69,10 +75,25 @@ export class FileSystemStorageService implements StorageService {
         }
     }
 
+    async saveMusicorpus(projectId: string, musicorpus: MusicorpusMetadata) {
+        const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+
+        try {
+            await this.writeFile(
+                projectDir,
+                FileSystemEntryNames.musicorpusFile,
+                JSON.stringify(serialize(musicorpus), null, 2)
+            );
+        } catch (error) {
+            throw new Error("Unable to save musicorpusFile");
+        }
+    }
+
     async savePage(page: ProjectPage): Promise<void> {
         let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
-        let pageDir = await projectDir.getDirectoryHandle(getPageDirectoryName(page.number), {create: true});
-        await this.writeFile(pageDir, 'image.png', page.blob);
+        let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
+        let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
+        await this.writeFile(pageDir, FileSystemEntryNames.imageFile, page.blob);
     }
 
     async loadProjects(): Promise<Project[]> {
@@ -84,7 +105,7 @@ export class FileSystemStorageService implements StorageService {
                 continue;
             const projectDir = await root.getDirectoryHandle(name);
             try {
-                let project = await this.readJsonFileAs<Project>(projectDir, 'project.json');
+                let project = await this.readJsonFileAs(projectDir, FileSystemEntryNames.projectFile, Project);
                 projects.push(project);
             } catch (error) {
                 if (error instanceof DOMException && error.name === 'NotFoundError') continue;
@@ -107,7 +128,7 @@ export class FileSystemStorageService implements StorageService {
                 continue;
 
             const pageDir = await projectDir.getDirectoryHandle(name);
-            const blob = await this.readFileAsBlob(pageDir, 'image.png');
+            const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.imageFile);
             pages.push({
                 projectId,
                 number: pageNumber,

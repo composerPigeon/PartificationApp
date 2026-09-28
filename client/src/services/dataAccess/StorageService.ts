@@ -1,11 +1,13 @@
 import type {Project} from "../../domain/Project.ts";
 import type {ProjectPage} from "../../domain";
+import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
 
 
 export interface StorageService {
     createProjectDir(projectId: string): Promise<void>;
 
     saveProject(project: Project): Promise<void>;
+    saveMusicorpus(projectId: string, musicorpus: MusicorpusMetadata): Promise<void>;
     savePage(page: ProjectPage): Promise<void>;
 
     loadProjects(): Promise<Project[]>;

@@ -1,8 +1,9 @@
 import type {Project, ProjectPage} from '../../domain';
 import StorageType from "../dataAccess/StorageType.ts";
 import type {StorageService} from "../dataAccess/StorageService.ts";
-import {getProjectId} from "../dataAccess/storageHelpers.ts";
+import {FileSystemEntryNames} from "../dataAccess/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
+import {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
 
 export interface DirectoryState {
     name: string;
@@ -40,14 +41,17 @@ export class ProjectManager implements IProjectManager {
     }
 
     async createProject(projectName: string, pages: AsyncIterable<Blob>): Promise<Project> {
-        let projectId = getProjectId(projectName);
+        let projectId = FileSystemEntryNames.getProjectId(projectName);
         await this.storage.createProjectDir(projectId);
 
-        let pageNumber: number = 1
+        let musicorpusMetadata = MusicorpusMetadata.createNew(projectName)
+        await this.storage.saveMusicorpus(projectId, musicorpusMetadata);
+
+        let pageNumber: number = 0
         for await (const pageBlob of pages) {
             let page: ProjectPage = {
                 projectId,
-                number: pageNumber,
+                number: pageNumber + 1,
                 blob: pageBlob
             }
 

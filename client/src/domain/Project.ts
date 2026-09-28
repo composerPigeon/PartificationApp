@@ -1,6 +1,19 @@
+import {JsonProperty, Serializable} from "ts-jackson";
 
-export interface Project {
-    id: string,
-    name: string,
-    pageCount: number,
+@Serializable()
+export class Project {
+    @JsonProperty()
+    id: string;
+
+    @JsonProperty()
+    name: string;
+
+    @JsonProperty({path: "page_count"})
+    pageCount: number;
+
+    constructor(id: string = "", name: string = "", pageCount: number = 0) {
+        this.id = id;
+        this.name = name;
+        this.pageCount = pageCount;
+    }
 }
