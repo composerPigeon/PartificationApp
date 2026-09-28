@@ -1,4 +1,4 @@
-import type {Project, ProjectPage} from '../../domain';
+import {Project, type ProjectPage} from '../../domain';
 import StorageType from "../dataAccess/StorageType.ts";
 import type {StorageService} from "../dataAccess/StorageService.ts";
 import {FileSystemEntryNames} from "../dataAccess/storageHelpers.ts";
@@ -59,11 +59,11 @@ export class ProjectManager implements IProjectManager {
             pageNumber++;
         }
 
-        let project: Project =  {
-            id: projectId,
-            name: projectName,
-            pageCount: pageNumber
-        }
+        let project = new Project(
+            projectId,
+            projectName,
+            pageNumber
+        )
         await this.storage.saveProject(project);
         return project;
     }

@@ -17,11 +17,24 @@ export class FileSystemStorageService implements StorageService {
         this.rootDir = rootDir;
     }
 
-    private async writeFile(directory: FileSystemDirectoryHandle, name: string, data: Blob | string): Promise<void> {
+    private async writeFileAsBlob(directory: FileSystemDirectoryHandle, fileName: string, blob: Blob): Promise<void> {
+        const file = await directory.getFileHandle(fileName, {create: true});
+        const writer = await file.createWritable();
+        try {
+            await writer.write(blob);
+            await writer.close();
+        } catch (error) {
+            await writer.abort().catch(() => undefined);
+            throw error;
+        }
+    }
+
+    private async writeJsonFile<TData>(directory: FileSystemDirectoryHandle, name: string, data: TData): Promise<void> {
         const file = await directory.getFileHandle(name, {create: true});
         const writer = await file.createWritable();
         try {
-            await writer.write(data);
+            let stringData = JSON.stringify(serialize(data), null, 2);
+            await writer.write(stringData);
             await writer.close();
         } catch (error) {
             await writer.abort().catch(() => undefined);
@@ -60,10 +73,10 @@ export class FileSystemStorageService implements StorageService {
         const projectDir = await this.rootDir.getDirectoryHandle(project.id);
 
         try {
-            await this.writeFile(
+            await this.writeJsonFile(
                 projectDir,
                 FileSystemEntryNames.projectFile,
-                JSON.stringify(serialize(project), null, 2)
+                project
             );
         } catch (error) {
             try {
@@ -79,10 +92,10 @@ export class FileSystemStorageService implements StorageService {
         const projectDir = await this.rootDir.getDirectoryHandle(projectId);
 
         try {
-            await this.writeFile(
+            await this.writeJsonFile(
                 projectDir,
                 FileSystemEntryNames.musicorpusFile,
-                JSON.stringify(serialize(musicorpus), null, 2)
+                musicorpus
             );
         } catch (error) {
             throw new Error("Unable to save musicorpusFile");
@@ -93,7 +106,7 @@ export class FileSystemStorageService implements StorageService {
         let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
         let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
-        await this.writeFile(pageDir, FileSystemEntryNames.imageFile, page.blob);
+        await this.writeFileAsBlob(pageDir, FileSystemEntryNames.imageFile, page.blob);
     }
 
     async loadProjects(): Promise<Project[]> {
