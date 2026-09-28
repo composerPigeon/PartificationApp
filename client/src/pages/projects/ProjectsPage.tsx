@@ -4,12 +4,11 @@ import {
   Alert, Box, Button, CircularProgress, Container, List, ListItem,
   ListItemButton, ListItemText, Paper, Stack, Typography,
 } from '@mui/material'
-import { projectManager } from '../../services/projects/ProjectManager.ts'
+import { projectManager } from '../../services'
 import type { Project } from '../../domain/Project.ts'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [folderName, setFolderName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
@@ -18,13 +17,8 @@ function ProjectsPage() {
     let active = true
     async function load() {
       try {
-        const directory = await projectManager.restoreDirectory()
-        if (!directory?.granted) {
-          throw new Error('Choose a project folder or renew folder access on the login page.')
-        }
         const loaded = await projectManager.loadProjects()
         if (active) {
-          setFolderName(directory.name)
           setProjects(loaded)
         }
       } catch (error) {
@@ -49,9 +43,6 @@ function ProjectsPage() {
         <Stack spacing={3}>
           <Box>
             <Typography component="h1" variant="h3" sx={{ fontWeight: 700 }}>Projects</Typography>
-            <Typography color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-              {folderName ? `Projects in ${folderName} · A–Z` : 'Your local projects'}
-            </Typography>
           </Box>
           <Button component={Link} to="/projects/new" variant="contained" sx={{ alignSelf: 'flex-start' }}>
             Create project
@@ -74,12 +65,12 @@ function ProjectsPage() {
               <List aria-label="Projects" disablePadding>
                 {projects.map((project, index) => (
                   <ListItem key={project.id} divider={index < projects.length - 1} disablePadding>
-                    <Link to="/projects/$projectId" params={{ projectId: project.id }}
+                    <Link to="/projects/$projectId" params={{projectId: project.id}} state={{project}}
                       style={{ width: '100%', color: 'inherit', textDecoration: 'none' }}>
                     <ListItemButton component="span" role={undefined} tabIndex={-1}>
                     <ListItemText
                       primary={project.name}
-                      secondary={`${project.pdfFileName} · ${project.images.length} ${project.images.length === 1 ? 'page' : 'pages'}`}
+                      secondary={` · ${project.pageCount} ${project.pageCount === 1 ? 'page' : 'pages'}`}
                       sx={{ overflowWrap: 'anywhere' }}
                     />
                     </ListItemButton>
@@ -90,7 +81,7 @@ function ProjectsPage() {
             </Paper>
           )}
           <Button component={Link} to="/login" sx={{ alignSelf: 'flex-start' }}>
-            Back to login / choose folder
+            Back to login
           </Button>
         </Stack>
       </Container>

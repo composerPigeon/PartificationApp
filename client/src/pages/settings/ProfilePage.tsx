@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import type { ProfileData } from '../../services/server/responses'
-import {serverProxy} from "../../services/server/ServerProxy.ts";
+import {serverProxy} from "../../services";
 
 function formatCreatedAt(value?: Date | string): string {
   if (value === undefined) {

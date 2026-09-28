@@ -7,6 +7,7 @@ import ProjectsPage from './pages/projects/ProjectsPage.tsx'
 import CreateProjectPage from './pages/projects/CreateProjectPage.tsx'
 import DetailProjectPage from './pages/projects/DetailProjectPage.tsx'
 import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
+import type {Project} from "./domain";
 
 const rootRoute = createRootRoute({
   component: Outlet,
@@ -67,5 +68,9 @@ export const router = createRouter({ routeTree })
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
+  }
+
+  interface HistoryState {
+    project?: Project
   }
 }

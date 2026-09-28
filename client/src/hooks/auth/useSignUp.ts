@@ -1,6 +1,6 @@
 import type {SignUpState} from "../states/auth/SignUpState.ts";
 
-import {serverProxy} from "../../services/server/ServerProxy.ts";
+import {serverProxy} from "../../services";
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
 
