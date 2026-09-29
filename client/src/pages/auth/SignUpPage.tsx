@@ -6,12 +6,13 @@ import {
   Typography,
 } from '@mui/material'
 import Form from "../../components/formComponents/Form.tsx";
-import { FullField } from '../../components/FullField'
-import PasswordField from '../../components/auth/PasswordField'
-import EmailField from "../../components/auth/EmailField.tsx";
+import PasswordField from '../../components/formComponents/PasswordField.tsx'
+import EmailField from "../../components/formComponents/EmailField.tsx";
 import FormPage from "../../components/formComponents/FormPage.tsx";
 import FormTitle from "../../components/formComponents/FormTitle.tsx";
 import {useSignUp} from "../../hooks/auth/useSignUp.ts";
+import PasswordType from "../../components/formComponents/PasswordType.ts";
+import NameField from "../../components/formComponents/NameField.tsx";
 
 function SignUpPage() {
   var state = useSignUp()
@@ -31,15 +32,14 @@ function SignUpPage() {
 
       <Form submitButtonText="Create account" isBusy={state.isSubmitting.value} isFormIncomplete={state.isIncomplete} handleSubmit={state.handleSignUp}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ sm: 2 }}>
-          <FullField label="First name" name="firstName" autoComplete="given-name" autoFocus
-            minLength={3} maxLength={80} value={state.givenName.value} setValue={state.givenName.set} />
-          <FullField label="Last name" name="lastName" autoComplete="family-name"
-            minLength={3} maxLength={80} value={state.familyName.value} setValue={state.familyName.set} />
+          <NameField label="Given name" autoComplete="given-name" required
+            value={state.givenName.value} setValue={state.givenName.set} />
+          <NameField label="Family name" autoComplete="family-name" required
+            value={state.familyName.value} setValue={state.familyName.set} />
         </Stack>
         <EmailField setValue={state.email.set} value={state.email.value}/>
-        <PasswordField newPassword value={state.password.value} setValue={state.password.set} />
-        <PasswordField newPassword label="Confirm password" name="confirmPassword"
-          value={state.confirmPassword.value} setValue={state.confirmPassword.set} />
+        <PasswordField passwordType={PasswordType.New} value={state.password.value} setValue={state.password.set} />
+        <PasswordField passwordType={PasswordType.Confirm} value={state.confirmPassword.value} setValue={state.confirmPassword.set} />
       </Form>
 
       <Typography align="center" color="text.secondary" sx={{ mt: 3 }}>

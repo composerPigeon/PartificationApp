@@ -1,6 +1,6 @@
 import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import HomePage from './pages/HomePage'
-import LoginPage from './pages/auth/LoginPage'
+import LogInPage from './pages/auth/LogInPage.tsx'
 import SignUpPage from './pages/auth/SignUpPage'
 import ProfilePage from './pages/settings/ProfilePage'
 import ProjectsPage from './pages/projects/ProjectsPage.tsx'
@@ -22,7 +22,7 @@ const homeRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  component: LoginPage,
+  component: LogInPage,
 })
 
 const signUpRoute = createRoute({

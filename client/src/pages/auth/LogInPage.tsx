@@ -4,16 +4,17 @@ import {
   Link as MuiLink,
   Typography,
 } from '@mui/material'
-import EmailField from "../../components/auth/EmailField.tsx";
+import EmailField from "../../components/formComponents/EmailField.tsx";
 import Form from "../../components/formComponents/Form.tsx";
-import PasswordField from "../../components/auth/PasswordField.tsx";
+import PasswordField from "../../components/formComponents/PasswordField.tsx";
 import { ActionButton } from '../../components/buttons/ActionButton'
 import FormPage from "../../components/formComponents/FormPage.tsx";
 
 import {type LoginState, useLogIn} from "../../hooks/auth/useLogIn.ts";
 import FormTitle from "../../components/formComponents/FormTitle.tsx";
+import PasswordType from "../../components/formComponents/PasswordType.ts";
 
-function LoginPage() {
+function LogInPage() {
   var state: LoginState = useLogIn();
 
 
@@ -30,8 +31,8 @@ function LoginPage() {
       )}
 
       <Form submitButtonText="Log in" isBusy={state.isSubmitting.value} isFormIncomplete={state.isIncomplete} handleSubmit={state.handleLogin}>
-          <EmailField autoFocus setValue={state.email.set} value={state.email.value}/>
-          <PasswordField setValue={state.password.set} value={state.password.value}/>
+          <EmailField setValue={state.email.set} value={state.email.value}/>
+          <PasswordField passwordType={PasswordType.Normal} setValue={state.password.set} value={state.password.value}/>
       </Form>
 
       <ActionButton fullWidth sx={{ mt: 2 }} busy={state.isSubmitting.value}>
@@ -48,4 +49,4 @@ function LoginPage() {
   )
 }
 
-export default LoginPage
+export default LogInPage
