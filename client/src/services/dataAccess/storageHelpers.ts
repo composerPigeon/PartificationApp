@@ -13,8 +13,8 @@ type PickerWindow = Window & {
 
 export class FileSystemEntryNames {
     static readonly musicorpusFile: string = 'musicorpus.json';
-    static readonly imageFile: string = 'image.png';
-    static readonly projectFile = 'partification-app-project.json';
+    static readonly pageImageFile: string = 'image.png';
+    static readonly projectMetadataFile = 'partification-app-project.json';
 
     static getProjectId(projectName: string): string {
         return `partification-app.${projectName.toLowerCase()}`

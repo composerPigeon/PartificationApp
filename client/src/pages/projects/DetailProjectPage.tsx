@@ -17,7 +17,7 @@ function ProjectDetail(project: Project) {
           <Box component="header">
             <Button component={Link} to="/projects">← Projects</Button>
             <Typography component="h1" variant="h4" align="center" sx={{ overflowWrap: 'anywhere', fontWeight: 700 }}>
-              {project.name ?? 'Project'}
+              {project.projectName ?? 'Project'}
             </Typography>
           </Box>
           {model.loading ? (
@@ -33,7 +33,7 @@ function ProjectDetail(project: Project) {
             <>
               <Box component="section" aria-label="Project page viewer"
                 sx={{ minHeight: 'calc(100svh - 240px)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 1, sm: 2 } }}>
-                <ProjectPageImage key={`${project.id}:${currentPage.number}`} projectName={project.name} page={currentPage} />
+                <ProjectPageImage key={`${project.id}:${currentPage.number}`} projectName={project.projectName} page={currentPage} />
               </Box>
               <Stack component="nav" aria-label="Page navigation" direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
                 <IconButton aria-label="Previous page" disabled={model.pageIndex === 0} onClick={model.previous}>

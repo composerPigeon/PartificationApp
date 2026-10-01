@@ -60,7 +60,7 @@ test('readable unique IDs, project name, original PDF and page round trip', asyn
   const second = await manager.createProject(' Choir Practice ', pdf(), pages())
   assert.match(first.id, /^choir-practice-score-/)
   assert.notEqual(first.id, second.id)
-  assert.equal(first.name, 'Choir Practice')
+  assert.equal(first.projectName, 'Choir Practice')
   assert.equal(await (await manager.loadPage(first.id, first.images[0])).text(), 'page')
   const directory = await root.getDirectoryHandle(first.id)
   assert.equal(await (await (await directory.getFileHandle('source.pdf')).getFile()).text(), '%PDF-example')
@@ -74,7 +74,7 @@ test('sorts by project name and accepts legacy metadata', async () => {
   const legacy = await root.getDirectoryHandle('legacy', { create: true })
   const metadata = await legacy.getFileHandle('project.json', { create: true })
   metadata.data = new Blob([JSON.stringify({ id: 'legacy', pdfFileName: 'Beta.pdf', images: [{ pageNumber: 1, fileName: 'page-1.png' }] })])
-  assert.deepEqual((await manager.loadProjects()).map(project => project.name), ['Alpha', 'Beta', 'zebra'])
+  assert.deepEqual((await manager.loadProjects()).map(project => project.projectName), ['Alpha', 'Beta', 'zebra'])
 })
 
 test('conversion failure cleans up only the new project', async () => {

@@ -69,7 +69,7 @@ function ProjectsPage() {
                       style={{ width: '100%', color: 'inherit', textDecoration: 'none' }}>
                     <ListItemButton component="span" role={undefined} tabIndex={-1}>
                     <ListItemText
-                      primary={project.name}
+                      primary={project.projectName}
                       secondary={` · ${project.pageCount} ${project.pageCount === 1 ? 'page' : 'pages'}`}
                       sx={{ overflowWrap: 'anywhere' }}
                     />

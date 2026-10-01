@@ -75,7 +75,7 @@ export class FileSystemStorageService implements StorageService {
         try {
             await this.writeJsonFile(
                 projectDir,
-                FileSystemEntryNames.projectFile,
+                FileSystemEntryNames.projectMetadataFile,
                 project
             );
         } catch (error) {
@@ -106,7 +106,7 @@ export class FileSystemStorageService implements StorageService {
         let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
         let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
-        await this.writeFileAsBlob(pageDir, FileSystemEntryNames.imageFile, page.blob);
+        await this.writeFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile, page.blob);
     }
 
     async loadProjects(): Promise<Project[]> {
@@ -118,7 +118,7 @@ export class FileSystemStorageService implements StorageService {
                 continue;
             const projectDir = await root.getDirectoryHandle(name);
             try {
-                let project = await this.readJsonFileAs(projectDir, FileSystemEntryNames.projectFile, Project);
+                let project = await this.readJsonFileAs(projectDir, FileSystemEntryNames.projectMetadataFile, Project);
                 projects.push(project);
             } catch (error) {
                 if (error instanceof DOMException && error.name === 'NotFoundError') continue;
@@ -127,7 +127,7 @@ export class FileSystemStorageService implements StorageService {
         }
 
         return projects.sort(
-            (a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'})
+            (a, b) => a.projectName.localeCompare(b.projectName, undefined, {sensitivity: 'base'})
         );
     }
 
@@ -141,7 +141,7 @@ export class FileSystemStorageService implements StorageService {
                 continue;
 
             const pageDir = await projectDir.getDirectoryHandle(name);
-            const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.imageFile);
+            const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
             pages.push({
                 projectId,
                 number: pageNumber,

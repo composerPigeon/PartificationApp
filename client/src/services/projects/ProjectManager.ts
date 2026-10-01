@@ -5,10 +5,6 @@ import {FileSystemEntryNames} from "../dataAccess/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
 import {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
 
-export interface DirectoryState {
-    name: string;
-    granted: boolean;
-}
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
     useLocalStorage(fileSystemStorage: StorageService): void;
@@ -40,13 +36,12 @@ export class ProjectManager implements IProjectManager {
         return this.type;
     }
 
-    async createProject(projectName: string, pages: AsyncIterable<Blob>): Promise<Project> {
-        let projectId = FileSystemEntryNames.getProjectId(projectName);
-        await this.storage.createProjectDir(projectId);
-
+    private async createMusicorpus(projectId: string, projectName: string) {
         let musicorpusMetadata = MusicorpusMetadata.createNew(projectName)
         await this.storage.saveMusicorpus(projectId, musicorpusMetadata);
+    }
 
+    private async createProjectPages(projectId: string, pages: AsyncIterable<Blob>): Promise<number> {
         let pageNumber: number = 0
         for await (const pageBlob of pages) {
             let page: ProjectPage = {
@@ -58,12 +53,23 @@ export class ProjectManager implements IProjectManager {
             await this.storage.savePage(page)
             pageNumber++;
         }
+        return pageNumber;
+    }
+
+    async createProject(projectName: string, pages: AsyncIterable<Blob>, ): Promise<Project> {
+        let projectId = FileSystemEntryNames.getProjectId(projectName);
+        await this.storage.createProjectDir(projectId);
+
+        await this.createMusicorpus(projectId, projectName);
+
+        let pageCount = await this.createProjectPages(projectId, pages);
 
         let project = new Project(
             projectId,
             projectName,
-            pageNumber
-        )
+            projectId,
+            pageCount
+        );
         await this.storage.saveProject(project);
         return project;
     }
