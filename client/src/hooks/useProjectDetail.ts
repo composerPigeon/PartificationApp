@@ -15,7 +15,7 @@ export function useProjectDetail(project: Project) {
         async function load() {
             try {
                 const loadedPages = await projectManager.loadPages(project.id)
-                setPages(loadedPages);
+                if (active) setPages(loadedPages);
             } catch (error) {
                 if (active) setError(error instanceof Error ? error.message : 'Unable to load pages.')
             } finally {
@@ -27,7 +27,7 @@ export function useProjectDetail(project: Project) {
         return () => {
             active = false
         }
-    }, [pages, attempt])
+    }, [project.id, attempt])
 
     function retry() {
         setLoading(true)

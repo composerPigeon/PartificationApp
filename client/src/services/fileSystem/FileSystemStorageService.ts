@@ -131,13 +131,29 @@ export class FileSystemStorageService implements StorageService {
         );
     }
 
+    private getPageNumberFromDirectoryName(projectId: string, directoryName: string): number | null {
+        const pagePrefix = `${projectId}.page-`;
+        if (!directoryName.startsWith(pagePrefix))
+            return null;
+
+        const numberText = directoryName.slice(pagePrefix.length);
+        if (!/^[1-9]\d*$/.test(numberText))
+            return null;
+
+        const pageNumber = Number(numberText);
+        return Number.isSafeInteger(pageNumber) ? pageNumber : null;
+    }
+
     async loadPages(projectId: string): Promise<ProjectPage[]> {
         let projectDir = await this.rootDir.getDirectoryHandle(projectId);
         const pages: ProjectPage[] = [];
 
-        let pageNumber = 1;
         for await (const [name, entry] of projectDir) {
             if (entry.kind !== 'directory')
+                continue;
+
+            const pageNumber = this.getPageNumberFromDirectoryName(projectId, name);
+            if (pageNumber === null)
                 continue;
 
             const pageDir = await projectDir.getDirectoryHandle(name);
@@ -147,10 +163,8 @@ export class FileSystemStorageService implements StorageService {
                 number: pageNumber,
                 blob
             })
-
-            pageNumber++;
         }
-        return pages;
+        return pages.sort((a, b) => a.number - b.number);
     }
 
     async deleteProject(projectId: string): Promise<void> {
