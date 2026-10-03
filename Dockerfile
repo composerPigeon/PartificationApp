@@ -20,4 +20,6 @@ COPY server/ ./server/
 COPY --from=client-build /build/client/dist/ ./server/static/
 
 EXPOSE 8000
-CMD ["gunicorn", "--chdir", "server", "--bind", "0.0.0.0:8000", "--workers", "2", "app:app"]
+WORKDIR /app/server
+# Create tables once before workers start, avoiding concurrent create_all calls.
+CMD ["sh", "-c", "python -c 'from app import app' && exec gunicorn --bind 0.0.0.0:8000 --workers 2 app:app"]

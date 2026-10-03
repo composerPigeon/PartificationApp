@@ -1,4 +1,3 @@
-from idlelib import testing
 from pathlib import Path
 
 from flask import Flask, Response, send_from_directory
@@ -14,7 +13,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 def create_app() -> Flask:
     app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="")
-    app.config["SQLALCHEMY_DATABASE_URI"] = config.DATABASE_URL
+    app.config["SQLALCHEMY_DATABASE_URI"] = config.sqlalchemy_database_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = config.SECRET_KEY
     app.register_blueprint(auth)
