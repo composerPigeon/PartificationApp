@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { projectManager } from '../services'
+import {useEffect, useState} from 'react'
+import {projectManager} from '../services'
 import type {Project, ProjectPage} from '../domain'
 
 export function useProjectDetail(project: Project) {
@@ -11,6 +11,7 @@ export function useProjectDetail(project: Project) {
 
     useEffect(() => {
         let active = true
+
         async function load() {
             try {
                 const loadedPages = await projectManager.loadPages(project.id)
@@ -21,19 +22,28 @@ export function useProjectDetail(project: Project) {
                 if (active) setLoading(false)
             }
         }
+
         void load()
-        return () => { active = false }
+        return () => {
+            active = false
+        }
     }, [pages, attempt])
 
-  function retry() {
-    setLoading(true)
-    setError(null)
-    setAttempt(value => value + 1)
-  }
+    function retry() {
+        setLoading(true)
+        setError(null)
+        setAttempt(value => value + 1)
+    }
 
-  const pageCount = project.pageCount
-  function previous() { setPageIndex(index => Math.max(0, index - 1)) }
-  function next() { setPageIndex(index => Math.min(Math.max(0, pageCount - 1), index + 1)) }
+    const pageCount = project.pageCount
 
-  return { pages, error, loading, retry, pageIndex, pageCount, previous, next }
+    function previous() {
+        setPageIndex(index => Math.max(0, index - 1))
+    }
+
+    function next() {
+        setPageIndex(index => Math.min(Math.max(0, pageCount - 1), index + 1))
+    }
+
+    return {pages, error, loading, retry, pageIndex, pageCount, previous, next}
 }

@@ -1,0 +1,8 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+
+[{*.js,*.mjs,*.ts,*.tsx}]
+ij_continuation_indent_size = 4

@@ -33,13 +33,13 @@ export function useLogIn(): LoginState {
                 return
             }
 
-            await navigate({ to: '/projects'})
+            await navigate({to: '/projects'})
         } catch (error) {
             setError(
-            error instanceof Error
-              ? error.message
-              : 'Unable to log in. Please try again.',
-          )
+                error instanceof Error
+                    ? error.message
+                    : 'Unable to log in. Please try again.',
+            )
         } finally {
             setIsSubmitting(false)
         }

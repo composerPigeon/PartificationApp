@@ -3,15 +3,15 @@ import {OperationResultData} from "./OperationResultData.ts";
 
 @Serializable()
 export class ProfileData extends OperationResultData {
-  @JsonProperty('first_name')
-  firstName?: string;
+    @JsonProperty('first_name')
+    firstName?: string;
 
-  @JsonProperty('last_name')
-  lastName?: string
+    @JsonProperty('last_name')
+    lastName?: string
 
-  @JsonProperty('email')
-  email?: string
+    @JsonProperty('email')
+    email?: string
 
-  @JsonProperty({ path: 'created_at', type: Date })
-  createdAt?: Date
+    @JsonProperty({path: 'created_at', type: Date})
+    createdAt?: Date
 }

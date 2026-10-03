@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import {Outlet, createRootRoute, createRoute, createRouter} from '@tanstack/react-router'
 import HomePage from './pages/HomePage'
 import LogInPage from './pages/auth/LogInPage.tsx'
 import SignUpPage from './pages/auth/SignUpPage'
@@ -10,67 +10,67 @@ import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
 import type {Project} from "./domain";
 
 const rootRoute = createRootRoute({
-  component: Outlet,
+    component: Outlet,
 })
 
 const homeRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: HomePage,
+    getParentRoute: () => rootRoute,
+    path: '/',
+    component: HomePage,
 })
 
 const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/login',
-  component: LogInPage,
+    getParentRoute: () => rootRoute,
+    path: '/login',
+    component: LogInPage,
 })
 
 const signUpRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/signup',
-  component: SignUpPage,
+    getParentRoute: () => rootRoute,
+    path: '/signup',
+    component: SignUpPage,
 })
 
 const mapDirectoryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/mapDirectory',
-  component: MapDirectoryPage,
+    getParentRoute: () => rootRoute,
+    path: '/mapDirectory',
+    component: MapDirectoryPage,
 })
 
 const profileRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/profile',
-  component: ProfilePage,
+    getParentRoute: () => rootRoute,
+    path: '/profile',
+    component: ProfilePage,
 })
 
 const projectsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/projects',
-  component: ProjectsPage,
+    getParentRoute: () => rootRoute,
+    path: '/projects',
+    component: ProjectsPage,
 })
 
 const createProjectRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/projects/new',
-  component: CreateProjectPage,
+    getParentRoute: () => rootRoute,
+    path: '/projects/new',
+    component: CreateProjectPage,
 })
 
 const detailProjectRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/projects/$projectId',
-  component: DetailProjectPage,
+    getParentRoute: () => rootRoute,
+    path: '/projects/$projectId',
+    component: DetailProjectPage,
 })
 
 const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute])
 
-export const router = createRouter({ routeTree })
+export const router = createRouter({routeTree})
 
 declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router
-  }
+    interface Register {
+        router: typeof router
+    }
 
-  interface HistoryState {
-    project?: Project
-  }
+    interface HistoryState {
+        project?: Project
+    }
 }
