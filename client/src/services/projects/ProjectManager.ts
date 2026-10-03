@@ -38,11 +38,6 @@ export class ProjectManager implements IProjectManager {
         return this.type;
     }
 
-    private async createMusicorpus(projectId: string, projectName: string) {
-        let musicorpusMetadata = MusicorpusMetadata.createNew(projectName)
-        await this.storage.saveMusicorpus(projectId, musicorpusMetadata);
-    }
-
     private async createProjectPages(projectId: string, pages: AsyncIterable<Blob>): Promise<number> {
         let pageNumber: number = 0
         for await (const pageBlob of pages) {
@@ -62,11 +57,12 @@ export class ProjectManager implements IProjectManager {
         let projectId = FileSystemEntryNames.getProjectId(projectName);
         await this.storage.createProjectDir(projectId);
 
-        await this.createMusicorpus(projectId, projectName);
+        await this.storage.saveMusicorpus(projectId, MusicorpusMetadata.createNew(projectName))
 
-        let pages = await this.pagesConverter.convert(pdf, onProgress);
-
-        let pageCount = await this.createProjectPages(projectId, pages);
+        let pageCount = await this.createProjectPages(
+            projectId,
+            await this.pagesConverter.convert(pdf, onProgress)
+        );
 
         let project = new Project(
             projectId,
