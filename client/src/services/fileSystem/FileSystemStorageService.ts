@@ -1,4 +1,4 @@
-import type {StorageService} from "./StorageService.ts";
+import type {StorageService} from "../projects/StorageService.ts";
 import {Project, type ProjectPage} from "../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
 import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";

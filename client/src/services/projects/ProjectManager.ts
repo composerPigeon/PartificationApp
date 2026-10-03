@@ -1,16 +1,17 @@
 import {Project, type ProjectPage} from '../../domain';
-import StorageType from "../dataAccess/StorageType.ts";
-import type {StorageService} from "../dataAccess/StorageService.ts";
-import {FileSystemEntryNames} from "../dataAccess/storageHelpers.ts";
+import StorageType from "./StorageType.ts";
+import type {StorageService} from "./StorageService.ts";
+import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
 import {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
+import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/ConvertPdfPagesService.ts";
 
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
     useLocalStorage(fileSystemStorage: StorageService): void;
     getCurrentStorageType(): StorageType;
 
-    createProject(name: string, pages: AsyncIterable<Blob>): Promise<Project>;
+    createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project>;
     loadProjects(): Promise<Project[]>;
 
     loadPages(projectId: string): Promise<ProjectPage[]>;
@@ -21,6 +22,7 @@ export interface IProjectManager {
 export class ProjectManager implements IProjectManager {
     private type: StorageType = StorageType.Browser;
     private storage: StorageService = browserStorage;
+    private pagesConverter: IConvertPdfPagesService = new ConvertPdfPagesService();
 
     useBrowserStorage(): void {
         this.type = StorageType.Browser;
@@ -56,11 +58,13 @@ export class ProjectManager implements IProjectManager {
         return pageNumber;
     }
 
-    async createProject(projectName: string, pages: AsyncIterable<Blob>, ): Promise<Project> {
+    async createProject(projectName: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project> {
         let projectId = FileSystemEntryNames.getProjectId(projectName);
         await this.storage.createProjectDir(projectId);
 
         await this.createMusicorpus(projectId, projectName);
+
+        let pages = await this.pagesConverter.convert(pdf, onProgress);
 
         let pageCount = await this.createProjectPages(projectId, pages);
 

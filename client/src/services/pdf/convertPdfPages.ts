@@ -3,7 +3,7 @@ import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
-export async function* pdfPages(file: File, onProgress: (page: number, total: number) => void): AsyncGenerator<Blob> {
+export async function* convertPdfPages(file: File, onProgress: (count: number, total: number) => void): AsyncGenerator<Blob> {
     const assets = `${import.meta.env.BASE_URL}pdfjs/`
     const task = getDocument({
         data: new Uint8Array(await file.arrayBuffer()),

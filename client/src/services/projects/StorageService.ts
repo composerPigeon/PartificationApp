@@ -1,4 +1,4 @@
-import type {Project} from "../../domain/Project.ts";
+import type {Project} from "../../domain";
 import type {ProjectPage} from "../../domain";
 import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
 

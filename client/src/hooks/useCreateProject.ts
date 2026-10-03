@@ -23,6 +23,10 @@ export function useCreateProject() {
         setFile(selected)
     }
 
+    function onPageConvertProgress(count: number, total: number): void {
+        setProgress(`Saving page ${count} of ${total}…`)
+    }
+
     async function submit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
         if (submitting.current || !file || !name.trim()) return
@@ -31,10 +35,7 @@ export function useCreateProject() {
         setError(null)
         setProgress('Preparing PDF…')
         try {
-            const {pdfPages} = await import('../services/projects/pdfPages.ts')
-            await projectManager.createProject(name, pdfPages(file, (page, total) => {
-                setProgress(`Saving page ${page} of ${total}…`)
-            }))
+            await projectManager.createProject(name, file, onPageConvertProgress);
             await navigate({to: '/projects'})
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Unable to create the project.')
