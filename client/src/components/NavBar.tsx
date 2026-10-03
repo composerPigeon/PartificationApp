@@ -10,7 +10,7 @@ export default function NavBar({title}: NavBarProps) {
         <AppBar position="static" color="inherit" elevation={1}>
             <Toolbar sx={{display: 'grid', gridTemplateColumns: 'minmax(96px, 1fr) minmax(0, 2fr) minmax(96px, 1fr)', gap: {xs: 1, sm: 2}}}>
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'start'}}>
-                    <Box component={Link} to="/" aria-label="Partification home"
+                    <Box component={Link} to="/projects" aria-label="Partification projects"
                          sx={{display: 'inline-flex', alignItems: 'center'}}>
                         <Box component="img" src={`${import.meta.env.BASE_URL}favicon.svg`} alt=""
                              sx={{width: 40, height: 40}}/>
