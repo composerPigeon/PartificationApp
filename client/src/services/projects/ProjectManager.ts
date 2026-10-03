@@ -13,6 +13,7 @@ export interface IProjectManager {
 
     createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project>;
     loadProjects(): Promise<Project[]>;
+    deleteProject(projectId: string): Promise<void>;
 
     loadPages(projectId: string): Promise<ProjectPage[]>;
 }
@@ -76,6 +77,10 @@ export class ProjectManager implements IProjectManager {
 
     async loadProjects(): Promise<Project[]> {
         return this.storage.loadProjects();
+    }
+
+    async deleteProject(projectId: string): Promise<void> {
+        await this.storage.deleteProject(projectId);
     }
 
     async loadPages(projectId: string): Promise<ProjectPage[]> {

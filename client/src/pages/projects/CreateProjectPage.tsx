@@ -4,14 +4,12 @@ import {useCreateProject} from '../../hooks/useCreateProject.ts'
 import {PdfFileField} from '../../components/PdfFileField.tsx'
 import Form from '../../components/formComponents/Form.tsx'
 import FormPage from '../../components/formComponents/FormPage.tsx'
-import FormTitle from '../../components/formComponents/FormTitle.tsx'
 import NameField from "../../components/formComponents/NameField.tsx";
 
 export default function CreateProjectPage() {
     const model = useCreateProject()
     return (
-        <FormPage>
-            <FormTitle>Create project</FormTitle>
+        <FormPage title="Create project">
             <Form
                 submitButtonText={model.busy ? 'Creating project…' : 'Create project'}
                 isBusy={model.busy}

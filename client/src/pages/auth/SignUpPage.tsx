@@ -9,7 +9,6 @@ import Form from "../../components/formComponents/Form.tsx";
 import PasswordField from '../../components/formComponents/PasswordField.tsx'
 import EmailField from "../../components/formComponents/EmailField.tsx";
 import FormPage from "../../components/formComponents/FormPage.tsx";
-import FormTitle from "../../components/formComponents/FormTitle.tsx";
 import {useSignUp} from "../../hooks/auth/useSignUp.ts";
 import PasswordType from "../../components/formComponents/PasswordType.ts";
 import NameField from "../../components/formComponents/NameField.tsx";
@@ -18,8 +17,7 @@ function SignUpPage() {
     var state = useSignUp()
 
     return (
-        <FormPage>
-            <FormTitle>Create new account</FormTitle>
+        <FormPage title="Create new account">
             <Typography color="text.secondary" align="center" sx={{mb: 3}}>
                 Start using Partification
             </Typography>

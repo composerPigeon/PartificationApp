@@ -7,11 +7,9 @@ import {
 import EmailField from "../../components/formComponents/EmailField.tsx";
 import Form from "../../components/formComponents/Form.tsx";
 import PasswordField from "../../components/formComponents/PasswordField.tsx";
-import {ActionButton} from '../../components/buttons/ActionButton'
 import FormPage from "../../components/formComponents/FormPage.tsx";
 
 import {type LoginState, useLogIn} from "../../hooks/auth/useLogIn.ts";
-import FormTitle from "../../components/formComponents/FormTitle.tsx";
 import PasswordType from "../../components/formComponents/PasswordType.ts";
 
 function LogInPage() {
@@ -19,11 +17,7 @@ function LogInPage() {
 
 
     return (
-        <FormPage>
-            <FormTitle>
-                Log in
-            </FormTitle>
-
+        <FormPage title="Log in">
             {state.error.value && (
                 <Alert severity="error" sx={{mb: 2}}>
                     {state.error.value}
@@ -36,10 +30,6 @@ function LogInPage() {
                 <PasswordField passwordType={PasswordType.Normal} setValue={state.password.set}
                                value={state.password.value}/>
             </Form>
-
-            <ActionButton fullWidth sx={{mt: 2}} busy={state.isSubmitting.value}>
-                Continue as guest
-            </ActionButton>
 
             <Typography align="center" color="text.secondary" sx={{mt: 3}}>
                 Don&apos;t have an account?{' '}
