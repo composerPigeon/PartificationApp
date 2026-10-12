@@ -4,7 +4,7 @@ from db import db
 
 class User(UserMixin, db.Model):
     """
-    User model for the application.
+    User domain for the application.
     UserMixin gives the authentication abilities and db.Model the database one.
     """
     __tablename__ = "users"

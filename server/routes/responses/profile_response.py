@@ -1,5 +1,5 @@
 from datetime import datetime
-from model import User
+from domain import User
 from . import OperationResultResponse
 from .response_base import ResponseBase
 

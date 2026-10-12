@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 from sqlalchemy.engine import URL
 
@@ -6,7 +8,6 @@ class AppConfig(BaseSettings):
     Class responsible for loading and managing application settings
     """
     TESTING: bool = False
-    DATABASE_URL: str = ""
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "partification"
@@ -15,9 +16,7 @@ class AppConfig(BaseSettings):
     SECRET_KEY: str
 
     @property
-    def sqlalchemy_database_uri(self) -> str | URL:
-        if self.DATABASE_URL:
-            return self.DATABASE_URL
+    def sqlalchemy_database_uri(self) -> URL:
         return URL.create(
             "postgresql+psycopg",
             username=self.POSTGRES_USER,
@@ -26,6 +25,10 @@ class AppConfig(BaseSettings):
             port=self.POSTGRES_PORT,
             database=self.POSTGRES_DB,
         )
+
+    @property
+    def static_dir(self) -> Path:
+        return Path(__file__).resolve().parent.parent / "static"
 
     class Config:
         env_file = ".env"

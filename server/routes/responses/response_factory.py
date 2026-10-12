@@ -1,7 +1,7 @@
 from flask import Response
 
 from . import OperationResultResponse, ProfileResponse
-from model import User
+from domain import User
 
 class ResponseFactory:
     @staticmethod
@@ -18,6 +18,16 @@ class ResponseFactory:
     def bad_request(message: str) -> Response:
         resp = OperationResultResponse(ok=False, error_message=message)
         return resp.to_flask_response(400)
+
+    @staticmethod
+    def unauthorized(message: str) -> Response:
+        resp = OperationResultResponse(ok=False, error_message=message)
+        return resp.to_flask_response(401)
+
+    @staticmethod
+    def not_found(message: str) -> Response:
+        resp = OperationResultResponse(ok=False, error_message=message)
+        return resp.to_flask_response(404)
 
     @staticmethod
     def internal_server_error() -> Response:

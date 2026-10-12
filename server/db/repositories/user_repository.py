@@ -1,5 +1,5 @@
 from .respository_base import RepositoryBase
-from model import User
+from domain import User
 
 class UserRepository(RepositoryBase):
     def get_by_id(self, user_id: int) -> User | None:

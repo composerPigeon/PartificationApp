@@ -6,14 +6,14 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db.repositories import UserRepository
-from model import User
+from domain import User
 from routes.requests import LoginRequest
 from routes.requests.signup_request import SignupRequest
-from routes.responses import ResponseBase, ResponseFactory
+from routes.responses import ResponseFactory
 
-auth = Blueprint("auth", __name__, url_prefix="/auth")
+auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
-@auth.post("/signup")
+@auth_blueprint.post("/signup")
 def signup() -> Response:
     users = UserRepository()
 
@@ -40,12 +40,9 @@ def signup() -> Response:
         users.rollback_session()
         current_app.logger.exception("Database error during signup.")
         return ResponseFactory.internal_server_error()
-    except Exception:
-        current_app.logger.exception("Unexpected error during signup.")
-        return ResponseFactory.internal_server_error()
 
 
-@auth.post("/login")
+@auth_blueprint.post("/login")
 def login() -> Response:
     users  = UserRepository()
     try:
@@ -57,23 +54,17 @@ def login() -> Response:
         ):
             return ResponseFactory.bad_request("Invalid email or password.")
 
-        login_user(user, remember=True)
+        #TODO: after implementing more secure authorisation can be changed remember=True
+        login_user(user, remember=False)
         current_app.logger.info(f"User(id:{user.id}) logged in.")
         return ResponseFactory.ok()
     except ValidationError | ValueError:
         current_app.logger.exception("Error parsing request.")
         return ResponseFactory.bad_request("Invalid json object")
-    except Exception:
-        current_app.logger.exception("Unexpected error during login.")
-        return ResponseFactory.internal_server_error()
 
-@auth.get("/logout")
+@auth_blueprint.get("/logout")
 @login_required
 def logout() -> Response:
-    try:
-        logout_user()
-        current_app.logger.info(f"User(id:{current_user.get_id()}) logged out")
-        return ResponseFactory.ok()
-    except Exception:
-        current_app.logger.exception("Unexpected error during logout")
-        return ResponseFactory.internal_server_error()
+    logout_user()
+    current_app.logger.info(f"User(id:{current_user.get_id()}) logged out")
+    return ResponseFactory.ok()
