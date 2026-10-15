@@ -1,9 +1,9 @@
-import {Project, type ProjectPage} from '../../domain';
+import { Project, ProjectPage} from '../../domain';
 import StorageType from "./StorageType.ts";
 import type {StorageService} from "./StorageService.ts";
 import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
-import {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
+import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/ConvertPdfPagesService.ts";
 
 export interface IProjectManager {
@@ -42,11 +42,13 @@ export class ProjectManager implements IProjectManager {
     private async createProjectPages(projectId: string, pages: AsyncIterable<Blob>): Promise<number> {
         let pageNumber: number = 0
         for await (const pageBlob of pages) {
-            let page: ProjectPage = {
+            let page = new ProjectPage(
                 projectId,
-                number: pageNumber + 1,
-                blob: pageBlob
-            }
+                pageNumber + 1,
+                0,
+                0,
+                pageBlob
+            );
 
             await this.storage.savePage(page)
             pageNumber++;

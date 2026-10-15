@@ -1,6 +1,6 @@
 import type {Project} from "../../domain";
 import type {ProjectPage} from "../../domain";
-import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
+import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 
 
 export interface StorageService {

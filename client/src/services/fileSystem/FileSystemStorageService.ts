@@ -1,7 +1,7 @@
 import type {StorageService} from "../projects/StorageService.ts";
-import {Project, type ProjectPage} from "../../domain";
+import {Project, ProjectPage} from "../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
-import type {MusicorpusMetadata} from "../../domain/MusicorpusMetadata.ts";
+import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {deserialize, serialize} from "ts-jackson";
 
 type WritableDirectory = FileSystemDirectoryHandle & {
@@ -158,11 +158,13 @@ export class FileSystemStorageService implements StorageService {
 
             const pageDir = await projectDir.getDirectoryHandle(name);
             const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
-            pages.push({
+            pages.push(new ProjectPage(
                 projectId,
-                number: pageNumber,
+                pageNumber,
+                0,
+                0,
                 blob
-            })
+            ));
         }
         return pages.sort((a, b) => a.number - b.number);
     }
