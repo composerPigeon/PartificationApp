@@ -1,0 +1,26 @@
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      target: server-development
+    volumes:
+      - ./server:/app/server
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: client-development
+    ports:
+      - "5173:5173"
+    environment:
+      API_PROXY_TARGET: http://app:8000
+      VITE_USE_POLLING: "true"
+    volumes:
+      - ./client:/build/client
+      - /build/client/node_modules
+    depends_on:
+      - app

@@ -8,13 +8,13 @@ export function ProjectPageImage({projectName, page}: { projectName: string, pag
     const [attempt, setAttempt] = useState(0)
 
     useEffect(() => {
-        let objectUrl = URL.createObjectURL(page.blob)
+        const objectUrl = URL.createObjectURL(page.blob)
         setUrl(objectUrl)
 
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
         }
-    }, [url, attempt])
+    }, [page.blob, attempt])
 
     if (error) return (
         <Alert severity="error" action={<Button color="inherit" onClick={() => {
@@ -29,8 +29,10 @@ export function ProjectPageImage({projectName, page}: { projectName: string, pag
              onError={() => setError(`Page ${page.number} is not a readable PNG image.`)}
              sx={{
                  display: 'block',
+                 width: '800px',
                  maxWidth: '100%',
-                 maxHeight: 'calc(100svh - 260px)',
+                 height: 'auto',
+                 alignSelf: 'flex-start',
                  objectFit: 'contain',
                  bgcolor: 'white',
                  boxShadow: 3

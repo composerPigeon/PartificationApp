@@ -8,7 +8,7 @@ function HomePage() {
         <NavPage title="Home">
             <Box sx={{
                 flex: 1,
-                background: 'radial-gradient(ellipse at 50% 0%, rgba(25, 118, 210, 0.12), transparent 65%)',
+                bgcolor: 'background.default',
             }}>
                 <Container maxWidth="md" sx={{
                     pt: {xs: 7, sm: 12},

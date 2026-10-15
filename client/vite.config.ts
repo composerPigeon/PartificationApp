@@ -17,13 +17,16 @@ export default defineConfig({
         }),
     ],
     server: {
+        watch: {
+            usePolling: process.env.VITE_USE_POLLING === 'true',
+        },
         proxy: {
             '/auth': {
-                target: 'http://127.0.0.1:5000',
+                target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:5000',
                 changeOrigin: true,
             },
             '/settings': {
-                target: 'http://127.0.0.1:5000',
+                target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:5000',
                 changeOrigin: true,
             },
         },

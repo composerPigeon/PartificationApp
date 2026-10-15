@@ -37,3 +37,33 @@ To open a database shell:
 ```bash
 docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
+
+## Develop with Docker hot reload
+
+Start the development override using the same `server/.env` settings:
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml up --build
+```
+
+Open http://localhost:5173 for development. React changes update through Vite hot
+reload, and Python changes restart the Gunicorn worker automatically. Source files
+are mounted from your working directory. Vite proxies `/auth` and `/settings` to
+the backend, so login and API requests use the same browser origin. File polling
+is enabled for reliable change detection with Docker Desktop.
+
+After changing client dependencies, rebuild and refresh the container's isolated
+`node_modules` volume:
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml up --build --renew-anon-volumes
+```
+
+Rebuild after changing `server/requirements.txt` as well. To stop development:
+
+```bash
+docker compose -f compose.yaml -f compose.dev.yaml down
+```
+
+The regular `docker compose up --build` command still serves the production build
+at http://localhost:8000.
