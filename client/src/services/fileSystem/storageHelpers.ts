@@ -14,6 +14,7 @@ type PickerWindow = Window & {
 export class FileSystemEntryNames {
     static readonly musicorpusFile: string = 'musicorpus.json';
     static readonly pageImageFile: string = 'image.png';
+    static readonly pageMetadataFile: string = 'page.json';
     static readonly projectMetadataFile = 'partification-app-project.json';
 
     static getProjectId(projectName: string): string {

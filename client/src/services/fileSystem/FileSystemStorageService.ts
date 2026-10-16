@@ -107,6 +107,29 @@ export class FileSystemStorageService implements StorageService {
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
         let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
         await this.writeFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile, page.blob);
+        await this.writeJsonFile(pageDir, FileSystemEntryNames.pageMetadataFile, page);
+    }
+
+    private async readPageDimensions(directory: FileSystemDirectoryHandle, blob: Blob): Promise<{width: number; height: number}> {
+        let metadataFile: FileSystemFileHandle;
+        try {
+            metadataFile = await directory.getFileHandle(FileSystemEntryNames.pageMetadataFile);
+        } catch (error) {
+            if (!(error instanceof DOMException) || error.name !== 'NotFoundError') throw error;
+            // Projects imported before page metadata existed still have a PNG.
+            const image = await createImageBitmap(blob);
+            try {
+                return {width: image.width, height: image.height};
+            } finally {
+                image.close();
+            }
+        }
+        const dimensions = JSON.parse(await (await metadataFile.getFile()).text());
+        if (!dimensions || !Number.isSafeInteger(dimensions.width) || dimensions.width <= 0
+            || !Number.isSafeInteger(dimensions.height) || dimensions.height <= 0) {
+            throw new Error(`Invalid page dimensions in folder ${directory.name}.`);
+        }
+        return {width: dimensions.width, height: dimensions.height};
     }
 
     async loadProjects(): Promise<Project[]> {
@@ -158,11 +181,12 @@ export class FileSystemStorageService implements StorageService {
 
             const pageDir = await projectDir.getDirectoryHandle(name);
             const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
+            const {width, height} = await this.readPageDimensions(pageDir, blob);
             pages.push(new ProjectPage(
                 projectId,
                 pageNumber,
-                0,
-                0,
+                width,
+                height,
                 blob
             ));
         }

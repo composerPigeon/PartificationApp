@@ -5,6 +5,7 @@ import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/ConvertPdfPagesService.ts";
+import type {ConvertedPdfPage} from '../pdf/ConvertPdfPagesService.ts';
 
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
@@ -39,15 +40,15 @@ export class ProjectManager implements IProjectManager {
         return this.type;
     }
 
-    private async createProjectPages(projectId: string, pages: AsyncIterable<Blob>): Promise<number> {
+    private async createProjectPages(projectId: string, pages: AsyncIterable<ConvertedPdfPage>): Promise<number> {
         let pageNumber: number = 0
-        for await (const pageBlob of pages) {
+        for await (const converted of pages) {
             let page = new ProjectPage(
                 projectId,
                 pageNumber + 1,
-                0,
-                0,
-                pageBlob
+                converted.width,
+                converted.height,
+                converted.blob
             );
 
             await this.storage.savePage(page)

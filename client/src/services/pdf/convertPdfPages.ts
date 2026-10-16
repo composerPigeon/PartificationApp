@@ -1,9 +1,10 @@
 import {getDocument, GlobalWorkerOptions} from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import type {ConvertedPdfPage} from './ConvertPdfPagesService.ts'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
-export async function* convertPdfPages(file: File, onProgress: (count: number, total: number) => void): AsyncGenerator<Blob> {
+export async function* convertPdfPages(file: File, onProgress: (count: number, total: number) => void): AsyncGenerator<ConvertedPdfPage> {
     const assets = `${import.meta.env.BASE_URL}pdfjs/`
     const task = getDocument({
         data: new Uint8Array(await file.arrayBuffer()),
@@ -28,7 +29,7 @@ export async function* convertPdfPages(file: File, onProgress: (count: number, t
                 const png = await new Promise<Blob>((resolve, reject) => {
                     canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Unable to convert PDF page to PNG.')), 'image/png')
                 })
-                yield png
+                yield {blob: png, width: canvas.width, height: canvas.height}
             } finally {
                 canvas.width = 0
                 canvas.height = 0
