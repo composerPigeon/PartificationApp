@@ -1,4 +1,4 @@
-import {Serializable} from "ts-jackson";
+import {JsonProperty, Serializable} from "ts-jackson";
 import type {Stave} from "./Stave.ts";
 import {GrandStave} from "./GrandStave.ts";
 import {StaveSystem} from "./StaveSystem.ts";
@@ -9,7 +9,9 @@ export class ProjectPage {
     number: number;
     blob: Blob;
 
+    @JsonProperty()
     width: number;
+    @JsonProperty()
     height: number;
 
     staves: Map<number, Stave>;

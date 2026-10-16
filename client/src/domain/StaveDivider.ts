@@ -1,7 +1,8 @@
 import type {Stave} from "./Stave.ts";
+import type {ScoreElement} from "./ScoreElement.ts";
 
 
-export class StaveDivider {
+export class StaveDivider implements ScoreElement {
     stave: Stave;
     y: number;
 
