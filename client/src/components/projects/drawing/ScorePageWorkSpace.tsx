@@ -3,7 +3,7 @@ import {Alert, Box} from '@mui/material'
 import {Image as PageImage, Layer, Stage} from 'react-konva'
 import type {KonvaEventObject} from 'konva/lib/Node'
 import type {Stage as KonvaStage} from 'konva/lib/Stage'
-import type {ScorePage} from '../../../domain'
+import type {Project, ScorePage} from '../../../domain'
 import type {EditingMode} from '../ToolBar.tsx'
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
@@ -11,13 +11,14 @@ import {CreateStaffForm} from '../CreateStaffForm.tsx'
 import {Instrument} from '../../../domain/Instrument.ts'
 import {InstrumentTag} from './InstrumentTag.tsx'
 
-interface ProjectPageWorkSpaceProps {
-    projectName: string
+interface ScorePageWorkSpaceProps {
+    project: Project
     page: ScorePage
     editingMode?: EditingMode
 }
 
-export function ProjectPageWorkSpace({projectName, page, editingMode = 'select'}: ProjectPageWorkSpaceProps) {
+export function ScorePageWorkSpace({project, page, editingMode = 'select'}: ScorePageWorkSpaceProps) {
+    const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const [scale, setScale] = useState(800 / page.width)
     const [image, setImage] = useState<HTMLImageElement | null>(null)
@@ -77,9 +78,12 @@ export function ProjectPageWorkSpace({projectName, page, editingMode = 'select'}
             </Box>
             {pendingStaff && editingMode === 'add-staff' && (
                 <CreateStaffForm position={{top: pendingStaff.top, left: pendingStaff.left}}
+                                 instruments={project.instruments}
                                  onCancel={() => setPendingStaff(null)}
                                  onCreate={(height, instrumentName, shortcut) => {
-                                     page.createStaff(pendingStaff.centerY, height, new Instrument(instrumentName, shortcut))
+                                     const instrument = project.getInstrument(instrumentName) ?? new Instrument(instrumentName, shortcut)
+                                     project.addInstrument(instrument)
+                                     page.createStaff(pendingStaff.centerY, height, instrument)
                                      setStaves([...page.staves.values()])
                                      setPendingStaff(null)
                                  }}/>

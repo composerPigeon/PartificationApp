@@ -1,4 +1,5 @@
 import {JsonProperty, Serializable} from "ts-jackson";
+import {Instrument} from "./Instrument.ts";
 
 @Serializable()
 export class Project {
@@ -14,10 +15,30 @@ export class Project {
     @JsonProperty({path: "page_count"})
     pageCount: number;
 
-    constructor(projectId: string = "", projectName: string = "", directoryName: string = "", pageCount: number = 0) {
+    @JsonProperty({path: "instruments"})
+    private readonly _instruments: Instrument[];
+
+    constructor(projectId: string = "", projectName: string = "", directoryName: string = "",
+                pageCount: number = 0, instruments: Instrument[] = []) {
         this.id = projectId;
         this.projectName = projectName;
         this.directoryName = directoryName;
         this.pageCount = pageCount;
+        this._instruments = instruments;
+    }
+
+    public addInstrument(instrument: Instrument) {
+        if (!this._instruments.find(existing => existing.id === instrument.id)) {
+            this._instruments.push(instrument);
+        }
+    }
+
+    public getInstrument(instrumentTitle: string): Instrument | undefined {
+        let id = Instrument.createId(instrumentTitle);
+        return this._instruments.find(instrument => instrument.id === id);
+    }
+
+    public get instruments(): Instrument[] {
+        return this._instruments;
     }
 }

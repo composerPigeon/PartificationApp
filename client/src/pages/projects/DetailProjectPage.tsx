@@ -2,14 +2,14 @@ import {Link, useLocation, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/material'
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
-import {ProjectPageWorkSpace} from '../../components/projects/drawing/ProjectPageWorkSpace.tsx'
+import {ScorePageWorkSpace} from '../../components/projects/drawing/ScorePageWorkSpace.tsx'
 import type {Project} from "../../domain";
 import NavPage from '../../components/NavPage';
 import {PageNavigation} from '../../components/projects/PageNavigation';
 import {ToolBar} from '../../components/projects/ToolBar';
 import type {EditingMode} from '../../components/projects/ToolBar';
 
-function ProjectDetail(project: Project) {
+function ProjectDetail({project}: {project: Project}) {
     const model = useProjectDetail(project)
     const currentPage = model.pages[model.pageIndex]
     const [editingMode, setEditingMode] = useState<EditingMode>('select')
@@ -43,8 +43,8 @@ function ProjectDetail(project: Project) {
                                  data-editing-mode={editingMode}
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2,
                                      cursor: editingMode === 'add-staff' ? 'crosshair' : editingMode === 'edit-staff' ? 'cell' : 'default'}}>
-                                <ProjectPageWorkSpace key={`${project.id}:${currentPage.number}`}
-                                                  projectName={project.projectName} page={currentPage} editingMode={editingMode}/>
+                                <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
+                                                  project={project} page={currentPage} editingMode={editingMode}/>
                             </Box>
                         ) : null}
                     </Stack>
@@ -68,5 +68,5 @@ export default function DetailProjectPage() {
         );
     }
 
-    return <ProjectDetail key={projectId} {...project} />
+    return <ProjectDetail key={projectId} project={project} />
 }
