@@ -1,3 +1,4 @@
+// @refresh reset
 import {useLayoutEffect, useRef, useState} from 'react'
 import {Alert, Box} from '@mui/material'
 import {Image as PageImage, Layer, Stage} from 'react-konva'
@@ -79,11 +80,12 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
             {pendingStaff && editingMode === 'add-staff' && (
                 <CreateStaffForm position={{top: pendingStaff.top, left: pendingStaff.left}}
                                  instruments={project.instruments}
+                                 page={page} centerY={pendingStaff.centerY}
                                  onCancel={() => setPendingStaff(null)}
                                  onCreate={(height, instrumentName, shortcut) => {
                                      const instrument = project.getInstrument(instrumentName) ?? new Instrument(instrumentName, shortcut)
-                                     project.addInstrument(instrument)
                                      page.createStaff(pendingStaff.centerY, height, instrument)
+                                     project.addInstrument(instrument)
                                      setStaves([...page.staves.values()])
                                      setPendingStaff(null)
                                  }}/>

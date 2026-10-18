@@ -3,13 +3,14 @@ import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/mater
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
 import {ScorePageWorkSpace} from '../../components/projects/drawing/ScorePageWorkSpace.tsx'
-import type {Project} from "../../domain";
+import {Project} from "../../domain";
 import NavPage from '../../components/NavPage';
 import {PageNavigation} from '../../components/projects/PageNavigation';
 import {ToolBar} from '../../components/projects/ToolBar';
 import type {EditingMode} from '../../components/projects/ToolBar';
 
-function ProjectDetail({project}: {project: Project}) {
+function ProjectDetail({project: snapshot}: {project: Project}) {
+    const [project] = useState(() => Project.fromSnapshot(snapshot))
     const model = useProjectDetail(project)
     const currentPage = model.pages[model.pageIndex]
     const [editingMode, setEditingMode] = useState<EditingMode>('select')

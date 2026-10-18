@@ -41,4 +41,11 @@ export class Project {
     public get instruments(): Instrument[] {
         return this._instruments;
     }
+
+    /** Browser history preserves data but removes class prototypes and getters. */
+    public static fromSnapshot(data: Project): Project {
+        return new Project(data.id, data.projectName, data.directoryName, data.pageCount,
+            (data._instruments ?? data.instruments ?? []).map(instrument =>
+                new Instrument(instrument.title, instrument.shortcut)));
+    }
 }

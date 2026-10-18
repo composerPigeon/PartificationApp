@@ -12,7 +12,6 @@ export interface StaffBounds {
 
 @Serializable()
 export class Staff implements ScoreElement {
-    @JsonProperty()
     id: number
 
     @JsonProperty()
@@ -41,7 +40,14 @@ export class Staff implements ScoreElement {
 
     get x(): number { return this.bbox[0] }
     get y(): number { return this.bbox[1] }
-    set y(value: number) { this.bbox[1] = value }
+    set y(value: number) {
+        this.topDivider.y = value
+        this.bbox[1] = value
+    }
     get width(): number { return this.bbox[2] }
     get height(): number { return this.bbox[3] }
+    set height(value: number) {
+        this.bottomDivider.y = this.y + value
+        this.bbox[3] = value
+    }
 }
