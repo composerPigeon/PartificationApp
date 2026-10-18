@@ -14,19 +14,22 @@ interface CreateStaffFormProps {
 
 export function CreateStaffForm({position, instruments, page, centerY, onCancel, onCreate}: CreateStaffFormProps) {
     const [height, setHeight] = useState('75')
-    const [instrumentName, setInstrumentName] = useState('Unassigned')
+    const [instrumentName, setInstrumentName] = useState('')
     const [shortcut, setShortcut] = useState('')
     const validHeight = Number.isFinite(Number(height)) && Number(height) > 0
     const fits = validHeight && page.canPlaceStaff(centerY, Number(height))
     const existingInstrument = instruments.find(instrument => instrument.id === Instrument.createId(instrumentName.trim()))
+    const existingShortcut = existingInstrument?.shortcut.trim() ?? ''
+    const selectedShortcut = existingShortcut || shortcut
+    const canSubmit = fits && !!instrumentName.trim() && !!selectedShortcut.trim()
 
     return (
         <Popover open anchorReference="anchorPosition" anchorPosition={position} onClose={onCancel}>
             <Box component="form" aria-label="Create staff" sx={{p: 2, width: 280, maxWidth: 'calc(100vw - 32px)'}}
                  onSubmit={event => {
                      event.preventDefault()
-                     if (fits && instrumentName.trim()) {
-                         onCreate(Number(height), instrumentName.trim(), shortcut.trim())
+                     if (canSubmit) {
+                         onCreate(Number(height), instrumentName.trim(), selectedShortcut.trim())
                      }
                  }}>
                 <Stack spacing={2}>
@@ -39,12 +42,12 @@ export function CreateStaffForm({position, instruments, page, centerY, onCancel,
                                   inputValue={instrumentName} value={existingInstrument?.title ?? null}
                                   onInputChange={(_, value) => setInstrumentName(value)}
                                   renderInput={params => <TextField {...params} label="Instrument name" size="small" required/>}/>
-                    <TextField label="Shortcut" size="small" value={existingInstrument?.shortcut ?? shortcut}
-                               disabled={!!existingInstrument}
+                    <TextField label="Shortcut" size="small" required value={selectedShortcut}
+                               disabled={!!existingShortcut}
                                onChange={event => setShortcut(event.target.value)}/>
                     <Stack direction="row" spacing={1} sx={{justifyContent: 'flex-end'}}>
                         <Button onClick={onCancel}>Cancel</Button>
-                        <Button type="submit" variant="contained" disabled={!fits || !instrumentName.trim()}>Create</Button>
+                        <Button type="submit" variant="contained" disabled={!canSubmit}>Create</Button>
                     </Stack>
                 </Stack>
             </Box>

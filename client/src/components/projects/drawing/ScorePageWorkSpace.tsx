@@ -161,6 +161,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                                  onCreate={(height, instrumentName, shortcut) => {
                                      const instrument = project.getInstrument(instrumentName) ?? new Instrument(instrumentName, shortcut)
                                      page.createStaff(pendingStaff.centerY, height, instrument)
+                                     instrument.shortcut = shortcut
                                      project.addInstrument(instrument)
                                      setStaves([...page.staves.values()])
                                      setPendingStaff(null)
