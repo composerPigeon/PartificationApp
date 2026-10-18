@@ -14,7 +14,8 @@ import {InstrumentTag} from './InstrumentTag.tsx'
 import type {StaffDivider} from '../../../domain/StaffDivider.ts'
 import type {Node} from 'konva/lib/Node'
 
-function cursorFor(target: Node | null, dragging = false) {
+function cursorFor(target: Node | null, dragging = false, mode: EditingMode = 'edit-staff') {
+    if (mode === 'select') return target?.hasName('staff-body') ? 'pointer' : 'default'
     if (target?.hasName('staff-divider')) return 'ns-resize'
     if (target?.hasName('staff-body')) return dragging ? 'grabbing' : 'grab'
     return 'default'
@@ -42,7 +43,8 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
     const [error, setError] = useState(false)
     const [hoverCursor, setHoverCursor] = useState({mode: editingMode, value: 'default'})
     const cursor = editingMode === 'add-staff' && !error ? 'crosshair'
-        : editingMode === 'edit-staff' && !error && hoverCursor.mode === editingMode ? hoverCursor.value : 'default'
+        : !error && hoverCursor.mode === editingMode ? hoverCursor.value : 'default'
+    const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null)
     const [staves, setStaves] = useState(() => [...page.staves.values()])
     const [pendingStaff, setPendingStaff] = useState<{centerY: number, top: number, left: number} | null>(null)
     const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number, height: number} | null>(null)
@@ -70,7 +72,12 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
         }
     }, [page, projectName])
 
-    const addStaff = (event: KonvaEventObject<MouseEvent>) => {
+    const handlePageClick = (event: KonvaEventObject<MouseEvent>) => {
+        if (event.evt.button !== 0 || error) return
+        if (editingMode === 'select') {
+            setSelectedStaffId(event.target.hasName('staff-body') ? Number(event.target.id()) : null)
+            return
+        }
         if (editingMode !== 'add-staff' || event.evt.button !== 0 || error) return
         const pointer = stageRef.current?.getRelativePointerPosition()
         if (!pointer) return
@@ -87,21 +94,21 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                     '& .konvajs-content, & canvas': {cursor: 'inherit'},
                 }}>
                     <Stage ref={stageRef} width={page.width * scale} height={page.height * scale}
-                   scaleX={scale} scaleY={scale} onClick={addStaff}
+                   scaleX={scale} scaleY={scale} onClick={handlePageClick}
                    role="region"
                    onMouseMove={event => {
-                       setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current ?? event.target, !!dragTargetRef.current)})
+                       setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current ?? event.target, !!dragTargetRef.current, editingMode)})
                    }}
-                   onMouseLeave={() => setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current)})}
+                   onMouseLeave={() => setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})}
                    onDragStart={event => {
                        dragTargetRef.current = event.target
-                       setHoverCursor({mode: editingMode, value: cursorFor(event.target, true)})
+                       setHoverCursor({mode: editingMode, value: cursorFor(event.target, true, editingMode)})
                    }}
                    onDragEnd={() => {
                        dragTargetRef.current = null
                        const stage = stageRef.current!
                        const pointer = stage.getPointerPosition()
-                       setHoverCursor({mode: editingMode, value: cursorFor(pointer ? stage.getIntersection(pointer) : null)})
+                       setHoverCursor({mode: editingMode, value: cursorFor(pointer ? stage.getIntersection(pointer) : null, false, editingMode)})
                    }}
                    style={{background: 'white', boxShadow: '0 3px 12px #0003'}}>
                 <Layer name="page-image" listening={false}>
@@ -110,6 +117,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                 <Layer name="page-drawings">
                     {staves.map(staff => (
                         <StaffRect key={staff.id} staff={staff}
+                                   selected={editingMode === 'select' && selectedStaffId === staff.id}
                                    y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                    height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}
                                    editable={editingMode === 'edit-staff' && !error}
@@ -149,6 +157,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                 </Box>
                 <Box component="aside" aria-label="Staff instruments" sx={{position: 'relative'}}>
                     {staves.map(staff => <InstrumentTag key={staff.id} staff={staff} scale={scale}
+                                                       selected={editingMode === 'select' && selectedStaffId === staff.id}
                                                        y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}
                 </Box>
