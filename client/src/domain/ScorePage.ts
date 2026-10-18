@@ -57,7 +57,8 @@ export class ScorePage {
             return false;
 
         const previousStaff = this.staves.getPrevious(top, excludedStaffId);
-        const nextStaff = this.staves.getNext(bottom, excludedStaffId);
+        // Search from the top so a staff inside the proposed area is not skipped.
+        const nextStaff = this.staves.getNext(top, excludedStaffId);
 
         return (!previousStaff || previousStaff.y + previousStaff.height <= top)
             && (!nextStaff || bottom <= nextStaff.y);
