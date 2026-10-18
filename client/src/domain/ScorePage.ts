@@ -5,7 +5,7 @@ import {GrandStaff} from "./GrandStaff.ts";
 import {StaffSystem} from "./StaffSystem.ts";
 
 @Serializable()
-export class ProjectPage {
+export class ScorePage {
     projectId: string;
     number: number;
     blob: Blob;
@@ -37,7 +37,7 @@ export class ProjectPage {
         }
     }
 
-    createStaff(centerY: number, height: number = 75, instrument: Instrument = new Instrument('Unassigned', '')): Staff {
+    createStaff(centerY: number, height: number = 75, instrument: Instrument): Staff {
         let id = 1;
         for (const existingId of this.staves.keys()) id = Math.max(id, existingId + 1);
         const staff = new Staff(id, {x: 0, y: centerY - height / 2, width: this.width, height}, instrument);
@@ -47,35 +47,5 @@ export class ProjectPage {
 
     getStaff(staffNumber: number): Staff | undefined {
         return this.staves.get(staffNumber);
-    }
-
-    createGrandStaff(staffNumber: number): void {
-        let firstStaff = this.getStaff(staffNumber);
-        let secondStaff = this.getStaff(staffNumber + 1);
-
-        if (!this.grandStaves.has(staffNumber)
-            && firstStaff && secondStaff
-        ) {
-            let inst = new Instrument("Untitled", "")
-            this.grandStaves.set(staffNumber, new GrandStaff(staffNumber, inst, firstStaff, secondStaff));
-        }
-    }
-
-    createStaffSystem(staffNumber: number, size: number): void {
-        if (this.systems.has(staffNumber))
-            return;
-
-        let staves: Staff[] = []
-
-        for (let i = 0; i < size; i++) {
-            let staff = this.getStaff(staffNumber + i);
-            if (!staff)
-                return;
-
-            staves.push(staff);
-        }
-
-        let system = new StaffSystem(staffNumber, staves)
-        this.systems.set(system.id, system);
     }
 }

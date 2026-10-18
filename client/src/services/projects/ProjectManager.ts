@@ -1,4 +1,4 @@
-import { Project, ProjectPage} from '../../domain';
+import { Project, ScorePage} from '../../domain';
 import StorageType from "./StorageType.ts";
 import type {StorageService} from "./StorageService.ts";
 import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
@@ -16,7 +16,7 @@ export interface IProjectManager {
     loadProjects(): Promise<Project[]>;
     deleteProject(projectId: string): Promise<void>;
 
-    loadPages(projectId: string): Promise<ProjectPage[]>;
+    loadPages(projectId: string): Promise<ScorePage[]>;
 }
 
 
@@ -43,7 +43,7 @@ export class ProjectManager implements IProjectManager {
     private async createProjectPages(projectId: string, pages: AsyncIterable<ConvertedPdfPage>): Promise<number> {
         let pageNumber: number = 0
         for await (const converted of pages) {
-            let page = new ProjectPage(
+            let page = new ScorePage(
                 projectId,
                 pageNumber + 1,
                 converted.width,
@@ -86,7 +86,7 @@ export class ProjectManager implements IProjectManager {
         await this.storage.deleteProject(projectId);
     }
 
-    async loadPages(projectId: string): Promise<ProjectPage[]> {
+    async loadPages(projectId: string): Promise<ScorePage[]> {
         return await this.storage.loadPages(projectId);
     }
 }

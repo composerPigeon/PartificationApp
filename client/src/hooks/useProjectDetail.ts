@@ -1,12 +1,12 @@
 import {useEffect, useState} from 'react'
 import {projectManager} from '../services'
-import type {Project, ProjectPage} from '../domain'
+import type {Project, ScorePage} from '../domain'
 
 export function useProjectDetail(project: Project) {
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [attempt, setAttempt] = useState(0)
-    const [pages, setPages] = useState<ProjectPage[]>([])
+    const [pages, setPages] = useState<ScorePage[]>([])
     const [pageIndex, setPageIndex] = useState(0)
 
     useEffect(() => {

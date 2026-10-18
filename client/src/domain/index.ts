@@ -1,2 +1,2 @@
 export { Project } from './Project.ts';
-export { ProjectPage } from './ProjectPage.ts';
+export { ScorePage } from './ScorePage.ts';

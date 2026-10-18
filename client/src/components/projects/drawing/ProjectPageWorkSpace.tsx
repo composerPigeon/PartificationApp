@@ -3,7 +3,7 @@ import {Alert, Box} from '@mui/material'
 import {Image as PageImage, Layer, Stage} from 'react-konva'
 import type {KonvaEventObject} from 'konva/lib/Node'
 import type {Stage as KonvaStage} from 'konva/lib/Stage'
-import type {ProjectPage} from '../../../domain'
+import type {ScorePage} from '../../../domain'
 import type {EditingMode} from '../ToolBar.tsx'
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
@@ -13,7 +13,7 @@ import {InstrumentTag} from './InstrumentTag.tsx'
 
 interface ProjectPageWorkSpaceProps {
     projectName: string
-    page: ProjectPage
+    page: ScorePage
     editingMode?: EditingMode
 }
 
@@ -56,8 +56,8 @@ export function ProjectPageWorkSpace({projectName, page, editingMode = 'select'}
 
     return (
         <>
-            <Box sx={{width: '100%', maxWidth: 960, display: 'grid', gridTemplateColumns: 'minmax(0, 800px) clamp(96px, 18vw, 144px)', gap: 1}}>
-                <Box sx={{minWidth: 0}}>
+            <Box sx={{width: '100%', maxWidth: 1104, display: 'grid', gridTemplateColumns: 'clamp(64px, 12vw, 144px) minmax(0, 800px) clamp(64px, 12vw, 144px)', gap: 1}}>
+                <Box sx={{minWidth: 0, gridColumn: 2}}>
                     <Stage ref={stageRef} width={page.width * scale} height={page.height * scale}
                    scaleX={scale} scaleY={scale} onClick={addStaff}
                    role="region"

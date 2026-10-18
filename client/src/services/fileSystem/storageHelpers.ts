@@ -55,7 +55,7 @@ function isProject(value: unknown, directoryName: string): value is Project {
         && project.images.length > 0
         && project.images.every((image: unknown, index: number) => {
             if (typeof image !== 'object' || image === null) return false;
-            const page = image as Partial<ProjectPage>;
+            const page = image as Partial<ScorePage>;
             return page.pageNumber === index + 1 && page.fileName === `page-${index + 1}.png`;
         });
 }

@@ -54,12 +54,12 @@ export class MusicorpusMetadata {
             "partification-app",
             "partification-app",
             null, //TODO: after app publication add url
-            projectName,
+            projectName, //TODO: generate globally unique identifier from project & user name
             projectName,
             null,
             "1.0",
-            "Now_xD",
-            []
+            "Now_xD", //TODO: set to current date time + with TZ info.
+            [] //TODO: add user hash email - to identify datasets by user
         )
     }
 }

@@ -24,7 +24,7 @@ function ProjectDetail(project: Project) {
                                                                                   onNext={model.next}/>
                                                               ) : undefined
                                                           }>
-            <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, pl: {xs: '64px', sm: '88px'}, pr: {xs: 1, sm: 3}}}>
+            <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
                 <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}/>
                 <Container maxWidth="lg" disableGutters>
                     <Stack spacing={3}>

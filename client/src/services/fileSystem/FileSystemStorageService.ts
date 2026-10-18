@@ -1,5 +1,5 @@
 import type {StorageService} from "../projects/StorageService.ts";
-import {Project, ProjectPage} from "../../domain";
+import {Project, ScorePage} from "../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
 import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {deserialize, serialize} from "ts-jackson";
@@ -102,7 +102,7 @@ export class FileSystemStorageService implements StorageService {
         }
     }
 
-    async savePage(page: ProjectPage): Promise<void> {
+    async savePage(page: ScorePage): Promise<void> {
         let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
         let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
@@ -167,9 +167,9 @@ export class FileSystemStorageService implements StorageService {
         return Number.isSafeInteger(pageNumber) ? pageNumber : null;
     }
 
-    async loadPages(projectId: string): Promise<ProjectPage[]> {
+    async loadPages(projectId: string): Promise<ScorePage[]> {
         let projectDir = await this.rootDir.getDirectoryHandle(projectId);
-        const pages: ProjectPage[] = [];
+        const pages: ScorePage[] = [];
 
         for await (const [name, entry] of projectDir) {
             if (entry.kind !== 'directory')
@@ -182,7 +182,7 @@ export class FileSystemStorageService implements StorageService {
             const pageDir = await projectDir.getDirectoryHandle(name);
             const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
             const {width, height} = await this.readPageDimensions(pageDir, blob);
-            pages.push(new ProjectPage(
+            pages.push(new ScorePage(
                 projectId,
                 pageNumber,
                 width,
