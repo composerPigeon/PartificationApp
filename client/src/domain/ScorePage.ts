@@ -57,7 +57,7 @@ export class ScorePage {
             return false;
 
         const previousStaff = this.staves.getPrevious(top, excludedStaffId);
-        const nextStaff = this.staves.getNext(top, excludedStaffId);
+        const nextStaff = this.staves.getNext(bottom, excludedStaffId);
 
         return (!previousStaff || previousStaff.y + previousStaff.height <= top)
             && (!nextStaff || bottom <= nextStaff.y);
@@ -67,6 +67,14 @@ export class ScorePage {
         const staff = this.staves.get(id);
         if (!staff || !this.canPlaceStaff(y + staff.height / 2, staff.height, id)) return false;
         return this.staves.move(id, y);
+    }
+
+    resizeStaff(id: number, y: number, height: number): boolean {
+        const staff = this.staves.get(id);
+        if (!staff || !this.canPlaceStaff(y + height / 2, height, id)) return false;
+        this.staves.move(id, y);
+        staff.height = height;
+        return true;
     }
 
     getStaff(staffNumber: number): Staff | undefined {

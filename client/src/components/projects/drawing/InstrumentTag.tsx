@@ -5,13 +5,14 @@ interface InstrumentTagProps {
     staff: Staff
     scale: number
     y: number
+    height: number
 }
 
-export function InstrumentTag({staff, scale, y}: InstrumentTagProps) {
+export function InstrumentTag({staff, scale, y, height}: InstrumentTagProps) {
     return (
         <Box sx={{
             position: 'absolute',
-            top: (y + staff.height / 2) * scale,
+            top: (y + height / 2) * scale,
             transform: 'translateY(-50%)',
             width: '100%',
             boxSizing: 'border-box',

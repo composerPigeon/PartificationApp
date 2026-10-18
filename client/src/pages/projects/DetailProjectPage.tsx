@@ -42,8 +42,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                         ) : project && currentPage ? (
                             <Box component="section" aria-label="Project page viewer"
                                  data-editing-mode={editingMode}
-                                 sx={{display: 'flex', justifyContent: 'center', pb: 2,
-                                     cursor: editingMode === 'add-staff' ? 'crosshair' : editingMode === 'edit-staff' ? 'cell' : 'default'}}>
+                                 sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
                                 <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
                                                   project={project} page={currentPage} editingMode={editingMode}/>
                             </Box>

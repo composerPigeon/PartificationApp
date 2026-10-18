@@ -5,15 +5,16 @@ import type {Staff} from '../../../domain/Staff.ts'
 interface StaffRectProps {
     staff: Staff
     y: number
+    height: number
     editable: boolean
     onDrag(y: number): void
     onDragEnd(y: number): number
 }
 
-export function StaffRect({staff, y, editable, onDrag, onDragEnd}: StaffRectProps) {
+export function StaffRect({staff, y, height, editable, onDrag, onDragEnd}: StaffRectProps) {
     const theme = useTheme()
     return (
-        <Rect x={staff.x} y={y} width={staff.width} height={staff.height}
+        <Rect name="staff-body" x={staff.x} y={y} width={staff.width} height={height}
               draggable={editable}
               onDragMove={event => {
                   event.target.x(staff.x)
