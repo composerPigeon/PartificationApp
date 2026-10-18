@@ -4,13 +4,14 @@ import type {Staff} from '../../../domain/Staff.ts'
 interface InstrumentTagProps {
     staff: Staff
     scale: number
+    y: number
 }
 
-export function InstrumentTag({staff, scale}: InstrumentTagProps) {
+export function InstrumentTag({staff, scale, y}: InstrumentTagProps) {
     return (
         <Box sx={{
             position: 'absolute',
-            top: (staff.y + staff.height / 2) * scale,
+            top: (y + staff.height / 2) * scale,
             transform: 'translateY(-50%)',
             width: '100%',
             boxSizing: 'border-box',

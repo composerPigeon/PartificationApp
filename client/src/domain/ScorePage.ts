@@ -37,7 +37,7 @@ export class ScorePage {
     }
 
     createStaff(centerY: number, height: number = 75, instrument: Instrument): Staff {
-        if (!this.canCreateStaff(centerY, height)) {
+        if (!this.canPlaceStaff(centerY, height)) {
             throw new RangeError('Staff must fit on the page without overlapping another staff.');
         }
         let id = 1;
@@ -47,15 +47,26 @@ export class ScorePage {
         return staff;
     }
 
-    canCreateStaff(centerY: number, height: number): boolean {
-        if (!Number.isFinite(centerY) || !Number.isFinite(height) || height <= 0) return false;
+    canPlaceStaff(centerY: number, height: number, excludedStaffId?: number): boolean {
+        if (!Number.isFinite(centerY) || !Number.isFinite(height) || height <= 0)
+            return false;
+
         const top = centerY - height / 2;
         const bottom = centerY + height / 2;
-        if (top < 0 || bottom > this.height) return false;
-        const previous = this.staves.getPrevious(top);
-        const next = this.staves.getNext(top);
-        return (!previous || previous.y + previous.height <= top)
-            && (!next || bottom <= next.y);
+        if (top < 0 || bottom > this.height)
+            return false;
+
+        const previousStaff = this.staves.getPrevious(top, excludedStaffId);
+        const nextStaff = this.staves.getNext(top, excludedStaffId);
+
+        return (!previousStaff || previousStaff.y + previousStaff.height <= top)
+            && (!nextStaff || bottom <= nextStaff.y);
+    }
+
+    moveStaff(id: number, y: number): boolean {
+        const staff = this.staves.get(id);
+        if (!staff || !this.canPlaceStaff(y + staff.height / 2, staff.height, id)) return false;
+        return this.staves.move(id, y);
     }
 
     getStaff(staffNumber: number): Staff | undefined {

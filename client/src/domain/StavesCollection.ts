@@ -25,17 +25,17 @@ export class StavesCollection implements Iterable<Staff> {
     get(id: number): Staff | undefined { return this.nodes.get(id)?.staff; }
 
     /** Last staff whose top is strictly above Y. */
-    getPrevious(y: number): Staff | undefined {
+    getPrevious(y: number, excludedId?: number): Staff | undefined {
         for (let node = this.tail; node; node = node.prev) {
-            if (node.staff.y < y) return node.staff;
+            if (node.staff.id !== excludedId && node.staff.y < y) return node.staff;
         }
         return undefined;
     }
 
     /** First staff whose top is at or below Y, including an exact match. */
-    getNext(y: number): Staff | undefined {
+    getNext(y: number, excludedId?: number): Staff | undefined {
         for (let node = this.head; node; node = node.next) {
-            if (node.staff.y >= y) return node.staff;
+            if (node.staff.id !== excludedId && node.staff.y >= y) return node.staff;
         }
         return undefined;
     }

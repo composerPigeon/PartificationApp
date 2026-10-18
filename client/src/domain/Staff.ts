@@ -42,6 +42,7 @@ export class Staff implements ScoreElement {
     get y(): number { return this.bbox[1] }
     set y(value: number) {
         this.topDivider.y = value
+        this.bottomDivider.y = value + this.height
         this.bbox[1] = value
     }
     get width(): number { return this.bbox[2] }

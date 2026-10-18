@@ -26,6 +26,8 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
     const [error, setError] = useState(false)
     const [staves, setStaves] = useState(() => [...page.staves.values()])
     const [pendingStaff, setPendingStaff] = useState<{centerY: number, top: number, left: number} | null>(null)
+    const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number} | null>(null)
+    const dragPreview = editingMode === 'edit-staff' ? draggedStaff : null
     const dividers = [...new Set(staves.flatMap(staff => [staff.topDivider, staff.bottomDivider]))]
 
     useLayoutEffect(() => {
@@ -63,18 +65,35 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                     <Stage ref={stageRef} width={page.width * scale} height={page.height * scale}
                    scaleX={scale} scaleY={scale} onClick={addStaff}
                    role="region"
-                   style={{background: 'white', boxShadow: '0 3px 12px #0003', cursor: editingMode === 'add-staff' ? 'crosshair' : 'default'}}>
+                   style={{background: 'white', boxShadow: '0 3px 12px #0003', cursor: editingMode === 'add-staff' ? 'crosshair' : editingMode === 'edit-staff' ? 'ns-resize' : 'default'}}>
                 <Layer name="page-image" listening={false}>
                     {image && <PageImage image={image} width={page.width} height={page.height}/>}
                 </Layer>
                 <Layer name="page-drawings">
-                    {staves.map(staff => <StaffRect key={staff.id} staff={staff}/>)}
-                    {dividers.map((divider, index) => <StaffDividerLine key={index} divider={divider}/>)}
+                    {staves.map(staff => (
+                        <StaffRect key={staff.id} staff={staff}
+                                   y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
+                                   editable={editingMode === 'edit-staff' && !error}
+                                   onDrag={y => {
+                                       setDraggedStaff({id: staff.id, y})
+                                   }}
+                                   onDragEnd={y => {
+                                       page.moveStaff(staff.id, y)
+                                       setStaves([...page.staves.values()])
+                                       setDraggedStaff(null)
+                                       return staff.y
+                                   }}/>
+                    ))}
+                    {dividers.map((divider, index) => (
+                        <StaffDividerLine key={index} divider={divider}
+                                          y={divider.y + (dragPreview?.id === divider.staff.id ? dragPreview.y - divider.staff.y : 0)}/>
+                    ))}
                 </Layer>
                     </Stage>
                 </Box>
                 <Box component="aside" aria-label="Staff instruments" sx={{position: 'relative'}}>
-                    {staves.map(staff => <InstrumentTag key={staff.id} staff={staff} scale={scale}/>)}
+                    {staves.map(staff => <InstrumentTag key={staff.id} staff={staff} scale={scale}
+                                                       y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}/>)}
                 </Box>
             </Box>
             {pendingStaff && editingMode === 'add-staff' && (

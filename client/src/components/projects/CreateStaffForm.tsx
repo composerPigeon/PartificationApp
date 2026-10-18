@@ -17,7 +17,7 @@ export function CreateStaffForm({position, instruments, page, centerY, onCancel,
     const [instrumentName, setInstrumentName] = useState('Unassigned')
     const [shortcut, setShortcut] = useState('')
     const validHeight = Number.isFinite(Number(height)) && Number(height) > 0
-    const fits = validHeight && page.canCreateStaff(centerY, Number(height))
+    const fits = validHeight && page.canPlaceStaff(centerY, Number(height))
     const existingInstrument = instruments.find(instrument => instrument.id === Instrument.createId(instrumentName.trim()))
 
     return (
