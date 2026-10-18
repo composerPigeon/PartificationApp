@@ -2,7 +2,7 @@ import {Link, useLocation, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/material'
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
-import {ProjectPageImage} from '../../components/projects/ProjectPageImage.tsx'
+import {ProjectPageWorkSpace} from '../../components/projects/drawing/ProjectPageWorkSpace.tsx'
 import type {Project} from "../../domain";
 import NavPage from '../../components/NavPage';
 import {PageNavigation} from '../../components/projects/PageNavigation';
@@ -42,9 +42,9 @@ function ProjectDetail(project: Project) {
                             <Box component="section" aria-label="Project page viewer"
                                  data-editing-mode={editingMode}
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2,
-                                     cursor: editingMode === 'add-stave' ? 'crosshair' : editingMode === 'edit-stave' ? 'cell' : 'default'}}>
-                                <ProjectPageImage key={`${project.id}:${currentPage.number}`}
-                                                  projectName={project.projectName} page={currentPage}/>
+                                     cursor: editingMode === 'add-staff' ? 'crosshair' : editingMode === 'edit-staff' ? 'cell' : 'default'}}>
+                                <ProjectPageWorkSpace key={`${project.id}:${currentPage.number}`}
+                                                  projectName={project.projectName} page={currentPage} editingMode={editingMode}/>
                             </Box>
                         ) : null}
                     </Stack>

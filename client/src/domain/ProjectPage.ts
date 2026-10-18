@@ -1,7 +1,8 @@
 import {JsonProperty, Serializable} from "ts-jackson";
-import type {Stave} from "./Stave.ts";
-import {GrandStave} from "./GrandStave.ts";
-import {StaveSystem} from "./StaveSystem.ts";
+import {Staff} from "./Staff.ts";
+import {Instrument} from './Instrument.ts';
+import {GrandStaff} from "./GrandStaff.ts";
+import {StaffSystem} from "./StaffSystem.ts";
 
 @Serializable()
 export class ProjectPage {
@@ -14,9 +15,9 @@ export class ProjectPage {
     @JsonProperty()
     height: number;
 
-    staves: Map<number, Stave>;
-    grandStaves: Map<number, GrandStave>;
-    systems: Map<number, StaveSystem>;
+    staves: Map<number, Staff>;
+    grandStaves: Map<number, GrandStaff>;
+    systems: Map<number, StaffSystem>;
 
     constructor(projectId: string, number: number, width: number, height: number, blob: Blob) {
         this.projectId = projectId;
@@ -30,42 +31,51 @@ export class ProjectPage {
         this.systems = new Map();
     }
 
-    addStave(stave: Stave): void {
-        if (!this.staves.has(stave.id)) {
-            this.staves.set(stave.id, stave);
+    addStaff(staff: Staff): void {
+        if (!this.staves.has(staff.id)) {
+            this.staves.set(staff.id, staff);
         }
     }
 
-    getStave(staveNumber: number): Stave | undefined {
-        return this.staves.get(staveNumber);
+    createStaff(centerY: number, height: number = 75, instrument: Instrument = new Instrument('Unassigned', '')): Staff {
+        let id = 1;
+        for (const existingId of this.staves.keys()) id = Math.max(id, existingId + 1);
+        const staff = new Staff(id, {x: 0, y: centerY - height / 2, width: this.width, height}, instrument);
+        this.addStaff(staff);
+        return staff;
     }
 
-    createGrandStave(staveNumber: number): void {
-        let firstStave = this.getStave(staveNumber);
-        let secondStave = this.getStave(staveNumber + 1);
+    getStaff(staffNumber: number): Staff | undefined {
+        return this.staves.get(staffNumber);
+    }
 
-        if (!this.grandStaves.has(staveNumber)
-            && firstStave && secondStave
+    createGrandStaff(staffNumber: number): void {
+        let firstStaff = this.getStaff(staffNumber);
+        let secondStaff = this.getStaff(staffNumber + 1);
+
+        if (!this.grandStaves.has(staffNumber)
+            && firstStaff && secondStaff
         ) {
-            this.grandStaves.set(staveNumber, new GrandStave(staveNumber, firstStave, secondStave));
+            let inst = new Instrument("Untitled", "")
+            this.grandStaves.set(staffNumber, new GrandStaff(staffNumber, inst, firstStaff, secondStaff));
         }
     }
 
-    createStaveSystem(staveNumber: number, size: number): void {
-        if (this.systems.has(staveNumber))
+    createStaffSystem(staffNumber: number, size: number): void {
+        if (this.systems.has(staffNumber))
             return;
 
-        let staves: Stave[] = []
+        let staves: Staff[] = []
 
         for (let i = 0; i < size; i++) {
-            let stave = this.getStave(staveNumber + i);
-            if (!stave)
+            let staff = this.getStaff(staffNumber + i);
+            if (!staff)
                 return;
 
-            staves.push(stave);
+            staves.push(staff);
         }
 
-        let system = new StaveSystem(staveNumber, staves)
+        let system = new StaffSystem(staffNumber, staves)
         this.systems.set(system.id, system);
     }
 }
