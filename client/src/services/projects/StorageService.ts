@@ -1,5 +1,5 @@
 import type {Project} from "../../domain";
-import type {ScorePage} from "../../domain";
+import type {StoredScorePage} from './StoredScorePage.ts';
 import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 
 
@@ -8,10 +8,11 @@ export interface StorageService {
 
     saveProject(project: Project): Promise<void>;
     saveMusicorpus(projectId: string, musicorpus: MusicorpusMetadata): Promise<void>;
-    savePage(page: ScorePage): Promise<void>;
+    /** Saves metadata; pass true to also create the page folder and image. */
+    savePage(page: StoredScorePage, create?: boolean): Promise<void>;
 
     loadProjects(): Promise<Project[]>;
-    loadPages(projectId: string): Promise<ScorePage[]>;
+    loadPages(projectId: string): Promise<StoredScorePage[]>;
 
     deleteProject(projectId: string): Promise<void>;
 }

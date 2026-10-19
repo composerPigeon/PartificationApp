@@ -17,9 +17,12 @@ interface ToolBarProps {
     editingMode: EditingMode
     onModeChange(mode: EditingMode): void
     disabled?: boolean
+    hasChanges: boolean
+    saving: boolean
+    onSave(): void
 }
 
-export function ToolBar({editingMode, onModeChange, disabled = false}: ToolBarProps) {
+export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave}: ToolBarProps) {
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -42,9 +45,11 @@ export function ToolBar({editingMode, onModeChange, disabled = false}: ToolBarPr
             <ToolButton label="Add staff" selected={editingMode === 'add-staff'}
                         onSelect={() => onModeChange('add-staff')} disabled={disabled}
                         icon={<SvgIcon viewBox="0 0 24 24" fill="none">
-                            <path d="M3 5h18M3 8h18M3 11h12M3 14h11M3 17h11M19 13v8M15 17h8"
+                            <path d="M3 5h18M3 8h18M3 11h11M3 14h8M3 17h7"
                                   fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
                             <StaffClef/>
+                            <path d="M18.5 13.5v8M14.5 17.5h8"
+                                  fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
                         </SvgIcon>}/>
             <ToolButton label="Edit staff" selected={editingMode === 'edit-staff'}
                         onSelect={() => onModeChange('edit-staff')} disabled={disabled}
@@ -56,15 +61,18 @@ export function ToolBar({editingMode, onModeChange, disabled = false}: ToolBarPr
                                   fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
                         </SvgIcon>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
-            <ToolActionButton label="Export" disabled={disabled}
-                              icon={<SvgIcon>
-                                  <path d="M12 3v12m-4-4 4 4 4-4M4 15v5h16v-5"
-                                        fill="none" stroke="currentColor" strokeWidth="1.8"
+            <ToolActionButton label="Combine & Print" disabled={disabled}
+                              icon={<SvgIcon viewBox="0 0 24 24">
+                                  <path d="M3 5h18M3 8h18M3 11h10M3 14h8M3 17h8"
+                                        fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                                  <StaffClef/>
+                                  <path d="M15 14v-3h6v3M15 20h-2v-5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v5h-2M15 18h6v5h-6v-5Zm6-2h.1M17 20.5h2"
+                                        fill="none" stroke="currentColor" strokeWidth="1.3"
                                         strokeLinecap="round" strokeLinejoin="round"/>
                               </SvgIcon>}/>
-            <ToolActionButton label="Merge" disabled={disabled}
+            <ToolActionButton label={saving ? 'Saving…' : 'Save'} disabled={disabled || saving || !hasChanges} onClick={onSave}
                               icon={<SvgIcon>
-                                  <path d="M5 20v-5c0-3.5 7-3.5 7-7V3m7 17v-5c0-3.5-7-3.5-7-7M8 7l4-4 4 4"
+                                  <path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h10V3M7 21v-8h10v8"
                                         fill="none" stroke="currentColor" strokeWidth="1.8"
                                         strokeLinecap="round" strokeLinejoin="round"/>
                               </SvgIcon>}/>

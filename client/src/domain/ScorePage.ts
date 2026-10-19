@@ -10,6 +10,19 @@ export class ScorePage {
     projectId: string;
     number: number;
     blob: Blob;
+    isChanged: boolean = true;
+    private changeVersion: number = 0;
+
+    get version(): number { return this.changeVersion; }
+
+    markSaved(version: number = this.changeVersion): void {
+        if (version === this.changeVersion) this.isChanged = false;
+    }
+
+    private markChanged(): void {
+        this.changeVersion++;
+        this.isChanged = true;
+    }
 
     @JsonProperty()
     width: number;
@@ -33,7 +46,9 @@ export class ScorePage {
     }
 
     addStaff(staff: Staff): void {
+        if (this.staves.has(staff.id)) return;
         this.staves.add(staff);
+        this.markChanged();
     }
 
     createStaff(centerY: number, height: number = 75, instrument: Instrument): Staff {
@@ -67,14 +82,19 @@ export class ScorePage {
     moveStaff(id: number, y: number): boolean {
         const staff = this.staves.get(id);
         if (!staff || !this.canPlaceStaff(y + staff.height / 2, staff.height, id)) return false;
-        return this.staves.move(id, y);
+        if (staff.y === y) return true;
+        this.staves.move(id, y);
+        this.markChanged();
+        return true;
     }
 
     resizeStaff(id: number, y: number, height: number): boolean {
         const staff = this.staves.get(id);
         if (!staff || !this.canPlaceStaff(y + height / 2, height, id)) return false;
+        if (staff.y === y && staff.height === height) return true;
         this.staves.move(id, y);
         staff.height = height;
+        this.markChanged();
         return true;
     }
 

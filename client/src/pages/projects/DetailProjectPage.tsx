@@ -1,4 +1,4 @@
-import {Link, useLocation, useParams} from '@tanstack/react-router'
+import {Link, useBlocker, useLocation, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/material'
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
@@ -8,6 +8,7 @@ import NavPage from '../../components/NavPage';
 import {PageNavigation} from '../../components/projects/PageNavigation';
 import {ToolBar} from '../../components/projects/ToolBar';
 import type {EditingMode} from '../../components/projects/ToolBar';
+import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx'
 
 function ProjectDetail({project: snapshot}: {project: Project}) {
     const [project] = useState(() => Project.fromSnapshot(snapshot))
@@ -15,6 +16,12 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
     const currentPage = model.pages[model.pageIndex]
     const [editingMode, setEditingMode] = useState<EditingMode>('select')
     const toolsDisabled = model.loading || !!model.error || !currentPage
+    const blocker = useBlocker({
+        shouldBlockFn: ({current, next}) => model.hasChanges && current.pathname !== next.pathname,
+        enableBeforeUnload: model.hasChanges,
+        disabled: !model.hasChanges,
+        withResolver: true,
+    })
 
     return (
         <NavPage title={project.projectName ?? 'Project'} navigation={
@@ -25,10 +32,20 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                                                                   onNext={model.next}/>
                                                               ) : undefined
                                                           }>
+            <UnsavedChangesDialog open={blocker.status === 'blocked'}
+                                  onStay={() => blocker.reset?.()}
+                                  onLeave={() => blocker.proceed?.()}/>
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
-                <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}/>
+                <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}
+                         hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}/>
                 <Container maxWidth="lg" disableGutters>
                     <Stack spacing={3}>
+                        {model.saveError && (
+                            <Alert severity="error" action={<Button color="inherit" onClick={model.save}
+                                                                    disabled={model.saving}>Retry save</Button>}>
+                                {model.saveError}
+                            </Alert>
+                        )}
                         {model.loading ? (
                             <Box sx={{minHeight: '60svh', display: 'grid', placeItems: 'center'}}>
                                 <CircularProgress aria-label="Loading project"/>
@@ -44,7 +61,8 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                  data-editing-mode={editingMode}
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
                                 <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
-                                                  project={project} page={currentPage} editingMode={editingMode}/>
+                                                  project={project} page={currentPage} editingMode={editingMode}
+                                                  onPageChange={model.pageChanged}/>
                             </Box>
                         ) : null}
                     </Stack>

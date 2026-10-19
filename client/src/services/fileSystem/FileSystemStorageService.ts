@@ -1,8 +1,11 @@
 import type {StorageService} from "../projects/StorageService.ts";
-import {Project, ScorePage} from "../../domain";
+import {Project} from "../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
 import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {deserialize, serialize} from "ts-jackson";
+import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
+import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
+import type {StoredScorePage} from '../projects/StoredScorePage.ts';
 
 type WritableDirectory = FileSystemDirectoryHandle & {
     queryPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
@@ -79,12 +82,7 @@ export class FileSystemStorageService implements StorageService {
                 project
             );
         } catch (error) {
-            try {
-                await this.rootDir.removeEntry(project.id, {recursive: true});
-            } catch {
-                throw new Error(`Unable to save project; incomplete files remain in folder ${project.id}.`, {cause: error});
-            }
-            throw error;
+            throw new Error(`Unable to save project ${project.id}.`, {cause: error});
         }
     }
 
@@ -102,34 +100,30 @@ export class FileSystemStorageService implements StorageService {
         }
     }
 
-    async savePage(page: ScorePage): Promise<void> {
+    async savePage(page: StoredScorePage, create: boolean = false): Promise<void> {
         let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
-        let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create: true});
-        await this.writeFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile, page.blob);
-        await this.writeJsonFile(pageDir, FileSystemEntryNames.pageMetadataFile, page);
+        let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create});
+        if (create) {
+            await this.writeFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile, page.blob);
+        }
+        await this.writeJsonFile(pageDir, FileSystemEntryNames.pageMetadataFile, page.metadata);
+        await this.writeJsonFile(pageDir, FileSystemEntryNames.subdivisionsMetadataFile, page.subdivisions);
     }
 
-    private async readPageDimensions(directory: FileSystemDirectoryHandle, blob: Blob): Promise<{width: number; height: number}> {
-        let metadataFile: FileSystemFileHandle;
-        try {
-            metadataFile = await directory.getFileHandle(FileSystemEntryNames.pageMetadataFile);
-        } catch (error) {
-            if (!(error instanceof DOMException) || error.name !== 'NotFoundError') throw error;
-            // Projects imported before page metadata existed still have a PNG.
-            const image = await createImageBitmap(blob);
-            try {
-                return {width: image.width, height: image.height};
-            } finally {
-                image.close();
-            }
-        }
-        const dimensions = JSON.parse(await (await metadataFile.getFile()).text());
-        if (!dimensions || !Number.isSafeInteger(dimensions.width) || dimensions.width <= 0
-            || !Number.isSafeInteger(dimensions.height) || dimensions.height <= 0) {
+    private async readPageMetadata(directory: FileSystemDirectoryHandle): Promise<ScorePageMetadata> {
+        const file = await directory.getFileHandle(FileSystemEntryNames.pageMetadataFile);
+        const data = JSON.parse(await (await file.getFile()).text());
+        if (!data || !Number.isSafeInteger(data.width) || data.width <= 0
+            || !Number.isSafeInteger(data.height) || data.height <= 0) {
             throw new Error(`Invalid page dimensions in folder ${directory.name}.`);
         }
-        return {width: dimensions.width, height: dimensions.height};
+        const mapping = data.instruments;
+        if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping)
+            || !Object.entries(mapping).every(([order, instrumentId]) => /^[1-9]\d*$/.test(order) && typeof instrumentId === 'string')) {
+            throw new Error(`Invalid staff instrument mapping in folder ${directory.name}: expected instruments to be an object mapping staff order to instrument ID.`);
+        }
+        return new ScorePageMetadata(data.width, data.height, mapping);
     }
 
     async loadProjects(): Promise<Project[]> {
@@ -167,9 +161,24 @@ export class FileSystemStorageService implements StorageService {
         return Number.isSafeInteger(pageNumber) ? pageNumber : null;
     }
 
-    async loadPages(projectId: string): Promise<ScorePage[]> {
+    private async loadSubdivisions(directory: FileSystemDirectoryHandle): Promise<SubdivisionsMetadata> {
+        let file: FileSystemFileHandle;
+        try {
+            file = await directory.getFileHandle(FileSystemEntryNames.subdivisionsMetadataFile);
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'NotFoundError') return new SubdivisionsMetadata();
+            throw error;
+        }
+        try {
+            return deserialize(await (await file.getFile()).text(), SubdivisionsMetadata);
+        } catch (error) {
+            throw new Error(`Unable to load subdivisions in folder ${directory.name}.`, {cause: error});
+        }
+    }
+
+    async loadPages(projectId: string): Promise<StoredScorePage[]> {
         let projectDir = await this.rootDir.getDirectoryHandle(projectId);
-        const pages: ScorePage[] = [];
+        const pages: StoredScorePage[] = [];
 
         for await (const [name, entry] of projectDir) {
             if (entry.kind !== 'directory')
@@ -181,14 +190,9 @@ export class FileSystemStorageService implements StorageService {
 
             const pageDir = await projectDir.getDirectoryHandle(name);
             const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
-            const {width, height} = await this.readPageDimensions(pageDir, blob);
-            pages.push(new ScorePage(
-                projectId,
-                pageNumber,
-                width,
-                height,
-                blob
-            ));
+            const metadata = await this.readPageMetadata(pageDir);
+            const subdivisions = await this.loadSubdivisions(pageDir);
+            pages.push({projectId, number: pageNumber, blob, metadata, subdivisions});
         }
         return pages.sort((a, b) => a.number - b.number);
     }

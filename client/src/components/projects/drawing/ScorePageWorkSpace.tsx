@@ -32,9 +32,10 @@ interface ScorePageWorkSpaceProps {
     project: Project
     page: ScorePage
     editingMode?: EditingMode
+    onPageChange(): void
 }
 
-export function ScorePageWorkSpace({project, page, editingMode = 'select'}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({project, page, editingMode = 'select', onPageChange}: ScorePageWorkSpaceProps) {
     const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const dragTargetRef = useRef<Node | null>(null)
@@ -125,7 +126,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                                        setDraggedStaff({id: staff.id, y, height: staff.height})
                                    }}
                                    onDragEnd={y => {
-                                       page.moveStaff(staff.id, y)
+                                       if (page.moveStaff(staff.id, y)) onPageChange()
                                        setStaves([...page.staves.values()])
                                        setDraggedStaff(null)
                                        return staff.y
@@ -145,7 +146,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                                               }}
                                               onDragEnd={y => {
                                                   const bounds = resizeBounds(divider, y)
-                                                  page.resizeStaff(divider.staff.id, bounds.y, bounds.height)
+                                                  if (page.resizeStaff(divider.staff.id, bounds.y, bounds.height)) onPageChange()
                                                   setStaves([...page.staves.values()])
                                                   setDraggedStaff(null)
                                                   return divider.y
@@ -172,6 +173,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select'}: Scor
                                      page.createStaff(pendingStaff.centerY, height, instrument)
                                      instrument.shortcut = shortcut
                                      project.addInstrument(instrument)
+                                     onPageChange()
                                      setStaves([...page.staves.values()])
                                      setPendingStaff(null)
                                  }}/>

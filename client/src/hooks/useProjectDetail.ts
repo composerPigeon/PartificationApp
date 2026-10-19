@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {projectManager} from '../services'
 import type {Project, ScorePage} from '../domain'
 
@@ -8,13 +8,37 @@ export function useProjectDetail(project: Project) {
     const [attempt, setAttempt] = useState(0)
     const [pages, setPages] = useState<ScorePage[]>([])
     const [pageIndex, setPageIndex] = useState(0)
+    const [saving, setSaving] = useState(false)
+    const [saveError, setSaveError] = useState<string | null>(null)
+    const savePending = useRef(false)
+    const hasChanges = pages.some(page => page.isChanged)
+
+    function pageChanged() {
+        setPages(current => [...current])
+    }
+
+    async function save() {
+        if (savePending.current || loading || error || !hasChanges) return
+        savePending.current = true
+        setSaving(true)
+        setSaveError(null)
+        try {
+            await projectManager.saveProject(project, pages)
+        } catch (error) {
+            setSaveError(error instanceof Error ? error.message : 'Unable to save project.')
+        } finally {
+            savePending.current = false
+            setSaving(false)
+            pageChanged()
+        }
+    }
 
     useEffect(() => {
         let active = true
 
         async function load() {
             try {
-                const loadedPages = await projectManager.loadPages(project.id)
+                const loadedPages = await projectManager.loadPages(project)
                 if (active) setPages(loadedPages);
             } catch (error) {
                 if (active) setError(error instanceof Error ? error.message : 'Unable to load pages.')
@@ -27,7 +51,7 @@ export function useProjectDetail(project: Project) {
         return () => {
             active = false
         }
-    }, [project.id, attempt])
+    }, [project, attempt])
 
     function retry() {
         setLoading(true)
@@ -45,5 +69,5 @@ export function useProjectDetail(project: Project) {
         setPageIndex(index => Math.min(Math.max(0, pageCount - 1), index + 1))
     }
 
-    return {pages, error, loading, retry, pageIndex, pageCount, previous, next}
+    return {pages, error, loading, retry, pageIndex, pageCount, previous, next, hasChanges, saving, saveError, save, pageChanged}
 }

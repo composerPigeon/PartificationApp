@@ -6,6 +6,10 @@ import {browserStorage} from "../dataAccess";
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/ConvertPdfPagesService.ts";
 import type {ConvertedPdfPage} from '../pdf/ConvertPdfPagesService.ts';
+import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
+import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
+import {SubdivisionsMapper} from './SubdivisionsMapper.ts';
+import type {Instrument} from '../../domain/Instrument.ts';
 
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
@@ -15,8 +19,9 @@ export interface IProjectManager {
     createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project>;
     loadProjects(): Promise<Project[]>;
     deleteProject(projectId: string): Promise<void>;
+    saveProject(project: Project, pages: ScorePage[]): Promise<void>;
 
-    loadPages(projectId: string): Promise<ScorePage[]>;
+    loadPages(project: Project): Promise<ScorePage[]>;
 }
 
 
@@ -40,6 +45,18 @@ export class ProjectManager implements IProjectManager {
         return this.type;
     }
 
+    private async savePage(page: ScorePage, create: boolean = false): Promise<void> {
+        const version = page.version;
+        await this.storage.savePage({
+            projectId: page.projectId,
+            number: page.number,
+            blob: page.blob,
+            metadata: ScorePageMetadata.create(page),
+            subdivisions: SubdivisionsMetadata.create(page),
+        }, create);
+        page.markSaved(version);
+    }
+
     private async createProjectPages(projectId: string, pages: AsyncIterable<ConvertedPdfPage>): Promise<number> {
         let pageNumber: number = 0
         for await (const converted of pages) {
@@ -51,7 +68,7 @@ export class ProjectManager implements IProjectManager {
                 converted.blob
             );
 
-            await this.storage.savePage(page)
+            await this.savePage(page, true);
             pageNumber++;
         }
         return pageNumber;
@@ -82,11 +99,35 @@ export class ProjectManager implements IProjectManager {
         return this.storage.loadProjects();
     }
 
+    async saveProject(project: Project, pages: ScorePage[]): Promise<void> {
+        if (pages.some(page => page.projectId !== project.id)) {
+            throw new Error('Cannot save pages belonging to another project.');
+        }
+        await this.storage.saveProject(project);
+        for (const page of pages) {
+            if (!page.isChanged) continue;
+            await this.savePage(page);
+        }
+    }
+
     async deleteProject(projectId: string): Promise<void> {
         await this.storage.deleteProject(projectId);
     }
 
-    async loadPages(projectId: string): Promise<ScorePage[]> {
-        return await this.storage.loadPages(projectId);
+    async loadPages(project: Project): Promise<ScorePage[]> {
+        const storedPages = await this.storage.loadPages(project.id);
+        const instrumentsById = new Map(project.instruments.map(instrument => [instrument.id, instrument]));
+        return storedPages.map(stored => {
+            const page = new ScorePage(project.id, stored.number, stored.metadata.width, stored.metadata.height, stored.blob);
+            const instruments: Record<string, Instrument> = {};
+            for (const [order, instrumentId] of Object.entries(stored.metadata.instruments)) {
+                const instrument = instrumentsById.get(instrumentId);
+                if (!instrument) throw new Error(`Unknown instrument ${instrumentId} on page ${stored.number}.`);
+                instruments[order] = instrument;
+            }
+            SubdivisionsMapper.initializePage(page, stored.subdivisions, instruments);
+            page.markSaved();
+            return page;
+        });
     }
 }
