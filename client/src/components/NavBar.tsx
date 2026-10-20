@@ -1,4 +1,4 @@
-import {AppBar, Box, Button, IconButton, SvgIcon, Toolbar, Typography, useScrollTrigger} from '@mui/material';
+import {alpha, AppBar, Box, Button, IconButton, SvgIcon, Toolbar, Typography, useScrollTrigger} from '@mui/material';
 import {Link} from '@tanstack/react-router';
 import type {ReactNode} from 'react';
 
@@ -13,6 +13,8 @@ export default function NavBar({title, navigation}: NavBarProps) {
     return (
         <AppBar position="sticky" color="inherit" elevation={scrolled ? 4 : 1}
                 sx={theme => ({
+                    backgroundColor: theme.palette.background.paper,
+                    backgroundImage: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)}, ${alpha(theme.palette.secondary.main, 0.08)})`,
                     alignSelf: 'center',
                     top: scrolled ? 12 : 0,
                     width: scrolled ? 'calc(100% - 24px)' : '100%',

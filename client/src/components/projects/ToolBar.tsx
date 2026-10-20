@@ -20,9 +20,10 @@ interface ToolBarProps {
     hasChanges: boolean
     saving: boolean
     onSave(): void
+    onCombinePrint(): void
 }
 
-export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave}: ToolBarProps) {
+export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave, onCombinePrint}: ToolBarProps) {
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -61,7 +62,7 @@ export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges
                                   fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
                         </SvgIcon>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
-            <ToolActionButton label="Combine & Print" disabled={disabled}
+            <ToolActionButton label="Combine & Print" disabled={disabled || saving} onClick={onCombinePrint}
                               icon={<SvgIcon viewBox="0 0 24 24">
                                   <path d="M3 5h18M3 8h18M3 11h10M3 14h8M3 17h8"
                                         fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>

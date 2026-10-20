@@ -1,4 +1,4 @@
-import {Link, useBlocker, useLocation, useParams} from '@tanstack/react-router'
+import {Link, useBlocker, useLocation, useNavigate, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/material'
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
@@ -13,6 +13,7 @@ import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDial
 function ProjectDetail({project: snapshot}: {project: Project}) {
     const [project] = useState(() => Project.fromSnapshot(snapshot))
     const model = useProjectDetail(project)
+    const navigate = useNavigate()
     const currentPage = model.pages[model.pageIndex]
     const [editingMode, setEditingMode] = useState<EditingMode>('select')
     const toolsDisabled = model.loading || !!model.error || !currentPage
@@ -37,7 +38,10 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                   onLeave={() => blocker.proceed?.()}/>
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
                 <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}
-                         hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}/>
+                         hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}
+                         onCombinePrint={() => {
+                             void navigate({to: '/projects/$projectId/export', params: {projectId: project.id}, state: {project}})
+                         }}/>
                 <Container maxWidth="lg" disableGutters>
                     <Stack spacing={3}>
                         {model.saveError && (
@@ -72,7 +76,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
     )
 }
 
-export default function DetailProjectPage() {
+export default function ProjectWorkspacePage() {
     const {projectId} = useParams({from: '/projects/$projectId'})
     const project = useLocation({
         select: location => location.state.project,

@@ -4,13 +4,18 @@ import type {StorageService} from "./StorageService.ts";
 import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
 import {browserStorage} from "../dataAccess";
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
-import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/ConvertPdfPagesService.ts";
-import type {ConvertedPdfPage} from '../pdf/ConvertPdfPagesService.ts';
+import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/import/ConvertPdfPagesService.ts";
+import type {ConvertedPdfPage} from '../pdf/import/ConvertPdfPagesService.ts';
 import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
 import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
 import {SubdivisionsMapper} from './SubdivisionsMapper.ts';
 import type {Instrument} from '../../domain/Instrument.ts';
 import {StaffImageService, type IStaffImageService} from '../images/StaffImageService.ts';
+
+export interface StaffImage {
+    blob: Blob;
+    instrument: Instrument;
+}
 
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
@@ -23,6 +28,7 @@ export interface IProjectManager {
     saveProject(project: Project, pages: ScorePage[]): Promise<void>;
 
     loadPages(project: Project): Promise<ScorePage[]>;
+    loadStaffImages(project: Project, instruments: readonly Instrument[]): AsyncIterable<StaffImage>;
 }
 
 
@@ -117,6 +123,21 @@ export class ProjectManager implements IProjectManager {
 
     async deleteProject(projectId: string): Promise<void> {
         await this.storage.deleteProject(projectId);
+    }
+
+    async *loadStaffImages(project: Project, instruments: readonly Instrument[]): AsyncIterableIterator<StaffImage> {
+        const selectedInstruments = new Map(instruments.map(instrument => [instrument.id, instrument]));
+        const pages = await this.storage.loadPages(project.id);
+        for (const page of pages.sort((a, b) => a.number - b.number)) {
+            const staves = Object.entries(page.metadata.instruments).sort(([a], [b]) => Number(a) - Number(b));
+            for (const [order, instrumentId] of staves) {
+                const instrument = selectedInstruments.get(instrumentId);
+                if (instrument) yield {
+                    blob: await this.storage.loadStaffImage(project.id, page.number, Number(order)),
+                    instrument,
+                };
+            }
+        }
     }
 
     async loadPages(project: Project): Promise<ScorePage[]> {

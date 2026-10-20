@@ -214,6 +214,18 @@ export class FileSystemStorageService implements StorageService {
         return pages.sort((a, b) => a.number - b.number);
     }
 
+    async loadStaffImage(projectId: string, pageNumber: number, order: number): Promise<Blob> {
+        try {
+            const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+            const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
+            const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory);
+            const staffDir = await stavesDir.getDirectoryHandle(String(order));
+            return await this.readFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile);
+        } catch (error) {
+            throw new Error(`Unable to load saved staff ${order} on page ${pageNumber}. Save the project before exporting.`, {cause: error});
+        }
+    }
+
     async deleteProject(projectId: string): Promise<void> {
         await this.rootDir.removeEntry(projectId, {recursive: true});
     }

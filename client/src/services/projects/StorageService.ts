@@ -14,6 +14,7 @@ export interface StorageService {
 
     loadProjects(): Promise<Project[]>;
     loadPages(projectId: string): Promise<StoredScorePage[]>;
+    loadStaffImage(projectId: string, pageNumber: number, order: number): Promise<Blob>;
 
     deleteProject(projectId: string): Promise<void>;
 }

@@ -5,7 +5,8 @@ import SignUpPage from './pages/auth/SignUpPage'
 import ProfilePage from './pages/settings/ProfilePage'
 import ProjectsPage from './pages/projects/ProjectsPage.tsx'
 import CreateProjectPage from './pages/projects/CreateProjectPage.tsx'
-import DetailProjectPage from './pages/projects/DetailProjectPage.tsx'
+import ProjectWorkspacePage from './pages/projects/ProjectWorkspacePage.tsx'
+import ProjectExportPage from './pages/projects/ProjectExportPage.tsx'
 import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
 import type {Project} from "./domain";
 
@@ -58,10 +59,16 @@ const createProjectRoute = createRoute({
 const detailProjectRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/projects/$projectId',
-    component: DetailProjectPage,
+    component: ProjectWorkspacePage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute])
+const exportRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/projects/$projectId/export',
+    component: ProjectExportPage,
+})
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute, exportRoute])
 
 export const router = createRouter({routeTree})
 
