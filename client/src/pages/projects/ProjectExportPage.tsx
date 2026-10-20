@@ -5,7 +5,7 @@ import NavPage from '../../components/NavPage'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
 import {Project} from '../../domain/Project.ts'
-import {PageNavigation} from '../../components/projects/PageNavigation.tsx'
+import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
 
@@ -38,11 +38,14 @@ function ProjectExport({project: snapshot}: {project: Project}) {
     }
 
     return (
-        <NavPage title={`${project.projectName} · Export`} navigation={
-            <PageNavigation pageIndex={pageIndex} pageCount={pageCount}
-                            onPrevious={() => setPageIndex(index => Math.max(0, index - 1))}
-                            onNext={() => setPageIndex(index => Math.min(pageCount - 1, index + 1))}/>
-        }>
+        <ProjectPage title="Export" projectTitle={project.projectName} previewInsets={{
+            left: {xs: '240px', sm: '312px', md: '352px'},
+            right: {xs: '8px', sm: '24px'},
+        }} pagination={{
+            pageIndex, pageCount,
+            onPrevious: () => setPageIndex(index => Math.max(0, index - 1)),
+            onNext: () => setPageIndex(index => Math.min(pageCount - 1, index + 1)),
+        }}>
             <Box sx={{flex: 1, py: 2, pl: {xs: '240px', sm: '312px', md: '352px'}, pr: {xs: 1, sm: 3}}}>
                 <ExportToolBar editingMode={editingMode} onModeChange={setEditingMode}
                                generating={generating} onPreview={createPreview}
@@ -83,7 +86,7 @@ function ProjectExport({project: snapshot}: {project: Project}) {
                         </Box>
                 </Container>
             </Box>
-        </NavPage>
+        </ProjectPage>
     )
 }
 

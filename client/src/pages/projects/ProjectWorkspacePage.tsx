@@ -5,7 +5,7 @@ import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
 import {ScorePageWorkSpace} from '../../components/projects/drawing/ScorePageWorkSpace.tsx'
 import {Project} from "../../domain";
 import NavPage from '../../components/NavPage';
-import {PageNavigation} from '../../components/projects/PageNavigation';
+import {ProjectPage} from '../../components/projects/ProjectPage';
 import {ToolBar} from '../../components/projects/ToolBar';
 import type {EditingMode} from '../../components/projects/ToolBar';
 import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx'
@@ -25,21 +25,19 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
     })
 
     return (
-        <NavPage title={project.projectName ?? 'Project'} navigation={
-                                                              !model.loading && !model.error && currentPage ? (
-                                                                  <PageNavigation pageIndex={model.pageIndex}
-                                                                                  pageCount={model.pageCount}
-                                                                                  onPrevious={model.previous}
-                                                                                  onNext={model.next}/>
-                                                              ) : undefined
-                                                          }>
+        <ProjectPage title="Workspace" projectTitle={project.projectName ?? 'Project'} pagination={{
+            pageIndex: model.pageIndex,
+            pageCount: !model.loading && !model.error && currentPage ? model.pageCount : 0,
+            onPrevious: model.previous,
+            onNext: model.next,
+        }}>
             <UnsavedChangesDialog open={blocker.status === 'blocked'}
                                   onStay={() => blocker.reset?.()}
                                   onLeave={() => blocker.proceed?.()}/>
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
                 <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}
                          hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}
-                         onCombinePrint={() => {
+                         onExport={() => {
                              void navigate({to: '/projects/$projectId/export', params: {projectId: project.id}, state: {project}})
                          }}/>
                 <Container maxWidth="lg" disableGutters>
@@ -72,7 +70,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                     </Stack>
                 </Container>
             </Box>
-        </NavPage>
+        </ProjectPage>
     )
 }
 
@@ -84,7 +82,7 @@ export default function ProjectWorkspacePage() {
 
     if (!project || project.id !== projectId) {
         return (
-            <NavPage title="Project">
+            <NavPage title="Workspace">
                 <Alert severity="error">Project data is unavailable.</Alert>
             </NavPage>
         );

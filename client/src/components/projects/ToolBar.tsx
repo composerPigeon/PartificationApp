@@ -20,10 +20,10 @@ interface ToolBarProps {
     hasChanges: boolean
     saving: boolean
     onSave(): void
-    onCombinePrint(): void
+    onExport(): void
 }
 
-export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave, onCombinePrint}: ToolBarProps) {
+export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave, onExport}: ToolBarProps) {
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -62,13 +62,13 @@ export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges
                                   fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
                         </SvgIcon>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
-            <ToolActionButton label="Combine & Print" disabled={disabled || saving} onClick={onCombinePrint}
+            <ToolActionButton label="Export" disabled={disabled || saving} onClick={onExport}
                               icon={<SvgIcon viewBox="0 0 24 24">
                                   <path d="M3 5h18M3 8h18M3 11h10M3 14h8M3 17h8"
                                         fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
                                   <StaffClef/>
-                                  <path d="M15 14v-3h6v3M15 20h-2v-5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v5h-2M15 18h6v5h-6v-5Zm6-2h.1M17 20.5h2"
-                                        fill="none" stroke="currentColor" strokeWidth="1.3"
+                                  <path d="M13 16v6h9v-6M17.5 18V11m-3 3 3-3 3 3"
+                                        fill="none" stroke="currentColor" strokeWidth="1.6"
                                         strokeLinecap="round" strokeLinejoin="round"/>
                               </SvgIcon>}/>
             <ToolActionButton label={saving ? 'Saving…' : 'Save'} disabled={disabled || saving || !hasChanges} onClick={onSave}

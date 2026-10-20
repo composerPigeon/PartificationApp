@@ -1,22 +1,22 @@
 import {Box, IconButton, SvgIcon, Typography} from '@mui/material'
 
-const arrowButtonSx = {
-    width: 32, height: 32, bgcolor: 'primary.main', color: 'primary.contrastText',
-    '&:hover': {bgcolor: 'primary.dark'},
-    '&.Mui-disabled': {bgcolor: 'action.disabledBackground'},
-}
-
-interface PageNavigationProps {
+export interface PageNavigationProps {
     pageIndex: number
     pageCount: number
+    color?: 'primary' | 'secondary'
 
     onPrevious(): void
 
     onNext(): void
 }
 
-export function PageNavigation({pageIndex, pageCount, onPrevious, onNext}: PageNavigationProps) {
+export function PageNavigation({pageIndex, pageCount, onPrevious, onNext, color = 'primary'}: PageNavigationProps) {
     const currentPage = pageCount > 0 ? pageIndex + 1 : 0
+    const arrowButtonSx = {
+        width: 32, height: 32, bgcolor: `${color}.main`, color: `${color}.contrastText`,
+        '&:hover': {bgcolor: `${color}.dark`},
+        '&.Mui-disabled': {bgcolor: 'action.disabledBackground'},
+    }
     return (
         <Box component="nav" aria-label="Page navigation" sx={{
             display: 'flex', alignItems: 'center', gap: 0.5, p: 0.5, flexShrink: 0,
@@ -32,7 +32,7 @@ export function PageNavigation({pageIndex, pageCount, onPrevious, onNext}: PageN
             <Typography component="span" role="status" aria-live="polite"
                         aria-label={`Page ${currentPage} of ${pageCount}`}
                         sx={{px: 1, minWidth: `${String(pageCount).length * 2 + 3}ch`, textAlign: 'center', whiteSpace: 'nowrap', fontSize: '0.875rem', fontVariantNumeric: 'tabular-nums'}}>
-                <Box component="span" sx={{fontWeight: 800, color: 'primary.main'}}>{currentPage}</Box>
+                <Box component="span" sx={{fontWeight: 800, color: `${color}.main`}}>{currentPage}</Box>
                 <Box component="span" sx={{mx: 1, color: 'text.disabled'}}>/</Box>
                 <Box component="span" sx={{color: 'text.secondary'}}>{pageCount}</Box>
             </Typography>
