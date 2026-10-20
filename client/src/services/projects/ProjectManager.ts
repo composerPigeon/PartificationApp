@@ -10,6 +10,7 @@ import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
 import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
 import {SubdivisionsMapper} from './SubdivisionsMapper.ts';
 import type {Instrument} from '../../domain/Instrument.ts';
+import {StaffImageService, type IStaffImageService} from '../images/StaffImageService.ts';
 
 export interface IProjectManager {
     useBrowserStorage(browserStorage: StorageService): void;
@@ -30,6 +31,7 @@ export class ProjectManager implements IProjectManager {
     private type: StorageType = StorageType.Browser;
     private storage: StorageService = browserStorage;
     private pagesConverter: IConvertPdfPagesService = new ConvertPdfPagesService();
+    private staffImageService: IStaffImageService = new StaffImageService();
 
     useBrowserStorage(): void {
         this.type = StorageType.Browser;
@@ -47,13 +49,16 @@ export class ProjectManager implements IProjectManager {
 
     private async savePage(page: ScorePage, create: boolean = false): Promise<void> {
         const version = page.version;
-        await this.storage.savePage({
+        const storedPage = {
             projectId: page.projectId,
             number: page.number,
             blob: page.blob,
             metadata: ScorePageMetadata.create(page),
             subdivisions: SubdivisionsMetadata.create(page),
-        }, create);
+        };
+        const bounds = Object.values(storedPage.subdivisions.staves).map(({bbox: [x, y, width, height]}) => ({x, y, width, height}));
+        await this.storage.savePage(storedPage, create);
+        await this.storage.saveStaffImages(page.projectId, page.number, this.staffImageService.crop(storedPage.blob, bounds));
         page.markSaved(version);
     }
 

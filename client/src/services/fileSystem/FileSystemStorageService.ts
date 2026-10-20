@@ -111,6 +111,23 @@ export class FileSystemStorageService implements StorageService {
         await this.writeJsonFile(pageDir, FileSystemEntryNames.subdivisionsMetadataFile, page.subdivisions);
     }
 
+    async saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<Blob>): Promise<void> {
+        const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+        const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
+        const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory, {create: true});
+        let order = 0;
+        for await (const image of images) {
+            const staffDir = await stavesDir.getDirectoryHandle(String(++order), {create: true});
+            await this.writeFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile, image);
+        }
+        // Remove stale crops only after all current images have been written successfully.
+        for await (const [name, entry] of stavesDir) {
+            if (entry.kind === 'directory' && /^[1-9]\d*$/.test(name) && Number(name) > order) {
+                await stavesDir.removeEntry(name, {recursive: true});
+            }
+        }
+    }
+
     private async readPageMetadata(directory: FileSystemDirectoryHandle): Promise<ScorePageMetadata> {
         const file = await directory.getFileHandle(FileSystemEntryNames.pageMetadataFile);
         const data = JSON.parse(await (await file.getFile()).text());
