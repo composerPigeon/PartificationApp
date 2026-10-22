@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#7b1fa2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="#7b1fa2">
+  <g id="app-icon">
+  <rect width="64" height="64" rx="14" fill="currentColor"/>
   <path fill="#fff" d="M42 12v30.4a10 10 0 1 1-4-8V20.8l-18 4.5v20.1a10 10 0 1 1-4-8V22.2L42 16v-4Zm-30 37a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm26-3a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+  </g>
 </svg>

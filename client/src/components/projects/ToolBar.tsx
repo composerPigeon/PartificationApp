@@ -1,17 +1,9 @@
-import {Divider, Paper, SvgIcon} from '@mui/material'
+import {ButtonIcon} from '../buttons/ButtonIcon'
+import {Divider, Paper} from '@mui/material'
 import {ToolButton} from '../buttons/ToolButton'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 
 export type EditingMode = 'select' | 'add-staff' | 'edit-staff'
-
-function StaffClef() {
-    return (
-        <g transform="translate(-2.1 -0.8) scale(1.35 1.08)">
-            <path d="M6.7 14.8c-3.8-1-3.5-4.8-.7-7.5 2.4-2.3 2.4-4.7 1-5.3-1.7 1-1.5 3.8-.9 6.6l1.7 9.6c.5 3-2.8 3.7-3.6 1.4M5.5 13.5c-1.3-1.7.1-3.6 1.7-3.1 2.9.8 2.4 4.9-.5 4.4"
-                  fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </g>
-    )
-}
 
 interface ToolBarProps {
     editingMode: EditingMode
@@ -42,41 +34,18 @@ export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges
                }}>
             <ToolButton label="Select" selected={editingMode === 'select'}
                         onSelect={() => onModeChange('select')} disabled={disabled}
-                        icon={<SvgIcon><path d="M5 3v17l4.5-4.5 3.3 6 2.6-1.5-3.3-5.7H19L5 3z"/></SvgIcon>}/>
+                        icon={<ButtonIcon name="select"/>}/>
             <ToolButton label="Add staff" selected={editingMode === 'add-staff'}
                         onSelect={() => onModeChange('add-staff')} disabled={disabled}
-                        icon={<SvgIcon viewBox="0 0 24 24" fill="none">
-                            <path d="M3 5h18M3 8h18M3 11h11M3 14h8M3 17h7"
-                                  fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
-                            <StaffClef/>
-                            <path d="M18.5 13.5v8M14.5 17.5h8"
-                                  fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-                        </SvgIcon>}/>
+                        icon={<ButtonIcon name="add-staff" viewBox="0 0 24 24" fill="none"/>}/>
             <ToolButton label="Edit staff" selected={editingMode === 'edit-staff'}
                         onSelect={() => onModeChange('edit-staff')} disabled={disabled}
-                        icon={<SvgIcon viewBox="0 0 24 24">
-                            <path d="M3 5h18M3 8h14M3 11h11M3 14h8M3 17h6"
-                                  fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
-                            <StaffClef/>
-                            <path d="m11 17 8-8 3 3-8 8-4 1 1-4Zm6-6 3 3"
-                                  fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
-                        </SvgIcon>}/>
+                        icon={<ButtonIcon name="edit-staff" viewBox="0 0 24 24"/>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
             <ToolActionButton label="Export" disabled={disabled || saving} onClick={onExport}
-                              icon={<SvgIcon viewBox="0 0 24 24">
-                                  <path d="M3 5h18M3 8h18M3 11h10M3 14h8M3 17h8"
-                                        fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
-                                  <StaffClef/>
-                                  <path d="M13 16v6h9v-6M17.5 18V11m-3 3 3-3 3 3"
-                                        fill="none" stroke="currentColor" strokeWidth="1.6"
-                                        strokeLinecap="round" strokeLinejoin="round"/>
-                              </SvgIcon>}/>
+                              icon={<ButtonIcon name="export" viewBox="0 0 24 24"/>}/>
             <ToolActionButton label={saving ? 'Saving…' : 'Save'} disabled={disabled || saving || !hasChanges} onClick={onSave}
-                              icon={<SvgIcon>
-                                  <path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h10V3M7 21v-8h10v8"
-                                        fill="none" stroke="currentColor" strokeWidth="1.8"
-                                        strokeLinecap="round" strokeLinejoin="round"/>
-                              </SvgIcon>}/>
+                              icon={<ButtonIcon name="save"/>}/>
         </Paper>
     )
 }

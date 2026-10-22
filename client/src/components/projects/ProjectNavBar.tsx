@@ -1,5 +1,6 @@
 import {alpha, Box, Typography, useScrollTrigger} from '@mui/material'
 import {Link} from '@tanstack/react-router'
+import {AppIcon} from '../AppIcon'
 import {PageNavigation} from './PageNavigation'
 import type {PageNavigationProps} from './PageNavigation'
 
@@ -29,7 +30,8 @@ export function ProjectNavBar({title, pagination, previewInsets}: ProjectNavBarP
             display: 'grid', alignItems: 'center', gap: {xs: 1, sm: 0}, py: 1.5,
             bgcolor: 'background.paper',
             backgroundImage: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.12)}, ${alpha(theme.palette.primary.main, 0.08)})`,
-            borderBottom: '1px solid', borderColor: alpha(theme.palette.secondary.main, 0.2),
+            borderTop: '1px solid', borderTopColor: alpha(theme.palette.primary.main, 0.18),
+            borderBottom: '1px solid', borderBottomColor: alpha(theme.palette.secondary.main, 0.2),
         })}>
             <Box sx={{
                 gridArea: '1 / 1', justifySelf: 'start', mx: 3,
@@ -45,8 +47,7 @@ export function ProjectNavBar({title, pagination, previewInsets}: ProjectNavBarP
                          transition: theme.transitions.create(['width', 'margin-right', 'opacity'], {duration: 240}),
                          '@media (prefers-reduced-motion: reduce)': {transition: 'none'},
                      })}>
-                    <Box component="img" src={`${import.meta.env.BASE_URL}favicon.svg`} alt=""
-                         sx={{width: 40, height: 40}}/>
+                    <AppIcon color="secondary" sx={{width: 40, height: 40}}/>
                 </Box>
             <Typography component="h1" variant="h6" sx={{
                 minWidth: 0,

@@ -1,7 +1,8 @@
+import {ButtonIcon} from '../../components/buttons/ButtonIcon'
 import {useEffect, useState} from 'react'
 import {
     Alert, Box, Button, CircularProgress, Container,
-    Paper, Stack, SvgIcon, Typography,
+    Paper, Stack, Typography,
 } from '@mui/material'
 import {projectManager} from '../../services'
 import type {Project} from '../../domain/Project.ts'
@@ -87,9 +88,7 @@ function ProjectsPage() {
                 </Stack>
             </Container>
             <FloatButton to="/projects/new" icon aria-label="Create project">
-                <SvgIcon aria-hidden="true">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/>
-                </SvgIcon>
+                <ButtonIcon name="add" aria-hidden="true"/>
             </FloatButton>
         </NavPage>
     )

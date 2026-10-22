@@ -1,4 +1,5 @@
-import {Box, IconButton, SvgIcon, Typography} from '@mui/material'
+import {ButtonIcon} from '../buttons/ButtonIcon'
+import {Box, IconButton, Typography} from '@mui/material'
 
 export interface PageNavigationProps {
     pageIndex: number
@@ -25,9 +26,7 @@ export function PageNavigation({pageIndex, pageCount, onPrevious, onNext, color 
         }}>
             <IconButton aria-label="Previous page" title="Previous page" disabled={pageCount === 0 || pageIndex <= 0}
                         onClick={onPrevious} size="small" sx={arrowButtonSx}>
-                <SvgIcon fontSize="small">
-                    <path d="m14.7 6.7-1.4-1.4L6.6 12l6.7 6.7 1.4-1.4-5.3-5.3z"/>
-                </SvgIcon>
+                <ButtonIcon name="previous-page" fontSize="small"/>
             </IconButton>
             <Typography component="span" role="status" aria-live="polite"
                         aria-label={`Page ${currentPage} of ${pageCount}`}
@@ -38,9 +37,7 @@ export function PageNavigation({pageIndex, pageCount, onPrevious, onNext, color 
             </Typography>
             <IconButton aria-label="Next page" title="Next page" disabled={pageIndex >= pageCount - 1}
                         onClick={onNext} size="small" sx={arrowButtonSx}>
-                <SvgIcon fontSize="small">
-                    <path d="m9.3 5.3-1.4 1.4 5.3 5.3-5.3 5.3 1.4 1.4 6.7-6.7z"/>
-                </SvgIcon>
+                <ButtonIcon name="next-page" fontSize="small"/>
             </IconButton>
         </Box>
     )
