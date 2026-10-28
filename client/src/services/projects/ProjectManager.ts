@@ -145,6 +145,8 @@ export class ProjectManager implements IProjectManager {
         const instrumentsById = new Map(project.instruments.map(instrument => [instrument.id, instrument]));
         return storedPages.map(stored => {
             const page = new ScorePage(project.id, stored.number, stored.metadata.width, stored.metadata.height, stored.blob);
+            page.leftDivider.x = stored.metadata.leftDivider?.x ?? 0;
+            page.rightDivider.x = stored.metadata.rightDivider?.x ?? page.width;
             const instruments: Record<string, Instrument> = {};
             for (const [order, instrumentId] of Object.entries(stored.metadata.instruments)) {
                 const instrument = instrumentsById.get(instrumentId);

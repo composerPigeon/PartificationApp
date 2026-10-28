@@ -4,6 +4,7 @@ import {Instrument} from './Instrument.ts';
 import {GrandStaff} from "./GrandStaff.ts";
 import {StaffSystem} from "./StaffSystem.ts";
 import {StavesCollection} from './StavesCollection.ts';
+import {VerticalDivider} from "./VerticalDivider.ts";
 
 @Serializable()
 export class ScorePage {
@@ -32,6 +33,8 @@ export class ScorePage {
     staves: StavesCollection;
     grandStaves: Map<number, GrandStaff>;
     systems: Map<number, StaffSystem>;
+    leftDivider: VerticalDivider;
+    rightDivider: VerticalDivider;
 
     constructor(projectId: string, number: number, width: number, height: number, blob: Blob) {
         this.projectId = projectId;
@@ -39,10 +42,26 @@ export class ScorePage {
         this.width = width;
         this.height = height;
         this.blob = blob;
+        this.leftDivider = new VerticalDivider(0);
+        this.rightDivider = new VerticalDivider(width);
 
         this.staves = new StavesCollection();
         this.grandStaves = new Map();
         this.systems = new Map();
+    }
+
+    moveLeftDivider(n: number): void {
+        if (this.leftDivider.x === n) return;
+        this.leftDivider.x = n;
+        this.staves.moveLeftDivider(n);
+        this.markChanged();
+    }
+
+    moveRightDivider(n: number): void {
+        if (this.rightDivider.x === n) return;
+        this.rightDivider.x = n;
+        this.staves.moveRightDivider(n);
+        this.markChanged();
     }
 
     addStaff(staff: Staff): void {
@@ -57,7 +76,12 @@ export class ScorePage {
         }
         let id = 1;
         for (const existingId of this.staves.keys()) id = Math.max(id, existingId + 1);
-        const staff = new Staff(id, {x: 0, y: centerY - height / 2, width: this.width, height}, instrument);
+        const staff = new Staff(id, {
+            x: this.leftDivider.x,
+            y: centerY - height / 2,
+            width: this.rightDivider.x - this.leftDivider.x,
+            height
+        }, instrument);
         this.addStaff(staff);
         return staff;
     }

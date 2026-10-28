@@ -140,7 +140,15 @@ export class FileSystemStorageService implements StorageService {
             || !Object.entries(mapping).every(([order, instrumentId]) => /^[1-9]\d*$/.test(order) && typeof instrumentId === 'string')) {
             throw new Error(`Invalid staff instrument mapping in folder ${directory.name}: expected instruments to be an object mapping staff order to instrument ID.`);
         }
-        return new ScorePageMetadata(data.width, data.height, mapping);
+        const metadata = new ScorePageMetadata(data.width, data.height, mapping);
+        for (const key of ['leftDivider', 'rightDivider'] as const) {
+            if (data[key] === undefined) continue;
+            if (!data[key] || typeof data[key].x !== 'number' || !Number.isFinite(data[key].x)) {
+                throw new Error(`Invalid ${key} position in folder ${directory.name}.`);
+            }
+            metadata[key] = {x: data[key].x};
+        }
+        return metadata;
     }
 
     async loadProjects(): Promise<Project[]> {

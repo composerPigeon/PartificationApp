@@ -8,6 +8,7 @@ import type {Project, ScorePage} from '../../../domain'
 import type {EditingMode} from '../ToolBar.tsx'
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
+import {VerticalDividerLine} from './VerticalDividerLine.tsx'
 import {CreateStaffForm} from '../CreateStaffForm.tsx'
 import {Instrument} from '../../../domain/Instrument.ts'
 import {InstrumentTag} from './InstrumentTag.tsx'
@@ -16,6 +17,7 @@ import type {Node} from 'konva/lib/Node'
 
 function cursorFor(target: Node | null, dragging = false, mode: EditingMode = 'edit-staff') {
     if (mode === 'select') return target?.hasName('staff-body') ? 'pointer' : 'default'
+    if (target?.hasName('vertical-divider')) return 'ew-resize'
     if (target?.hasName('staff-divider')) return 'ns-resize'
     if (target?.hasName('staff-body')) return dragging ? 'grabbing' : 'grab'
     return 'default'
@@ -153,6 +155,22 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                                               }}/>
                         )
                     })}
+                    <VerticalDividerLine divider={page.leftDivider} height={page.height} scale={scale}
+                                         editable={editingMode === 'edit-staff' && !error}
+                                         minX={0} maxX={page.rightDivider.x - 1}
+                                         onDragEnd={n => {
+                                             page.moveLeftDivider(n)
+                                             setStaves([...page.staves.values()])
+                                             onPageChange()
+                                         }}/>
+                    <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
+                                         editable={editingMode === 'edit-staff' && !error}
+                                         minX={page.leftDivider.x + 1} maxX={page.width}
+                                         onDragEnd={n => {
+                                             page.moveRightDivider(n)
+                                             setStaves([...page.staves.values()])
+                                             onPageChange()
+                                         }}/>
                 </Layer>
                     </Stage>
                 </Box>

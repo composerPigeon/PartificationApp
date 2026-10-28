@@ -66,6 +66,19 @@ export class StavesCollection implements Iterable<Staff> {
         return true;
     }
 
+    moveLeftDivider(n: number): void {
+        for (const staff of this) {
+            staff.width = staff.x + staff.width - n;
+            staff.x = n;
+        }
+    }
+
+    moveRightDivider(n: number): void {
+        for (const staff of this) {
+            staff.width = n - staff.x;
+        }
+    }
+
     *values(): IterableIterator<Staff> {
         for (let node = this.head; node; node = node.next) yield node.staff;
     }
