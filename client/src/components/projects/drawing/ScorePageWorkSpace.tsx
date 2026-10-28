@@ -16,11 +16,15 @@ import type {StaffDivider} from '../../../domain/StaffDivider.ts'
 import type {Node} from 'konva/lib/Node'
 
 function cursorFor(target: Node | null, dragging = false, mode: EditingMode = 'edit-staff') {
-    if (mode === 'select') return target?.hasName('staff-body') ? 'pointer' : 'default'
     if (target?.hasName('vertical-divider')) return 'ew-resize'
     if (target?.hasName('staff-divider')) return 'ns-resize'
-    if (target?.hasName('staff-body')) return dragging ? 'grabbing' : 'grab'
+    if (target?.hasName('staff-body')) return dragging ? 'grabbing' : mode === 'select' ? 'pointer' : 'grab'
     return 'default'
+}
+
+function modeFor(target: Node | null, dragging = false): EditingMode {
+    if (dragging || target?.hasName('staff-divider') || target?.hasName('vertical-divider')) return 'edit-staff'
+    return target?.hasName('staff-body') ? 'select' : 'add-staff'
 }
 
 function resizeBounds(divider: StaffDivider, y: number) {
@@ -34,10 +38,11 @@ interface ScorePageWorkSpaceProps {
     project: Project
     page: ScorePage
     editingMode?: EditingMode
+    onModeChange(mode: EditingMode): void
     onPageChange(): void
 }
 
-export function ScorePageWorkSpace({project, page, editingMode = 'select', onPageChange}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({project, page, editingMode = 'select', onModeChange, onPageChange}: ScorePageWorkSpaceProps) {
     const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const dragTargetRef = useRef<Node | null>(null)
@@ -51,7 +56,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
     const [staves, setStaves] = useState(() => [...page.staves.values()])
     const [pendingStaff, setPendingStaff] = useState<{centerY: number, top: number, left: number} | null>(null)
     const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number, height: number} | null>(null)
-    const dragPreview = editingMode === 'edit-staff' ? draggedStaff : null
+    const dragPreview = draggedStaff
     const dividers = [...new Set(staves.flatMap(staff => [staff.topDivider, staff.bottomDivider]))]
 
     useLayoutEffect(() => {
@@ -77,14 +82,24 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
 
     const handlePageClick = (event: KonvaEventObject<MouseEvent>) => {
         if (event.evt.button !== 0 || error) return
-        if (editingMode === 'select') {
-            setSelectedStaffId(event.target.hasName('staff-body') ? Number(event.target.id()) : null)
+        const mode = modeFor(event.target)
+        onModeChange(mode)
+        if (event.target.hasName('staff-body')) {
+            setSelectedStaffId(Number(event.target.id()))
             return
         }
-        if (editingMode !== 'add-staff' || event.evt.button !== 0 || error) return
+        if (mode !== 'add-staff') return
+        setSelectedStaffId(null)
         const pointer = stageRef.current?.getRelativePointerPosition()
         if (!pointer) return
         setPendingStaff({centerY: pointer.y, top: event.evt.clientY, left: event.evt.clientX})
+    }
+
+    const updateInteraction = (target: Node | null, dragging = false) => {
+        if (error || pendingStaff) return
+        const mode = modeFor(target, dragging)
+        onModeChange(mode)
+        setHoverCursor({mode, value: cursorFor(target, dragging, mode)})
     }
 
     return (
@@ -100,18 +115,19 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                    scaleX={scale} scaleY={scale} onClick={handlePageClick}
                    role="region"
                    onMouseMove={event => {
-                       setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current ?? event.target, !!dragTargetRef.current, editingMode)})
+                       updateInteraction(dragTargetRef.current ?? event.target, !!dragTargetRef.current)
                    }}
                    onMouseLeave={() => setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})}
                    onDragStart={event => {
                        dragTargetRef.current = event.target
-                       setHoverCursor({mode: editingMode, value: cursorFor(event.target, true, editingMode)})
+                       setSelectedStaffId(null)
+                       updateInteraction(event.target, true)
                    }}
                    onDragEnd={() => {
                        dragTargetRef.current = null
                        const stage = stageRef.current!
                        const pointer = stage.getPointerPosition()
-                       setHoverCursor({mode: editingMode, value: cursorFor(pointer ? stage.getIntersection(pointer) : null, false, editingMode)})
+                       updateInteraction(pointer ? stage.getIntersection(pointer) : null)
                    }}
                    style={{background: 'white', boxShadow: '0 3px 12px #0003'}}>
                 <Layer name="page-image" listening={false}>
@@ -123,7 +139,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                                    selected={editingMode === 'select' && selectedStaffId === staff.id}
                                    y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                    height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}
-                                   editable={editingMode === 'edit-staff' && !error}
+                                   editable={!error}
                                    onDrag={y => {
                                        setDraggedStaff({id: staff.id, y, height: staff.height})
                                    }}
@@ -140,7 +156,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                         return (
                             <StaffDividerLine key={index} divider={divider} scale={scale}
                                               y={preview ? preview.y + (isTop ? 0 : preview.height) : divider.y}
-                                              editable={editingMode === 'edit-staff' && !error}
+                                              editable={!error}
                                               onDrag={y => {
                                                   const bounds = resizeBounds(divider, y)
                                                   setDraggedStaff({id: divider.staff.id, ...bounds})
@@ -156,7 +172,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                         )
                     })}
                     <VerticalDividerLine divider={page.leftDivider} height={page.height} scale={scale}
-                                         editable={editingMode === 'edit-staff' && !error}
+                                         editable={!error}
                                          minX={0} maxX={page.rightDivider.x - 1}
                                          onDragEnd={n => {
                                              page.moveLeftDivider(n)
@@ -164,7 +180,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onPag
                                              onPageChange()
                                          }}/>
                     <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
-                                         editable={editingMode === 'edit-staff' && !error}
+                                         editable={!error}
                                          minX={page.leftDivider.x + 1} maxX={page.width}
                                          onDragEnd={n => {
                                              page.moveRightDivider(n)

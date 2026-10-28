@@ -64,6 +64,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
                                 <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
                                                   project={project} page={currentPage} editingMode={editingMode}
+                                                  onModeChange={setEditingMode}
                                                   onPageChange={model.pageChanged}/>
                             </Box>
                         ) : null}
