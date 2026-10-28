@@ -10,9 +10,11 @@ interface ExportToolBarProps {
     hasSelectedInstruments: boolean
     generating: boolean
     onPreview(): void
+    hasPreview: boolean
+    onPrint(): void
 }
 
-export function ExportToolBar({onBack, editingMode, onModeChange, hasSelectedInstruments, generating, onPreview}: ExportToolBarProps) {
+export function ExportToolBar({onBack, editingMode, onModeChange, hasSelectedInstruments, generating, onPreview, hasPreview, onPrint}: ExportToolBarProps) {
     return (
         <Paper component="aside" aria-label="Export tools" elevation={5}
                sx={{
@@ -28,7 +30,7 @@ export function ExportToolBar({onBack, editingMode, onModeChange, hasSelectedIns
                               icon={<ButtonIcon name="back"/>}/>
             <ToolActionButton label={generating ? 'Generating preview…' : 'Preview'} disabled={!hasSelectedInstruments || generating} onClick={onPreview}
                               icon={<ButtonIcon name="preview"/>}/>
-            <ToolActionButton label="Print" disabled
+            <ToolActionButton label="Print" disabled={!hasPreview || generating} onClick={onPrint}
                               icon={<ButtonIcon name="print"/>}/>
         </Paper>
     )

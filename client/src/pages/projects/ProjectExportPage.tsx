@@ -1,6 +1,6 @@
 import {Link, useLocation, useNavigate, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack, Typography} from '@mui/material'
-import {useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import NavPage from '../../components/NavPage'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
@@ -15,10 +15,26 @@ function ProjectExport({project: snapshot}: {project: Project}) {
     const [selectedInstrumentIds, setSelectedInstrumentIds] = useState<Set<string>>(() => new Set())
     const navigate = useNavigate()
     const [previewPdf, setPreviewPdf] = useState<Blob | null>(null)
+    const previewUrlRef = useRef<string | null>(null)
     const [pageIndex, setPageIndex] = useState(0)
     const [pageCount, setPageCount] = useState(0)
     const [generating, setGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!previewPdf) return
+        const url = URL.createObjectURL(previewPdf)
+        previewUrlRef.current = url
+        return () => {
+            URL.revokeObjectURL(url)
+            previewUrlRef.current = null
+        }
+    }, [previewPdf])
+
+    function printPreview() {
+        if (generating || !previewPdf || !previewUrlRef.current) return
+        window.open(previewUrlRef.current, '_blank', 'noopener,noreferrer')
+    }
 
     async function createPreview() {
         if (generating || !selectedInstrumentIds.size) return
@@ -49,6 +65,7 @@ function ProjectExport({project: snapshot}: {project: Project}) {
             <Box sx={{flex: 1, py: 2, pl: {xs: '240px', sm: '312px', md: '352px'}, pr: {xs: 1, sm: 3}}}>
                 <ExportToolBar editingMode={editingMode} onModeChange={setEditingMode}
                                generating={generating} onPreview={createPreview}
+                               hasPreview={!!previewPdf} onPrint={printPreview}
                                hasSelectedInstruments={selectedInstrumentIds.size > 0} onBack={() => {
                     void navigate({to: '/projects/$projectId', params: {projectId: project.id}, state: {project}})
                 }}/>
