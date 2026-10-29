@@ -1,3 +1,4 @@
+import {useAuth} from '../../hooks/auth/useAuth'
 import {ButtonIcon} from '../../components/buttons/ButtonIcon'
 import {useEffect, useState} from 'react'
 import {
@@ -11,6 +12,7 @@ import {FloatButton} from '../../components/buttons/FloatButton'
 import ProjectCard from '../../components/projects/ProjectCard'
 
 function ProjectsPage() {
+    const {userName} = useAuth()
     const [projects, setProjects] = useState<Project[]>([])
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -35,6 +37,10 @@ function ProjectsPage() {
         let active = true
 
         async function load() {
+            setProjects([])
+            setError(null)
+            setDeleteError(null)
+            setIsLoading(true)
             try {
                 const loaded = await projectManager.loadProjects()
                 if (active) {
@@ -51,7 +57,7 @@ function ProjectsPage() {
         return () => {
             active = false
         }
-    }, [attempt])
+    }, [attempt, userName])
 
     function retry() {
         setError(null)

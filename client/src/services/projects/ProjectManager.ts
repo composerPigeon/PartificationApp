@@ -2,7 +2,7 @@ import { Project, ScorePage} from '../../domain';
 import StorageType from "./StorageType.ts";
 import type {StorageService} from "./StorageService.ts";
 import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
-import {browserStorage} from "../dataAccess";
+import {browserStorage} from '../dataAccess';
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/import/ConvertPdfPagesService.ts";
 import type {ConvertedPdfPage} from '../pdf/import/ConvertPdfPagesService.ts';
@@ -18,7 +18,7 @@ export interface StaffImage {
 }
 
 export interface IProjectManager {
-    useBrowserStorage(browserStorage: StorageService): void;
+    useBrowserStorage(): void;
     useLocalStorage(fileSystemStorage: StorageService): void;
     getCurrentStorageType(): StorageType;
 

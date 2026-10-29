@@ -3,6 +3,7 @@ import {alpha, AppBar, Box, Button, IconButton, Toolbar, Typography} from '@mui/
 import {Link} from '@tanstack/react-router';
 import type {ReactNode} from 'react';
 import {AppIcon} from './AppIcon';
+import {useAuth} from '../hooks/auth/useAuth';
 
 interface NavBarProps {
     title: string;
@@ -10,6 +11,7 @@ interface NavBarProps {
 }
 
 export default function NavBar({title, navigation}: NavBarProps) {
+    const {isAuthenticated} = useAuth();
     return (
         <AppBar position="static" color="inherit" elevation={1}
                 sx={theme => ({
@@ -58,10 +60,10 @@ export default function NavBar({title, navigation}: NavBarProps) {
                     </Typography>
                     {navigation}
                 </Box>
-                <Button component={Link} to="/login" variant="outlined" color="secondary"
+                {!isAuthenticated && <Button component={Link} to="/login" variant="outlined" color="secondary"
                         sx={{display: {xs: 'none', sm: 'inline-flex'}, justifySelf: 'end', gridColumn: 3, gridRow: 1}}>
                     Login
-                </Button>
+                </Button>}
             </Toolbar>
         </AppBar>
     );

@@ -1,8 +1,10 @@
+import {useAuth} from './auth/useAuth'
 import {useEffect, useRef, useState} from 'react'
 import {projectManager} from '../services'
 import type {Project, ScorePage} from '../domain'
 
 export function useProjectDetail(project: Project) {
+    const {userName} = useAuth()
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [attempt, setAttempt] = useState(0)
@@ -37,6 +39,11 @@ export function useProjectDetail(project: Project) {
         let active = true
 
         async function load() {
+            setPages([])
+            setPageIndex(0)
+            setError(null)
+            setSaveError(null)
+            setLoading(true)
             try {
                 const loadedPages = await projectManager.loadPages(project)
                 if (active) setPages(loadedPages);
@@ -51,7 +58,7 @@ export function useProjectDetail(project: Project) {
         return () => {
             active = false
         }
-    }, [project, attempt])
+    }, [project, attempt, userName])
 
     function retry() {
         setLoading(true)

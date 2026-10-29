@@ -4,4 +4,4 @@ import {FileSystemStorageService} from "../fileSystem/FileSystemStorageService.t
 
 export const browserStorage: StorageService = new FileSystemStorageService(
     await getRootDirectoryOfOriginPrivateFileSystem()
-)
+);

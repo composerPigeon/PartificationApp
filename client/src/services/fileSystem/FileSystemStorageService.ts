@@ -1,3 +1,4 @@
+import {authService} from '../index';
 import type {StorageService} from "../projects/StorageService.ts";
 import {Project} from "../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
@@ -8,17 +9,22 @@ import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
 import type {StoredScorePage} from '../projects/StoredScorePage.ts';
 import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
 
-type WritableDirectory = FileSystemDirectoryHandle & {
-    queryPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
-    requestPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
-    values(): AsyncIterableIterator<FileSystemHandle>;
-};
-
 export class FileSystemStorageService implements StorageService {
     private readonly rootDir: FileSystemDirectoryHandle;
 
     constructor(rootDir: FileSystemDirectoryHandle) {
         this.rootDir = rootDir;
+    }
+
+    private async getUserDirectory(): Promise<FileSystemDirectoryHandle> {
+        const userName = authService.userName;
+        if (!authService.isAuthenticated || !userName.trim()) throw new Error('Sign in to access your projects.');
+        return this.rootDir.getDirectoryHandle(`user-${encodeURIComponent(userName)}`, {create: true});
+    }
+
+    private async getProjectDirectory(projectId: string, create: boolean = false): Promise<FileSystemDirectoryHandle> {
+        const userDir = await this.getUserDirectory();
+        return userDir.getDirectoryHandle(projectId, {create});
     }
 
     private async writeFileAsBlob(directory: FileSystemDirectoryHandle, fileName: string, blob: Blob): Promise<void> {
@@ -70,11 +76,11 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async createProjectDir(projectId: string): Promise<void> {
-        await this.rootDir.getDirectoryHandle(projectId, {create: true});
+        await this.getProjectDirectory(projectId, true);
     }
 
     async saveProject(project: Project): Promise<void> {
-        const projectDir = await this.rootDir.getDirectoryHandle(project.id);
+        const projectDir = await this.getProjectDirectory(project.id);
 
         try {
             await this.writeJsonFile(
@@ -88,7 +94,7 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async saveMusicorpus(projectId: string, musicorpus: MusicorpusMetadata) {
-        const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+        const projectDir = await this.getProjectDirectory(projectId);
 
         try {
             await this.writeJsonFile(
@@ -102,7 +108,7 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async savePage(page: StoredScorePage, create: boolean = false): Promise<void> {
-        let projectDir = await this.rootDir.getDirectoryHandle(page.projectId);
+        let projectDir = await this.getProjectDirectory(page.projectId);
         let pageDirName = FileSystemEntryNames.getPageDirName(page.projectId, page.number);
         let pageDir = await projectDir.getDirectoryHandle(pageDirName, {create});
         if (create) {
@@ -113,7 +119,7 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<StoredStaffImage>): Promise<void> {
-        const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+        const projectDir = await this.getProjectDirectory(projectId);
         const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
         const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory, {create: true});
         const savedOrders = new Set<string>();
@@ -155,10 +161,10 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async loadProjects(): Promise<Project[]> {
-        const root = this.rootDir as WritableDirectory;
+        const root = await this.getUserDirectory();
         const projects: Project[] = [];
 
-        for await (const [name, entry] of this.rootDir) {
+        for await (const [name, entry] of root) {
             if (entry.kind !== 'directory')
                 continue;
             const projectDir = await root.getDirectoryHandle(name);
@@ -205,7 +211,7 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async loadPages(projectId: string): Promise<StoredScorePage[]> {
-        let projectDir = await this.rootDir.getDirectoryHandle(projectId);
+        let projectDir = await this.getProjectDirectory(projectId);
         const pages: StoredScorePage[] = [];
 
         for await (const [name, entry] of projectDir) {
@@ -227,7 +233,7 @@ export class FileSystemStorageService implements StorageService {
 
     async loadStaffImage(projectId: string, pageNumber: number, order: number): Promise<Blob> {
         try {
-            const projectDir = await this.rootDir.getDirectoryHandle(projectId);
+            const projectDir = await this.getProjectDirectory(projectId);
             const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
             const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory);
             const staffDir = await stavesDir.getDirectoryHandle(String(order));
@@ -238,6 +244,7 @@ export class FileSystemStorageService implements StorageService {
     }
 
     async deleteProject(projectId: string): Promise<void> {
-        await this.rootDir.removeEntry(projectId, {recursive: true});
+        const userDir = await this.getUserDirectory();
+        await userDir.removeEntry(projectId, {recursive: true});
     }
 }

@@ -1,6 +1,7 @@
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
 import {serverProxy} from "../../services";
+import {useAuth} from './useAuth';
 import type {PropertyState} from "../states/PropertyState.ts";
 import type {FormBaseState} from "../states/FormBaseState.ts";
 
@@ -13,6 +14,7 @@ export interface LoginState extends FormBaseState {
 }
 
 export function useLogIn(): LoginState {
+    const {authenticate} = useAuth();
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -33,6 +35,7 @@ export function useLogIn(): LoginState {
                 return
             }
 
+            authenticate(email)
             await navigate({to: '/projects'})
         } catch (error) {
             setError(
