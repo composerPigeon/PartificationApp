@@ -2,7 +2,12 @@ from .respository_base import RepositoryBase
 from domain import User
 
 class UserRepository(RepositoryBase):
-    def get_by_id(self, user_id: int) -> User | None:
+    def get_by_user_name(self, user_name: str) -> User | None:
+        return self.session.execute(
+            self.db.select(User).where(User.user_name == user_name)
+        ).scalar_one_or_none()
+
+    def get_by_id(self, user_id: str) -> User | None:
         db_user = self.session.execute(
             self.db.select(User).where(User.id == user_id)
         ).scalar_one_or_none()

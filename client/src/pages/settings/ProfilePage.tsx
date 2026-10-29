@@ -114,10 +114,10 @@ function ProfilePage() {
                             <Stack spacing={2.5} divider={<Divider flexItem/>}>
                                 <Box>
                                     <Typography variant="caption" color="text.secondary">
-                                        Name
+                                        Username
                                     </Typography>
                                     <Typography variant="h6">
-                                        {profile.firstName} {profile.lastName}
+                                        {profile.userName}
                                     </Typography>
                                 </Box>
                                 <Box>

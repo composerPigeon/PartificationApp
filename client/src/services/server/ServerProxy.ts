@@ -1,13 +1,13 @@
-import {OperationResultData, ProfileData, isRecord} from "./responses";
+import {OperationResultData, ProfileData, LoginData, isRecord} from "./responses";
 import {LoginBody, SignupBody, RequestBodyBase} from "./requests";
 import {deserialize} from "ts-jackson";
 
 export interface IServerProxy {
     getFullAddress(relativeUrl: string): string
 
-    executeLogin(email: string, password: string): Promise<OperationResultData>
+    executeLogin(userName: string, password: string): Promise<LoginData>
 
-    executeSignup(email: string, password: string, firstName: string, lastName: string): Promise<OperationResultData>
+    executeSignup(userName: string, email: string, password: string): Promise<OperationResultData>
 
     getProfile(): Promise<ProfileData>
 }
@@ -107,20 +107,20 @@ export class ServerProxy implements IServerProxy {
         }
     }
 
-    async executeLogin(email: string, password: string): Promise<OperationResultData> {
+    async executeLogin(userName: string, password: string): Promise<LoginData> {
         const response = await this.executePost(
             '/auth/login',
-            new LoginBody(email, password),
+            new LoginBody(userName, password),
         )
 
         let jsonResponse = await this.parseResponse(response)
-        return this.parseResult(jsonResponse)
+        return this.parseData(jsonResponse, data => deserialize(data, LoginData));
     }
 
-    async executeSignup(email: string, password: string, firstName: string, lastName: string): Promise<OperationResultData> {
+    async executeSignup(userName: string, email: string, password: string): Promise<OperationResultData> {
         const response = await this.executePost(
             '/auth/signup',
-            new SignupBody(email, password, firstName, lastName),
+            new SignupBody(userName, email, password),
         )
 
         let jsonResponse = await this.parseResponse(response)

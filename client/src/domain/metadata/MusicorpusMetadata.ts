@@ -48,18 +48,18 @@ export class MusicorpusMetadata {
         this.authorEmails = authorEmails;
     }
 
-    static createNew(projectName: string): MusicorpusMetadata {
+    static createNew(userId: string, projectName: string): MusicorpusMetadata {
         return new MusicorpusMetadata(
             "1.0",
             "partification-app",
             "partification-app",
-            null, //TODO: after app publication add url
-            projectName, //TODO: generate globally unique identifier from project & user name
+            null, //TODO: after app publication add url, Id like that to be partification.app
+            `${userId}.${projectName}`,
             projectName,
             null,
             "1.0",
             "Now_xD", //TODO: set to current date time + with TZ info.
-            [] //TODO: add user hash email - to identify datasets by user
+            [`${userId}@partification.app`]
         )
     }
 }

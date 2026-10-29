@@ -46,9 +46,9 @@ class CsrfTests(unittest.TestCase):
         self.assertNotIn("GET", rule.methods)
 
     def test_signup_login_and_logout_with_valid_tokens(self):
-        credentials = {"email": "csrf@example.com", "password": "Test-password-123!"}
+        credentials = {"user_name": "csrf.user", "password": "Test-password-123!"}
         for path, body in (
-            ("/auth/signup", {**credentials, "first_name": "Test", "last_name": "User"}),
+            ("/auth/signup", {**credentials, "email": "csrf@example.com"}),
             ("/auth/login", credentials),
             ("/auth/logout", {}),
         ):

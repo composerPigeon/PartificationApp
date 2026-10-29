@@ -17,9 +17,10 @@ export class FileSystemStorageService implements StorageService {
     }
 
     private async getUserDirectory(): Promise<FileSystemDirectoryHandle> {
-        const userName = authService.userName;
-        if (!authService.isAuthenticated || !userName.trim()) throw new Error('Sign in to access your projects.');
-        return this.rootDir.getDirectoryHandle(`user-${encodeURIComponent(userName)}`, {create: true});
+        const account = authService.currentAccount;
+        if (!account?.isAuthenticated || !account.userId.trim()) throw new Error('Sign in to access your projects.');
+        const userId = account.userId;
+        return this.rootDir.getDirectoryHandle(`user-${encodeURIComponent(userId)}`, {create: true});
     }
 
     private async getProjectDirectory(projectId: string, create: boolean = false): Promise<FileSystemDirectoryHandle> {

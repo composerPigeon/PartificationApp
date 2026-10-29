@@ -19,8 +19,8 @@ export class FileSystemEntryNames {
     static readonly subdivisionsMetadataFile: string = 'subdivisions.image.json';
     static readonly projectMetadataFile = 'partification-app-project.json';
 
-    static getProjectId(projectName: string): string {
-        return `partification-app.${projectName.toLowerCase()}`
+    static getProjectId(userId: string, projectName: string): string {
+        return `partification-app.${userId}.${projectName.toLowerCase()}`
     }
 
     static getPageDirName(projectId: string, pageNumber: number): string {

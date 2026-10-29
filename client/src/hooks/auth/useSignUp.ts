@@ -6,8 +6,7 @@ import {useState, type SubmitEvent} from "react";
 
 export function useSignUp(): SignUpState {
     const navigate = useNavigate()
-    const [givenName, setGivenName] = useState('')
-    const [familyName, setFamilyName] = useState('')
+    const [userName, setUserName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -32,10 +31,9 @@ export function useSignUp(): SignUpState {
 
         try {
             const result = await serverProxy.executeSignup(
+                userName.trim().toLowerCase(),
                 email.trim(),
                 password,
-                givenName.trim(),
-                familyName.trim(),
             )
 
             if (!result.ok) {
@@ -56,16 +54,14 @@ export function useSignUp(): SignUpState {
     }
 
     const isIncomplete = Boolean(
-        !givenName.trim() ||
-        !familyName.trim() ||
+        !userName.trim() ||
         !email.trim() ||
         !password ||
         !confirmPassword,
     )
 
     return {
-        givenName: {value: givenName, set: setGivenName},
-        familyName: {value: familyName, set: setFamilyName},
+        userName: {value: userName, set: setUserName},
         email: {value: email, set: setEmail},
         password: {value: password, set: setPassword},
         confirmPassword: {value: confirmPassword, set: setConfirmPassword},

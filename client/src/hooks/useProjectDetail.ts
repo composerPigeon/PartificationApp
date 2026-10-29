@@ -4,7 +4,8 @@ import {projectManager} from '../services'
 import type {Project, ScorePage} from '../domain'
 
 export function useProjectDetail(project: Project) {
-    const {userName} = useAuth()
+    const {currentAccount} = useAuth()
+    const userId = currentAccount?.userId
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [attempt, setAttempt] = useState(0)
@@ -58,7 +59,7 @@ export function useProjectDetail(project: Project) {
         return () => {
             active = false
         }
-    }, [project, attempt, userName])
+    }, [project, attempt, userId])
 
     function retry() {
         setLoading(true)

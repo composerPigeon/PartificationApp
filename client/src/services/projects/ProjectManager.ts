@@ -3,6 +3,7 @@ import StorageType from "./StorageType.ts";
 import type {StorageService} from "./StorageService.ts";
 import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
 import {browserStorage} from '../dataAccess';
+import {authService} from '../index';
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/import/ConvertPdfPagesService.ts";
 import type {ConvertedPdfPage} from '../pdf/import/ConvertPdfPagesService.ts';
@@ -86,10 +87,13 @@ export class ProjectManager implements IProjectManager {
     }
 
     async createProject(projectName: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project> {
-        let projectId = FileSystemEntryNames.getProjectId(projectName);
+        const account = authService.currentAccount;
+        if (!account?.isAuthenticated || !account.userId.trim()) throw new Error('Sign in to create a project.');
+        const userId = account.userId;
+        let projectId = FileSystemEntryNames.getProjectId(userId, projectName);
         await this.storage.createProjectDir(projectId);
 
-        await this.storage.saveMusicorpus(projectId, MusicorpusMetadata.createNew(projectName))
+        await this.storage.saveMusicorpus(projectId, MusicorpusMetadata.createNew(userId, projectName))
 
         let pageCount = await this.createProjectPages(
             projectId,

@@ -4,7 +4,7 @@ import {
     Link as MuiLink,
     Typography,
 } from '@mui/material'
-import EmailField from "../../components/formComponents/EmailField.tsx";
+import UserNameField from "../../components/formComponents/UserNameField.tsx";
 import Form from "../../components/formComponents/Form.tsx";
 import PasswordField from "../../components/formComponents/PasswordField.tsx";
 import FormPage from "../../components/formComponents/FormPage.tsx";
@@ -26,7 +26,7 @@ function LogInPage() {
 
             <Form submitButtonText="Log in" isBusy={state.isSubmitting.value} isFormIncomplete={state.isIncomplete}
                   handleSubmit={state.handleLogin}>
-                <EmailField setValue={state.email.set} value={state.email.value}/>
+                <UserNameField setValue={state.userName.set} value={state.userName.value}/>
                 <PasswordField passwordType={PasswordType.Normal} setValue={state.password.set}
                                value={state.password.value}/>
             </Form>

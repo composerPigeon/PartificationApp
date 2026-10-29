@@ -31,17 +31,19 @@ def signup() -> Response:
         if users.exist(signup_req.email):
             return ResponseFactory.bad_request("Email already exists.")
 
+        if users.get_by_user_name(signup_req.user_name) is not None:
+            return ResponseFactory.bad_request("Username already exists.")
+
         new_user = User(
             email=signup_req.email,
-            first_name=signup_req.first_name,
-            last_name=signup_req.last_name,
+            user_name=signup_req.user_name,
             password_hash=generate_password_hash(signup_req.password),
         )
 
         users.add_user(new_user)
         users.commit_session()
         return ResponseFactory.ok()
-    except ValidationError | ValueError:
+    except (ValidationError, ValueError):
         current_app.logger.exception("Error parsing request.")
         return ResponseFactory.bad_request("Invalid json object.")
     except IntegrityError:
@@ -56,18 +58,18 @@ def login() -> Response:
     users  = UserRepository()
     try:
         login_req = LoginRequest.from_flask(request)
-        user = users.get_by_email(login_req.email)
+        user = users.get_by_user_name(login_req.user_name)
 
         if user is None or not check_password_hash(
             user.password_hash, login_req.password
         ):
-            return ResponseFactory.bad_request("Invalid email or password.")
+            return ResponseFactory.bad_request("Invalid username or password.")
 
         #TODO: after implementing more secure authorisation can be changed remember=True
         login_user(user, remember=False)
         current_app.logger.info(f"User(id:{user.id}) logged in.")
-        return ResponseFactory.ok()
-    except ValidationError | ValueError:
+        return ResponseFactory.login(user)
+    except (ValidationError, ValueError):
         current_app.logger.exception("Error parsing request.")
         return ResponseFactory.bad_request("Invalid json object")
 

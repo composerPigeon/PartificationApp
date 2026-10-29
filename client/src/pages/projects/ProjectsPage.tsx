@@ -12,7 +12,8 @@ import {FloatButton} from '../../components/buttons/FloatButton'
 import ProjectCard from '../../components/projects/ProjectCard'
 
 function ProjectsPage() {
-    const {userName} = useAuth()
+    const {currentAccount} = useAuth()
+    const userId = currentAccount?.userId
     const [projects, setProjects] = useState<Project[]>([])
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -57,7 +58,7 @@ function ProjectsPage() {
         return () => {
             active = false
         }
-    }, [attempt, userName])
+    }, [attempt, userId])
 
     function retry() {
         setError(null)

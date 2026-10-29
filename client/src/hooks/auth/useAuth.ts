@@ -1,10 +1,11 @@
 import {createContext, useContext} from 'react';
+import type {Account} from '../../domain/Account';
 
 interface AuthState {
-    isAuthenticated: boolean;
-    userName: string;
-    authenticate(userName: string): void;
-    revoke(): void;
+    currentAccount: Account | null;
+    addAccount(userId: string, userName: string): void;
+    authenticate(userId: string): void;
+    revoke(userId: string): void;
 }
 
 export const AuthContext = createContext<AuthState | undefined>(undefined);

@@ -27,7 +27,7 @@ class RateLimitTests(unittest.TestCase):
     def post(self, path, ip="127.0.0.1"):
         token = self.client.get("/auth/csrf").json["csrf_token"]
         return self.client.post(
-            path, json={"email": "missing@example.com", "password": "wrong"},
+            path, json={"user_name": "missing.user", "password": "wrong"},
             headers={"X-CSRFToken": token}, environ_overrides={"REMOTE_ADDR": ip},
         )
 
@@ -52,11 +52,15 @@ class RateLimitTests(unittest.TestCase):
 
     def test_authenticated_users_have_separate_limits_on_same_ip(self):
         with self.app.app_context():
+            users = []
             for index in (1, 2):
-                db.session.add(User(email=f"user{index}@example.com", first_name="Test",
-                                    last_name="User", password_hash="unused"))
+                user = User(email=f"user{index}@example.com", user_name=f"user{index}",
+                            password_hash="unused")
+                db.session.add(user)
+                users.append(user)
             db.session.commit()
-        for user_id in (1, 2):
+            user_ids = [user.id for user in users]
+        for user_id in user_ids:
             client = self.app.test_client()
             with client.session_transaction() as session:
                 session["_user_id"] = str(user_id)

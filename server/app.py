@@ -1,4 +1,5 @@
 from flask import Flask
+from uuid import UUID
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect, CSRFError
 
@@ -14,7 +15,11 @@ def create_login_manager(app: Flask) -> LoginManager:
 
     from domain import User
     @login.user_loader
-    def load_user(user_id: int) -> User | None:
+    def load_user(user_id: str) -> User | None:
+        try:
+            UUID(user_id)
+        except (ValueError, TypeError, AttributeError):
+            return None
         return db.session.execute(
             db.select(User).where(User.id == user_id)
         ).scalar_one_or_none()

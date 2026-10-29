@@ -4,15 +4,15 @@ import {RequestBodyBase} from "./RequestBodyBase.ts";
 @Serializable()
 export class LoginBody extends RequestBodyBase {
 
-    @JsonProperty('email')
-    email: string;
+    @JsonProperty('user_name')
+    userName: string;
 
     @JsonProperty('password')
     password: string;
 
-    constructor(email: string, password: string) {
+    constructor(userName: string, password: string) {
         super();
-        this.email = email
+        this.userName = userName
         this.password = password
     }
 }

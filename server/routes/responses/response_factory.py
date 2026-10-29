@@ -2,8 +2,13 @@ from flask import Response
 
 from . import OperationResultResponse, ProfileResponse
 from domain import User
+from .login_response import LoginResponse
 
 class ResponseFactory:
+    @staticmethod
+    def login(user: User) -> Response:
+        return LoginResponse(user).to_flask_response(200)
+
     @staticmethod
     def ok() -> Response:
         resp = OperationResultResponse(ok=True)

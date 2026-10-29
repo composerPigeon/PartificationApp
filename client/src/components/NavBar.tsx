@@ -11,7 +11,7 @@ interface NavBarProps {
 }
 
 export default function NavBar({title, navigation}: NavBarProps) {
-    const {isAuthenticated} = useAuth();
+    const {currentAccount} = useAuth();
     return (
         <AppBar position="static" color="inherit" elevation={1}
                 sx={theme => ({
@@ -60,7 +60,7 @@ export default function NavBar({title, navigation}: NavBarProps) {
                     </Typography>
                     {navigation}
                 </Box>
-                {!isAuthenticated && <Button component={Link} to="/login" variant="outlined" color="secondary"
+                {!currentAccount?.isAuthenticated && <Button component={Link} to="/login" variant="outlined" color="secondary"
                         sx={{display: {xs: 'none', sm: 'inline-flex'}, justifySelf: 'end', gridColumn: 3, gridRow: 1}}>
                     Login
                 </Button>}

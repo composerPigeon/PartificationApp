@@ -7,16 +7,16 @@ import type {FormBaseState} from "../states/FormBaseState.ts";
 
 
 export interface LoginState extends FormBaseState {
-    email: PropertyState<string>,
+    userName: PropertyState<string>,
     password: PropertyState<string>,
 
     handleLogin: (event: SubmitEvent<HTMLFormElement>) => Promise<void>,
 }
 
 export function useLogIn(): LoginState {
-    const {authenticate} = useAuth();
+    const {addAccount, authenticate} = useAuth();
     const navigate = useNavigate()
-    const [email, setEmail] = useState('')
+    const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,14 +28,15 @@ export function useLogIn(): LoginState {
         setIsSubmitting(true)
 
         try {
-            const result = await serverProxy.executeLogin(email, password)
+            const result = await serverProxy.executeLogin(userName.trim().toLowerCase(), password)
 
             if (!result.ok) {
                 setError(result.error ?? 'Unable to log in. Please try again.')
                 return
             }
 
-            authenticate(email)
+            addAccount(result.userId, result.userName)
+            authenticate(result.userId)
             await navigate({to: '/projects'})
         } catch (error) {
             setError(
@@ -49,7 +50,7 @@ export function useLogIn(): LoginState {
     }
 
     return {
-        email: {value: email, set: setEmail},
+        userName: {value: userName, set: setUserName},
         password: {value: password, set: setPassword},
         handleLogin,
         error: {value: error, set: setError},

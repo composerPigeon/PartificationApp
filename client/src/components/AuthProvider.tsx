@@ -3,23 +3,25 @@ import {AuthContext} from '../hooks/auth/useAuth';
 import {authService} from '../services';
 
 export function AuthProvider({children}: {children: ReactNode}) {
-    const [isAuthenticated, setIsAuthenticated] = useState(() => authService.isAuthenticated);
-    const [userName, setUserName] = useState(() => authService.userName);
+    const [{currentAccount}, setAuthState] = useState(() => ({currentAccount: authService.currentAccount}));
 
-    function authenticate(userName: string) {
-        authService.authenticate(userName);
-        setIsAuthenticated(authService.isAuthenticated);
-        setUserName(authService.userName);
+    function addAccount(userId: string, userName: string) {
+        authService.addAccount(userId, userName);
+        setAuthState({currentAccount: authService.currentAccount});
     }
 
-    function revoke() {
-        authService.revoke();
-        setIsAuthenticated(authService.isAuthenticated);
-        setUserName(authService.userName);
+    function authenticate(userId: string) {
+        authService.authenticate(userId);
+        setAuthState({currentAccount: authService.currentAccount});
+    }
+
+    function revoke(userId: string) {
+        authService.revoke(userId);
+        setAuthState({currentAccount: authService.currentAccount});
     }
 
     return (
-        <AuthContext.Provider value={{isAuthenticated, userName, authenticate, revoke}}>
+        <AuthContext.Provider value={{currentAccount, addAccount, authenticate, revoke}}>
             {children}
         </AuthContext.Provider>
     );

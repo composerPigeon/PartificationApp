@@ -4,15 +4,15 @@ from .login_request import LoginRequest
 
 
 class SignupRequest(LoginRequest):
-    first_name: str = Field(min_length=3, max_length=80, pattern=r"^[A-Za-z0-9_.-]+$")
-    last_name: str = Field(min_length=3, max_length=80, pattern=r"^[A-Za-z0-9_.-]+$")
+    email: str = Field(min_length=3, max_length=120)
 
-    @field_validator("first_name", mode="before")
+    @field_validator("email", mode="before")
     @classmethod
-    def strip_first_name(cls, value: Any) -> Any:
-        return value.strip() if isinstance(value, str) else value
-
-    @field_validator("last_name", mode="before")
-    @classmethod
-    def strip_last_name(cls, value: Any) -> Any:
-        return value.strip() if isinstance(value, str) else value
+    def normalize_email(cls, value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        value = value.strip()
+        local_part, separator, domain = value.rpartition("@")
+        if not separator or not local_part or "." not in domain:
+            raise ValueError("must be a valid email address")
+        return value.lower()
