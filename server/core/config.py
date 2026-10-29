@@ -14,6 +14,13 @@ class AppConfig(BaseSettings):
     POSTGRES_USER: str = "partification"
     POSTGRES_PASSWORD: str = ""
     SECRET_KEY: str
+    SESSION_COOKIE_SECURE: bool = True
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SAMESITE: str = "Lax"
+    SESSION_COOKIE_NAME: str = "__Host-session"
+    LOGIN_RATE_LIMIT: str = "5 per minute"
+    PROTECTED_RATE_LIMIT: str = "60 per minute"
+    RATELIMIT_STORAGE_URI: str = "memory://"
 
     @property
     def sqlalchemy_database_uri(self) -> URL:

@@ -12,6 +12,20 @@ cp server/.env.example server/.env
 If `server/.env` already exists, add the `POSTGRES_DB`, `POSTGRES_USER`, and
 `POSTGRES_PASSWORD` settings from the example instead of replacing it.
 
+For local HTTP development, set `SESSION_COOKIE_SECURE=false` and
+`SESSION_COOKIE_NAME=session` in `server/.env`. In production over HTTPS, set
+`SESSION_COOKIE_SECURE=true` and `SESSION_COOKIE_NAME=__Host-session`.
+Keep `SESSION_COOKIE_HTTPONLY=true` and `SESSION_COOKIE_SAMESITE=Lax` in both
+environments. Cookies are restricted to the current host and path `/`.
+
+Rate limits can be configured with `LOGIN_RATE_LIMIT` (default `5 per minute`,
+per IP) and `PROTECTED_RATE_LIMIT` (default `60 per minute`, per endpoint and
+authenticated user, or IP for anonymous requests). Excess requests return JSON
+with HTTP 429 and a `Retry-After` header. `RATELIMIT_STORAGE_URI` defaults to
+`memory://`, which keeps separate counters per worker and resets on restart.
+For shared production counters, configure a shared storage backend and install
+its Flask-Limiter dependencies, such as `Flask-Limiter[redis]` for Redis.
+
 Build and start the React client, Flask API, and PostgreSQL together:
 
 ```bash

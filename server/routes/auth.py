@@ -1,4 +1,5 @@
 from flask import Response, request, Blueprint, current_app
+from flask_wtf.csrf import generate_csrf
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -10,8 +11,15 @@ from domain import User
 from routes.requests import LoginRequest
 from routes.requests.signup_request import SignupRequest
 from routes.responses import ResponseFactory
+from rate_limits import limiter, protected_limit
 
 auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
+
+@auth_blueprint.get("/csrf")
+def csrf_token():
+    response = current_app.json.response({"csrf_token": generate_csrf()})
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 @auth_blueprint.post("/signup")
 def signup() -> Response:
@@ -43,6 +51,7 @@ def signup() -> Response:
 
 
 @auth_blueprint.post("/login")
+@limiter.limit(lambda: current_app.config["LOGIN_RATE_LIMIT"])
 def login() -> Response:
     users  = UserRepository()
     try:
@@ -62,7 +71,8 @@ def login() -> Response:
         current_app.logger.exception("Error parsing request.")
         return ResponseFactory.bad_request("Invalid json object")
 
-@auth_blueprint.get("/logout")
+@auth_blueprint.post("/logout")
+@protected_limit
 @login_required
 def logout() -> Response:
     logout_user()

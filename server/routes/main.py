@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from core import config
 from db.repositories import UserRepository
 from .responses import ResponseFactory
+from rate_limits import protected_limit
 
 main_blueprint = Blueprint("main", __name__, url_prefix="/")
 
@@ -11,8 +12,9 @@ main_blueprint = Blueprint("main", __name__, url_prefix="/")
 def serve_frontend():
     return send_from_directory(config.static_dir, "index.html")
 
-@login_required
 @main_blueprint.get("/profile")
+@protected_limit
+@login_required
 def get_profile():
     users = UserRepository()
     try:
