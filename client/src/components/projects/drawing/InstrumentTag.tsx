@@ -7,11 +7,20 @@ interface InstrumentTagProps {
     y: number
     height: number
     selected: boolean
+    onEdit(position: {top: number, left: number}): void
 }
 
-export function InstrumentTag({staff, scale, y, height, selected}: InstrumentTagProps) {
+export function InstrumentTag({staff, scale, y, height, selected, onEdit}: InstrumentTagProps) {
     return (
-        <Box sx={{
+        <Box role="button" tabIndex={0} aria-label={`Edit instrument ${staff.instrument.title}`}
+             onDoubleClick={event => onEdit({top: event.clientY, left: event.clientX})}
+             onKeyDown={event => {
+                 if (event.key !== 'Enter' && event.key !== ' ') return
+                 event.preventDefault()
+                 const bounds = event.currentTarget.getBoundingClientRect()
+                 onEdit({top: bounds.top, left: bounds.left})
+             }} sx={{
+            cursor: 'pointer',
             position: 'absolute',
             top: (y + height / 2) * scale,
             transform: 'translateY(-50%)',

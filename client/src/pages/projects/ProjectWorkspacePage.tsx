@@ -16,6 +16,11 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
     const navigate = useNavigate()
     const currentPage = model.pages[model.pageIndex]
     const [editingMode, setEditingMode] = useState<EditingMode>('select')
+    const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null)
+    const changeMode = (mode: EditingMode) => {
+        if (selectedStaffId !== null && mode !== 'select') return
+        setEditingMode(mode)
+    }
     const toolsDisabled = model.loading || !!model.error || !currentPage
     const blocker = useBlocker({
         shouldBlockFn: ({current, next}) => model.hasChanges && current.pathname !== next.pathname,
@@ -28,14 +33,15 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
         <ProjectPage title="Workspace" projectTitle={project.projectName ?? 'Project'} pagination={{
             pageIndex: model.pageIndex,
             pageCount: !model.loading && !model.error && currentPage ? model.pageCount : 0,
-            onPrevious: model.previous,
-            onNext: model.next,
+            onPrevious: () => { setSelectedStaffId(null); model.previous() },
+            onNext: () => { setSelectedStaffId(null); model.next() },
         }}>
             <UnsavedChangesDialog open={blocker.status === 'blocked'}
                                   onStay={() => blocker.reset?.()}
                                   onLeave={() => blocker.proceed?.()}/>
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
-                <ToolBar editingMode={editingMode} onModeChange={setEditingMode} disabled={toolsDisabled}
+                <ToolBar editingMode={editingMode} onModeChange={changeMode} disabled={toolsDisabled}
+                         modeLocked={selectedStaffId !== null}
                          hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}
                          onExport={() => {
                              void navigate({to: '/projects/$projectId/export', params: {projectId: project.id}, state: {project}})
@@ -64,7 +70,8 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
                                 <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
                                                   project={project} page={currentPage} editingMode={editingMode}
-                                                  onModeChange={setEditingMode}
+                                                  onModeChange={changeMode}
+                                                  selectedStaffId={selectedStaffId} onSelectStaff={setSelectedStaffId}
                                                   onPageChange={model.pageChanged}/>
                             </Box>
                         ) : null}

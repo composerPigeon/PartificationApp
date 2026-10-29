@@ -47,22 +47,41 @@ export class StavesCollection implements Iterable<Staff> {
         const node = new StaffNode(staff);
         this.insert(node);
         this.nodes.set(staff.id, node);
+        this.updateOrder(node);
     }
 
     delete(id: number): boolean {
         const node = this.nodes.get(id);
         if (!node) return false;
+        const next = node.next;
         this.unlink(node);
-        return this.nodes.delete(id);
+        this.nodes.delete(id);
+        node.staff.order = 0;
+        this.updateOrder(next);
+        return true;
     }
 
-    move(id: number, y: number): boolean {
-        const node = this.nodes.get(id);
+    move(staffId: number, y: number): boolean {
+        const node = this.nodes.get(staffId);
         if (!node) return false;
         if (!Number.isFinite(y)) throw new RangeError('Staff Y must be finite.');
+        const movingUp = y < node.staff.y;
+        const nextBeforeMove = node.next;
+
         this.unlink(node);
         node.staff.y = y;
         this.insert(node);
+
+        // No neighbors were crossed, so the order is unchanged.
+        if (node.next === nextBeforeMove) return true;
+
+        if (movingUp) {
+            // Renumber from the new position through the old position.
+            this.updateOrder(node, nextBeforeMove);
+        } else {
+            // Renumber from the old position through the new position.
+            this.updateOrder(nextBeforeMove, node.next);
+        }
         return true;
     }
 
@@ -89,26 +108,35 @@ export class StavesCollection implements Iterable<Staff> {
 
     [Symbol.iterator](): IterableIterator<Staff> { return this.values(); }
 
+    /** Renumber [start, end), leaving the rest of the collection untouched. */
+    private updateOrder(start: StaffNode | undefined, end?: StaffNode): void {
+        let order = (start?.prev?.staff.order ?? 0) + 1;
+        for (let node = start; node && node !== end; node = node.next) {
+            node.staff.order = order++;
+        }
+    }
+
     private insert(node: StaffNode): void {
         let next = this.head;
         while (next && (next.staff.y < node.staff.y
             || (next.staff.y === node.staff.y && next.staff.id < node.staff.id))) {
             next = next.next;
         }
-        node.prev = next ? next.prev : this.tail;
-        node.next = next;
-        if (node.prev) node.prev.next = node;
-        else this.head = node;
-        if (next) next.prev = node;
-        else this.tail = node;
+        const prev = next ? next.prev : this.tail;
+        this.connectNeighbors(prev, node);
+        this.connectNeighbors(node, next);
     }
 
     private unlink(node: StaffNode): void {
-        if (node.prev) node.prev.next = node.next;
-        else this.head = node.next;
-        if (node.next) node.next.prev = node.prev;
-        else this.tail = node.prev;
+        this.connectNeighbors(node.prev, node.next);
         node.prev = undefined;
         node.next = undefined;
+    }
+
+    private connectNeighbors(prev: StaffNode | undefined, next: StaffNode | undefined): void {
+        if (prev) prev.next = next;
+        else this.head = next;
+        if (next) next.prev = prev;
+        else this.tail = prev;
     }
 }

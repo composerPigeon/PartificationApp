@@ -62,7 +62,7 @@ export class ProjectManager implements IProjectManager {
             metadata: ScorePageMetadata.create(page),
             subdivisions: SubdivisionsMetadata.create(page),
         };
-        const bounds = Object.values(storedPage.subdivisions.staves).map(({bbox: [x, y, width, height]}) => ({x, y, width, height}));
+        const bounds = [...page.staves].map(staff => ({order: staff.order, ...staff.bounds}));
         await this.storage.savePage(storedPage, create);
         await this.storage.saveStaffImages(page.projectId, page.number, this.staffImageService.crop(storedPage.blob, bounds));
         page.markSaved(version);

@@ -18,10 +18,7 @@ export class StavesMetadata {
     [number: string]: StaffMetadata;
 
     public static create(staves: StavesCollection): StavesMetadata {
-        const metadata: StavesMetadata = {};
-        let number = 1;
-        for (const staff of staves) metadata[String(number++)] = new StaffMetadata([...staff.bbox]);
-        return metadata;
+        return Object.fromEntries([...staves].map(staff => [staff.order, new StaffMetadata([...staff.bbox])]));
     }
 }
 
@@ -54,13 +51,13 @@ export class SubdivisionsMetadata {
     public static create(page: ScorePage): SubdivisionsMetadata {
         const metadata = new SubdivisionsMetadata(StavesMetadata.create(page.staves));
 
-        //TODO: after grandstaff & systems implementation -> use the the y ordering of underlying staffs to do the numbering
         for (const grand of page.grandStaves.values()) {
-            metadata.grandStaves[`${grand.firstStaff.id}-${grand.secondStaff.id}`] = boundingBox([grand.firstStaff, grand.secondStaff]);
+            const members = [grand.firstStaff, grand.secondStaff].sort((a, b) => a.order - b.order);
+            metadata.grandStaves[`${members[0].order}-${members[1].order}`] = boundingBox(members);
         }
         for (const system of page.systems.values()) {
-            const members = [...system.staves.values()].sort((a, b) => a.id - b.id);
-            if (members.length) metadata.systems[`${members[0].id}-${members[members.length - 1].id}`] = boundingBox(members);
+            const members = [...system.staves.values()].sort((a, b) => a.order - b.order);
+            if (members.length) metadata.systems[`${members[0].order}-${members[members.length - 1].order}`] = boundingBox(members);
         }
         return metadata;
     }

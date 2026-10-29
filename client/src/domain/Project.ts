@@ -38,6 +38,14 @@ export class Project {
         return this._instruments.find(instrument => instrument.id === id);
     }
 
+    public getOrCreateInstrument(instrumentTitle: string, shortcut: string): Instrument {
+        const existing = this.getInstrument(instrumentTitle);
+        if (existing) return existing;
+        const instrument = new Instrument(instrumentTitle, shortcut);
+        this.addInstrument(instrument);
+        return instrument;
+    }
+
     public get instruments(): Instrument[] {
         return this._instruments;
     }

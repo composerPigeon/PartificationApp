@@ -27,11 +27,10 @@ export class ScorePageMetadata {
     }
 
     static create(page: ScorePage): ScorePageMetadata {
-        const metadata = new ScorePageMetadata(page.width, page.height);
+        const instruments = Object.fromEntries([...page.staves].map(staff => [staff.order, staff.instrument.id]));
+        const metadata = new ScorePageMetadata(page.width, page.height, instruments);
         metadata.leftDivider = {x: page.leftDivider.x};
         metadata.rightDivider = {x: page.rightDivider.x};
-        let order = 1;
-        for (const staff of page.staves) metadata.instruments[String(order++)] = staff.instrument.id;
         return metadata;
     }
 }

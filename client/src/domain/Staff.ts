@@ -13,6 +13,8 @@ export interface StaffBounds {
 @Serializable()
 export class Staff implements ScoreElement {
     id: number
+    /** One-based page order, maintained by StavesCollection; 0 when not in a collection. */
+    order: number = 0
 
     @JsonProperty()
     bbox: [number, number, number, number]

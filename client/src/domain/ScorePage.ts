@@ -122,6 +122,15 @@ export class ScorePage {
         return true;
     }
 
+    /** Pass the Instrument instance from the owning project. */
+    changeInstrumentForStaff(staffId: number, instrument: Instrument): boolean {
+        const staff = this.staves.get(staffId);
+        if (!staff) return false;
+        staff.instrument = instrument;
+        this.markChanged();
+        return true;
+    }
+
     getStaff(staffNumber: number): Staff | undefined {
         return this.staves.get(staffNumber);
     }

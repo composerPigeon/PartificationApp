@@ -11,7 +11,7 @@ function rangeMembers(key: string, staves: StavesCollection): Staff[] {
     if (!match) throw new Error(`Invalid subdivision range: ${key}.`);
     const first = Number(match[1]);
     const last = Number(match[2] ?? match[1]);
-    const members = [...staves].filter(staff => staff.id >= first && staff.id <= last).sort((a, b) => a.id - b.id);
+    const members = [...staves].filter(staff => staff.order >= first && staff.order <= last);
     if (!Number.isSafeInteger(first) || !Number.isSafeInteger(last) || last < first || members.length !== last - first + 1) {
         throw new Error(`Subdivision ${key} references missing staves.`);
     }

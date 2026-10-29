@@ -9,13 +9,14 @@ interface ToolBarProps {
     editingMode: EditingMode
     onModeChange(mode: EditingMode): void
     disabled?: boolean
+    modeLocked?: boolean
     hasChanges: boolean
     saving: boolean
     onSave(): void
     onExport(): void
 }
 
-export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges, saving, onSave, onExport}: ToolBarProps) {
+export function ToolBar({editingMode, onModeChange, disabled = false, modeLocked = false, hasChanges, saving, onSave, onExport}: ToolBarProps) {
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -36,10 +37,10 @@ export function ToolBar({editingMode, onModeChange, disabled = false, hasChanges
                         onSelect={() => onModeChange('select')} disabled={disabled}
                         icon={<ButtonIcon name="select"/>}/>
             <ToolButton label="Add staff" selected={editingMode === 'add-staff'}
-                        onSelect={() => onModeChange('add-staff')} disabled={disabled}
+                        onSelect={() => onModeChange('add-staff')} disabled={disabled || modeLocked}
                         icon={<ButtonIcon name="add-staff" viewBox="0 0 24 24" fill="none"/>}/>
             <ToolButton label="Edit staff" selected={editingMode === 'edit-staff'}
-                        onSelect={() => onModeChange('edit-staff')} disabled={disabled}
+                        onSelect={() => onModeChange('edit-staff')} disabled={disabled || modeLocked}
                         icon={<ButtonIcon name="edit-staff" viewBox="0 0 24 24"/>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
             <ToolActionButton label="Export" disabled={disabled || saving} onClick={onExport}

@@ -10,7 +10,8 @@ import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
 import {VerticalDividerLine} from './VerticalDividerLine.tsx'
 import {CreateStaffForm} from '../CreateStaffForm.tsx'
-import {Instrument} from '../../../domain/Instrument.ts'
+import {InstrumentForm} from '../InstrumentForm.tsx'
+import type {Instrument} from '../../../domain/Instrument.ts'
 import {InstrumentTag} from './InstrumentTag.tsx'
 import type {StaffDivider} from '../../../domain/StaffDivider.ts'
 import type {Node} from 'konva/lib/Node'
@@ -39,10 +40,12 @@ interface ScorePageWorkSpaceProps {
     page: ScorePage
     editingMode?: EditingMode
     onModeChange(mode: EditingMode): void
+    selectedStaffId: number | null
+    onSelectStaff(staffId: number | null): void
     onPageChange(): void
 }
 
-export function ScorePageWorkSpace({project, page, editingMode = 'select', onModeChange, onPageChange}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({project, page, editingMode = 'select', onModeChange, selectedStaffId, onSelectStaff, onPageChange}: ScorePageWorkSpaceProps) {
     const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const dragTargetRef = useRef<Node | null>(null)
@@ -50,11 +53,12 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
     const [image, setImage] = useState<HTMLImageElement | null>(null)
     const [error, setError] = useState(false)
     const [hoverCursor, setHoverCursor] = useState({mode: editingMode, value: 'default'})
-    const cursor = editingMode === 'add-staff' && !error ? 'crosshair'
+    const cursor = selectedStaffId !== null ? 'default' : editingMode === 'add-staff' && !error ? 'crosshair'
         : !error && hoverCursor.mode === editingMode ? hoverCursor.value : 'default'
-    const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null)
+    const editable = !error && selectedStaffId === null
     const [staves, setStaves] = useState(() => [...page.staves.values()])
     const [pendingStaff, setPendingStaff] = useState<{centerY: number, top: number, left: number} | null>(null)
+    const [editingInstrument, setEditingInstrument] = useState<{staffId: number, instrument: Instrument, position: {top: number, left: number}} | null>(null)
     const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number, height: number} | null>(null)
     const dragPreview = draggedStaff
     const dividers = [...new Set(staves.flatMap(staff => [staff.topDivider, staff.bottomDivider]))]
@@ -82,21 +86,30 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
 
     const handlePageClick = (event: KonvaEventObject<MouseEvent>) => {
         if (event.evt.button !== 0 || error) return
+        if (selectedStaffId !== null) {
+            if (event.target.hasName('staff-body')) {
+                const staffId = Number(event.target.id())
+                onSelectStaff(staffId === selectedStaffId ? null : staffId)
+            } else {
+                onSelectStaff(null)
+            }
+            return
+        }
         const mode = modeFor(event.target)
         onModeChange(mode)
         if (event.target.hasName('staff-body')) {
-            setSelectedStaffId(Number(event.target.id()))
+            onSelectStaff(Number(event.target.id()))
             return
         }
         if (mode !== 'add-staff') return
-        setSelectedStaffId(null)
+        onSelectStaff(null)
         const pointer = stageRef.current?.getRelativePointerPosition()
         if (!pointer) return
         setPendingStaff({centerY: pointer.y, top: event.evt.clientY, left: event.evt.clientX})
     }
 
     const updateInteraction = (target: Node | null, dragging = false) => {
-        if (error || pendingStaff) return
+        if (error || pendingStaff || editingInstrument || selectedStaffId !== null) return
         const mode = modeFor(target, dragging)
         onModeChange(mode)
         setHoverCursor({mode, value: cursorFor(target, dragging, mode)})
@@ -120,7 +133,6 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                    onMouseLeave={() => setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})}
                    onDragStart={event => {
                        dragTargetRef.current = event.target
-                       setSelectedStaffId(null)
                        updateInteraction(event.target, true)
                    }}
                    onDragEnd={() => {
@@ -136,10 +148,10 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                 <Layer name="page-drawings">
                     {staves.map(staff => (
                         <StaffRect key={staff.id} staff={staff}
-                                   selected={editingMode === 'select' && selectedStaffId === staff.id}
+                                   selected={selectedStaffId === staff.id}
                                    y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                    height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}
-                                   editable={!error}
+                                   editable={editable}
                                    onDrag={y => {
                                        setDraggedStaff({id: staff.id, y, height: staff.height})
                                    }}
@@ -156,7 +168,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                         return (
                             <StaffDividerLine key={index} divider={divider} scale={scale}
                                               y={preview ? preview.y + (isTop ? 0 : preview.height) : divider.y}
-                                              editable={!error}
+                                              editable={editable}
                                               onDrag={y => {
                                                   const bounds = resizeBounds(divider, y)
                                                   setDraggedStaff({id: divider.staff.id, ...bounds})
@@ -172,7 +184,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                         )
                     })}
                     <VerticalDividerLine divider={page.leftDivider} height={page.height} scale={scale}
-                                         editable={!error}
+                                         editable={editable}
                                          minX={0} maxX={page.rightDivider.x - 1}
                                          onDragEnd={n => {
                                              page.moveLeftDivider(n)
@@ -180,7 +192,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                                              onPageChange()
                                          }}/>
                     <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
-                                         editable={!error}
+                                         editable={editable}
                                          minX={page.leftDivider.x + 1} maxX={page.width}
                                          onDragEnd={n => {
                                              page.moveRightDivider(n)
@@ -192,8 +204,13 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                 </Box>
                 <Box component="aside" aria-label="Staff instruments" sx={{position: 'relative'}}>
                     {staves.map(staff => <InstrumentTag key={staff.id} staff={staff} scale={scale}
-                                                       selected={editingMode === 'select' && selectedStaffId === staff.id}
+                                                       selected={selectedStaffId === staff.id}
                                                        y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
+                                                       onEdit={position => {
+                                                           onSelectStaff(staff.id)
+                                                           onModeChange('select')
+                                                           setEditingInstrument({staffId: staff.id, instrument: staff.instrument, position})
+                                                       }}
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}
                 </Box>
             </Box>
@@ -203,14 +220,25 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
                                  page={page} centerY={pendingStaff.centerY}
                                  onCancel={() => setPendingStaff(null)}
                                  onCreate={(height, instrumentName, shortcut) => {
-                                     const instrument = project.getInstrument(instrumentName) ?? new Instrument(instrumentName, shortcut)
+                                     const instrument = project.getOrCreateInstrument(instrumentName, shortcut)
                                      page.createStaff(pendingStaff.centerY, height, instrument)
-                                     instrument.shortcut = shortcut
-                                     project.addInstrument(instrument)
                                      onPageChange()
                                      setStaves([...page.staves.values()])
                                      setPendingStaff(null)
                                  }}/>
+            )}
+            {editingInstrument && (
+                <InstrumentForm position={editingInstrument.position} instruments={project.instruments}
+                                instrument={editingInstrument.instrument}
+                                onCancel={() => setEditingInstrument(null)}
+                                onSubmit={(instrumentName, shortcut) => {
+                                    if (!page.getStaff(editingInstrument.staffId)) return
+                                    const instrument = project.getOrCreateInstrument(instrumentName, shortcut)
+                                    page.changeInstrumentForStaff(editingInstrument.staffId, instrument)
+                                    onPageChange()
+                                    setStaves([...page.staves.values()])
+                                    setEditingInstrument(null)
+                                }}/>
             )}
             {error && <Alert severity="error">Page {page.number} could not be displayed.</Alert>}
         </>

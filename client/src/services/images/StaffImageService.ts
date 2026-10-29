@@ -1,13 +1,18 @@
 import type {StaffBounds} from '../../domain/Staff.ts';
 import Konva from 'konva';
+import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
+
+export interface StaffImageRegion extends StaffBounds {
+    order: number;
+}
 
 export interface IStaffImageService {
-    crop(pageImage: Blob, bounds: Iterable<StaffBounds>): AsyncIterable<Blob>;
+    crop(pageImage: Blob, bounds: Iterable<StaffImageRegion>): AsyncIterable<StoredStaffImage>;
 }
 
 export class StaffImageService implements IStaffImageService {
     /** Decode the original once and yield PNG crops in the supplied staff order. */
-    async *crop(pageImage: Blob, bounds: Iterable<StaffBounds>): AsyncIterableIterator<Blob> {
+    async *crop(pageImage: Blob, bounds: Iterable<StaffImageRegion>): AsyncIterableIterator<StoredStaffImage> {
         const regions = [...bounds];
         if (!regions.length) return;
 
@@ -16,7 +21,7 @@ export class StaffImageService implements IStaffImageService {
         try {
             // Export this image node alone; editor layers and zoom are never involved.
             original = new Konva.Image({image, width: image.width, height: image.height, listening: false});
-            for (const {x, y, width, height} of regions) {
+            for (const {order, x, y, width, height} of regions) {
                 if (![x, y, width, height].every(Number.isFinite) || x < 0 || y < 0
                     || width <= 0 || height <= 0 || x + width > image.width || y + height > image.height) {
                     throw new RangeError('Staff crop must fit inside the original page image.');
@@ -29,7 +34,7 @@ export class StaffImageService implements IStaffImageService {
                     mimeType: 'image/png',
                 });
                 if (!blob) throw new Error('Unable to encode staff image.');
-                yield blob;
+                yield {order, blob};
             }
         } finally {
             original?.destroy();

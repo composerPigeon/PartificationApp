@@ -6,6 +6,7 @@ import {deserialize, serialize} from "ts-jackson";
 import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
 import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
 import type {StoredScorePage} from '../projects/StoredScorePage.ts';
+import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
 
 type WritableDirectory = FileSystemDirectoryHandle & {
     queryPermission(options: {mode: 'readwrite'}): Promise<PermissionState>;
@@ -111,18 +112,20 @@ export class FileSystemStorageService implements StorageService {
         await this.writeJsonFile(pageDir, FileSystemEntryNames.subdivisionsMetadataFile, page.subdivisions);
     }
 
-    async saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<Blob>): Promise<void> {
+    async saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<StoredStaffImage>): Promise<void> {
         const projectDir = await this.rootDir.getDirectoryHandle(projectId);
         const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
         const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory, {create: true});
-        let order = 0;
-        for await (const image of images) {
-            const staffDir = await stavesDir.getDirectoryHandle(String(++order), {create: true});
-            await this.writeFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile, image);
+        const savedOrders = new Set<string>();
+        for await (const {order, blob} of images) {
+            const name = String(order);
+            const staffDir = await stavesDir.getDirectoryHandle(name, {create: true});
+            await this.writeFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile, blob);
+            savedOrders.add(name);
         }
         // Remove stale crops only after all current images have been written successfully.
         for await (const [name, entry] of stavesDir) {
-            if (entry.kind === 'directory' && /^[1-9]\d*$/.test(name) && Number(name) > order) {
+            if (entry.kind === 'directory' && /^[1-9]\d*$/.test(name) && !savedOrders.has(name)) {
                 await stavesDir.removeEntry(name, {recursive: true});
             }
         }
