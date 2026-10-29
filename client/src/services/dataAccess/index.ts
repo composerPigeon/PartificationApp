@@ -1,6 +1,6 @@
-import type {StorageService} from "../projects/StorageService.ts";
-import {getRootDirectoryOfOriginPrivateFileSystem} from "../fileSystem/storageHelpers.ts";
-import {FileSystemStorageService} from "../fileSystem/FileSystemStorageService.ts";
+import type {StorageService} from "../storage/StorageService.ts";
+import {getRootDirectoryOfOriginPrivateFileSystem} from "../storage/fileSystem/storageHelpers.ts";
+import {FileSystemStorageService} from "../storage/fileSystem/FileSystemStorageService.ts";
 
 export const browserStorage: StorageService = new FileSystemStorageService(
     await getRootDirectoryOfOriginPrivateFileSystem()

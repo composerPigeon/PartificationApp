@@ -10,6 +10,11 @@ export function AuthProvider({children}: {children: ReactNode}) {
         setAuthState({currentAccount: authService.currentAccount});
     }
 
+    function setCurrent(userId: string) {
+        authService.setCurrent(userId);
+        setAuthState({currentAccount: authService.currentAccount});
+    }
+
     function authenticate(userId: string) {
         authService.authenticate(userId);
         setAuthState({currentAccount: authService.currentAccount});
@@ -21,7 +26,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
     }
 
     return (
-        <AuthContext.Provider value={{currentAccount, addAccount, authenticate, revoke}}>
+        <AuthContext.Provider value={{currentAccount, accounts: authService.accounts, addAccount, setCurrent, authenticate, revoke}}>
             {children}
         </AuthContext.Provider>
     );

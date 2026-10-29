@@ -1,16 +1,16 @@
-import {Link, useBlocker, useLocation, useNavigate, useParams} from '@tanstack/react-router'
+import {Link, useBlocker, useLoaderData, useNavigate, useParams} from '@tanstack/react-router'
 import {Alert, Box, Button, CircularProgress, Container, Stack} from '@mui/material'
 import {useState} from 'react'
 import {useProjectDetail} from '../../hooks/useProjectDetail.ts'
 import {ScorePageWorkSpace} from '../../components/projects/drawing/ScorePageWorkSpace.tsx'
 import {Project} from "../../domain";
-import NavPage from '../../components/NavPage';
 import {ProjectPage} from '../../components/projects/ProjectPage';
 import {ToolBar} from '../../components/projects/ToolBar';
 import type {EditingMode} from '../../components/projects/ToolBar';
 import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx'
 
 function ProjectDetail({project: snapshot}: {project: Project}) {
+    const {userId, projectName} = useParams({from: '/$userId/$projectName'})
     const [project] = useState(() => Project.fromSnapshot(snapshot))
     const model = useProjectDetail(project)
     const navigate = useNavigate()
@@ -44,7 +44,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                          modeLocked={selectedStaffId !== null}
                          hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}
                          onExport={() => {
-                             void navigate({to: '/projects/$projectId/export', params: {projectId: project.id}, state: {project}})
+                             void navigate({to: '/$userId/$projectName/export', params: {userId, projectName}, state: {project}})
                          }}/>
                 <Container maxWidth="lg" disableGutters>
                     <Stack spacing={3}>
@@ -83,18 +83,6 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
 }
 
 export default function ProjectWorkspacePage() {
-    const {projectId} = useParams({from: '/projects/$projectId'})
-    const project = useLocation({
-        select: location => location.state.project,
-    })
-
-    if (!project || project.id !== projectId) {
-        return (
-            <NavPage title="Workspace">
-                <Alert severity="error">Project data is unavailable.</Alert>
-            </NavPage>
-        );
-    }
-
-    return <ProjectDetail key={projectId} project={project} />
+    const {project} = useLoaderData({from: '/$userId/$projectName'})
+    return <ProjectDetail key={project.id} project={project} />
 }

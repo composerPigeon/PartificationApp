@@ -1,17 +1,16 @@
 import { Project, ScorePage} from '../../domain';
-import StorageType from "./StorageType.ts";
-import type {StorageService} from "./StorageService.ts";
-import {FileSystemEntryNames} from "../fileSystem/storageHelpers.ts";
+import StorageType from "../storage/StorageType.ts";
+import type {StorageService} from "../storage/StorageService.ts";
+import {FileSystemEntryNames} from "../storage/fileSystem/storageHelpers.ts";
 import {browserStorage} from '../dataAccess';
 import {authService} from '../index';
 import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/import/ConvertPdfPagesService.ts";
 import type {ConvertedPdfPage} from '../pdf/import/ConvertPdfPagesService.ts';
-import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
-import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
 import {SubdivisionsMapper} from './SubdivisionsMapper.ts';
 import type {Instrument} from '../../domain/Instrument.ts';
 import {StaffImageService, type IStaffImageService} from '../images/StaffImageService.ts';
+import {StoredScorePage} from "./StoredScorePage.ts";
 
 export interface StaffImage {
     blob: Blob;
@@ -56,13 +55,7 @@ export class ProjectManager implements IProjectManager {
 
     private async savePage(page: ScorePage, create: boolean = false): Promise<void> {
         const version = page.version;
-        const storedPage = {
-            projectId: page.projectId,
-            number: page.number,
-            blob: page.blob,
-            metadata: ScorePageMetadata.create(page),
-            subdivisions: SubdivisionsMetadata.create(page),
-        };
+        const storedPage = StoredScorePage.fromPage(page);
         const bounds = [...page.staves].map(staff => ({order: staff.order, ...staff.bounds}));
         await this.storage.savePage(storedPage, create);
         await this.storage.saveStaffImages(page.projectId, page.number, this.staffImageService.crop(storedPage.blob, bounds));
@@ -88,7 +81,7 @@ export class ProjectManager implements IProjectManager {
 
     async createProject(projectName: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project> {
         const account = authService.currentAccount;
-        if (!account?.isAuthenticated || !account.userId.trim()) throw new Error('Sign in to create a project.');
+        if (!account?.userId.trim()) throw new Error('Select an account to create a project.');
         const userId = account.userId;
         let projectId = FileSystemEntryNames.getProjectId(userId, projectName);
         await this.storage.createProjectDir(projectId);
@@ -148,9 +141,7 @@ export class ProjectManager implements IProjectManager {
         const storedPages = await this.storage.loadPages(project.id);
         const instrumentsById = new Map(project.instruments.map(instrument => [instrument.id, instrument]));
         return storedPages.map(stored => {
-            const page = new ScorePage(project.id, stored.number, stored.metadata.width, stored.metadata.height, stored.blob);
-            page.leftDivider.x = stored.metadata.leftDivider?.x ?? 0;
-            page.rightDivider.x = stored.metadata.rightDivider?.x ?? page.width;
+            const page = stored.asPage()
             const instruments: Record<string, Instrument> = {};
             for (const [order, instrumentId] of Object.entries(stored.metadata.instruments)) {
                 const instrument = instrumentsById.get(instrumentId);

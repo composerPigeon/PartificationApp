@@ -17,7 +17,7 @@ function LogInPage() {
 
 
     return (
-        <FormPage title="Log in">
+        <FormPage title="Log in" hideProfile>
             {state.error.value && (
                 <Alert severity="error" sx={{mb: 2}}>
                     {state.error.value}

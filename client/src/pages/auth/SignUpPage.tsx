@@ -16,7 +16,7 @@ function SignUpPage() {
     var state = useSignUp()
 
     return (
-        <FormPage title="Create new account">
+        <FormPage title="Create new account" hideProfile>
             {state.error.value && (
                 <Alert severity="error" sx={{mb: 2}}>
                     {state.error.value}

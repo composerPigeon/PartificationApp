@@ -1,13 +1,14 @@
-import {authService} from '../index';
-import type {StorageService} from "../projects/StorageService.ts";
-import {Project} from "../../domain";
+import {authService} from '../../index.ts';
+import type {StorageService} from "../StorageService.ts";
+import {Project} from "../../../domain";
 import {FileSystemEntryNames} from "./storageHelpers.ts";
-import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
+import type {MusicorpusMetadata} from "../../../domain/metadata/MusicorpusMetadata.ts";
 import {deserialize, serialize} from "ts-jackson";
-import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
-import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
-import type {StoredScorePage} from '../projects/StoredScorePage.ts';
-import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
+import {SubdivisionsMetadata} from '../../../domain/metadata/SubdivisionsMetadata.ts';
+import {ScorePageMetadata} from '../../../domain/metadata/ScorePageMetadata.ts';
+import {StoredScorePage} from '../../projects/StoredScorePage.ts';
+import type {StoredStaffImage} from '../../projects/StoredStaffImage.ts';
+import {RootMetadata} from '../../../domain/metadata/RootMetadata.ts';
 
 export class FileSystemStorageService implements StorageService {
     private readonly rootDir: FileSystemDirectoryHandle;
@@ -18,7 +19,7 @@ export class FileSystemStorageService implements StorageService {
 
     private async getUserDirectory(): Promise<FileSystemDirectoryHandle> {
         const account = authService.currentAccount;
-        if (!account?.isAuthenticated || !account.userId.trim()) throw new Error('Sign in to access your projects.');
+        if (!account?.userId.trim()) throw new Error('Select an account to access your projects.');
         const userId = account.userId;
         return this.rootDir.getDirectoryHandle(`user-${encodeURIComponent(userId)}`, {create: true});
     }
@@ -63,7 +64,7 @@ export class FileSystemStorageService implements StorageService {
         }
     }
 
-    private async readJsonFileAs<TOut>(directory: FileSystemDirectoryHandle, fileName: string, serializableClass: new() => TOut): Promise<TOut> {
+    private async readJsonFileAs<TOut>(directory: FileSystemDirectoryHandle, fileName: string, serializableClass: new(...args: never[]) => TOut): Promise<TOut> {
         let result: TOut;
         try {
             let fileHandler = await directory.getFileHandle(fileName);
@@ -78,6 +79,14 @@ export class FileSystemStorageService implements StorageService {
 
     async createProjectDir(projectId: string): Promise<void> {
         await this.getProjectDirectory(projectId, true);
+    }
+
+    async saveRootMetadata(metadata: RootMetadata): Promise<void> {
+        await this.writeJsonFile(this.rootDir, FileSystemEntryNames.rootMetadataFile, metadata);
+    }
+
+    async loadRootMetadata(): Promise<RootMetadata> {
+        return this.readJsonFileAs(this.rootDir, FileSystemEntryNames.rootMetadataFile, RootMetadata);
     }
 
     async saveProject(project: Project): Promise<void> {
@@ -227,7 +236,7 @@ export class FileSystemStorageService implements StorageService {
             const blob = await this.readFileAsBlob(pageDir, FileSystemEntryNames.pageImageFile);
             const metadata = await this.readPageMetadata(pageDir);
             const subdivisions = await this.loadSubdivisions(pageDir);
-            pages.push({projectId, number: pageNumber, blob, metadata, subdivisions});
+            pages.push(StoredScorePage.fromDirectory(projectId, pageNumber, blob, metadata, subdivisions));
         }
         return pages.sort((a, b) => a.number - b.number);
     }

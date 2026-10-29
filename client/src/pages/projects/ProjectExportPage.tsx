@@ -1,7 +1,6 @@
-import {Link, useLocation, useNavigate, useParams} from '@tanstack/react-router'
-import {Alert, Box, Button, CircularProgress, Container, Stack, Typography} from '@mui/material'
+import {useLoaderData, useNavigate, useParams} from '@tanstack/react-router'
+import {Alert, Box, CircularProgress, Container, Stack, Typography} from '@mui/material'
 import {useEffect, useRef, useState} from 'react'
-import NavPage from '../../components/NavPage'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
 import {Project} from '../../domain/Project.ts'
@@ -10,6 +9,7 @@ import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
 
 function ProjectExport({project: snapshot}: {project: Project}) {
+    const {userId, projectName} = useParams({from: '/$userId/$projectName/export'})
     const [project] = useState(() => Project.fromSnapshot(snapshot))
     const [editingMode, setEditingMode] = useState<'select'>('select')
     const [selectedInstrumentIds, setSelectedInstrumentIds] = useState<Set<string>>(() => new Set())
@@ -67,7 +67,7 @@ function ProjectExport({project: snapshot}: {project: Project}) {
                                generating={generating} onPreview={createPreview}
                                hasPreview={!!previewPdf} onPrint={printPreview}
                                hasSelectedInstruments={selectedInstrumentIds.size > 0} onBack={() => {
-                    void navigate({to: '/projects/$projectId', params: {projectId: project.id}, state: {project}})
+                    void navigate({to: '/$userId/$projectName', params: {userId, projectName}, state: {project}})
                 }}/>
                 <InstrumentsBar instruments={project.instruments} selectedIds={selectedInstrumentIds} disabled={generating}
                                 onToggle={(id, selected) => {
@@ -108,18 +108,6 @@ function ProjectExport({project: snapshot}: {project: Project}) {
 }
 
 export default function ProjectExportPage() {
-    const {projectId} = useParams({from: '/projects/$projectId/export'})
-    const project = useLocation({select: location => location.state.project})
-
-    if (!project || project.id !== projectId) {
-        return (
-            <NavPage title="Export">
-                <Alert severity="error" action={<Button component={Link} to="/projects" color="inherit">Projects</Button>}>
-                    Project data is unavailable.
-                </Alert>
-            </NavPage>
-        )
-    }
-
-    return <ProjectExport key={projectId} project={project}/>
+    const {project} = useLoaderData({from: '/$userId/$projectName/export'})
+    return <ProjectExport key={project.id} project={project}/>
 }

@@ -2,6 +2,7 @@ import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Box, CircularProgress, IconButton, Paper, Typography} from '@mui/material';
 import {Link} from '@tanstack/react-router';
 import type {Project} from '../../domain/Project';
+import {useAuth} from '../../hooks/auth/useAuth';
 
 interface ProjectCardProps {
     project: Project;
@@ -10,9 +11,11 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({project, deleting, onDelete}: ProjectCardProps) {
+    const {currentAccount} = useAuth();
+    if (!currentAccount) return null;
     return (
         <Paper component="li" variant="outlined" sx={{display: 'flex', alignItems: 'center', pr: 2}}>
-            <Link to="/projects/$projectId" params={{projectId: project.id}} state={{project}}
+            <Link to="/$userId/$projectName" params={{userId: currentAccount.userId, projectName: project.projectName}} state={{project}}
                   style={{flex: 1, minWidth: 0, color: 'inherit', textDecoration: 'none'}}>
                 <Box sx={{
                     p: 3,

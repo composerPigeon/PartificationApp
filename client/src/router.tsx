@@ -1,4 +1,4 @@
-import {Outlet, createRootRoute, createRoute, createRouter} from '@tanstack/react-router'
+import {Outlet, createRootRoute, createRoute, createRouter, notFound} from '@tanstack/react-router'
 import HomePage from './pages/HomePage'
 import LogInPage from './pages/auth/LogInPage.tsx'
 import SignUpPage from './pages/auth/SignUpPage'
@@ -9,6 +9,15 @@ import ProjectWorkspacePage from './pages/projects/ProjectWorkspacePage.tsx'
 import ProjectExportPage from './pages/projects/ProjectExportPage.tsx'
 import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
 import type {Project} from "./domain";
+import {authService, projectManager} from './services';
+
+async function loadProject({userId, projectName}: {userId: string; projectName: string}) {
+    if (authService.currentAccount?.userId !== userId) throw notFound();
+    const projects = await projectManager.loadProjects();
+    const project = projects.find(project => project.projectName === projectName);
+    if (!project) throw notFound();
+    return {project};
+}
 
 const rootRoute = createRootRoute({
     component: Outlet,
@@ -58,13 +67,15 @@ const createProjectRoute = createRoute({
 
 const detailProjectRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/projects/$projectId',
+    path: '/$userId/$projectName',
+    loader: ({params}) => loadProject(params),
     component: ProjectWorkspacePage,
 })
 
 const exportRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/projects/$projectId/export',
+    path: '/$userId/$projectName/export',
+    loader: ({params}) => loadProject(params),
     component: ProjectExportPage,
 })
 
