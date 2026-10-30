@@ -1,7 +1,7 @@
 // @refresh reset
 import {useLayoutEffect, useRef, useState} from 'react'
-import {Alert, Box} from '@mui/material'
-import {Image as PageImage, Layer, Stage} from 'react-konva'
+import {Alert, Box, useTheme} from '@mui/material'
+import {Image as PageImage, Layer, Line, Stage} from 'react-konva'
 import type {KonvaEventObject} from 'konva/lib/Node'
 import type {Stage as KonvaStage} from 'konva/lib/Stage'
 import type {Project, ScorePage} from '../../../domain'
@@ -9,7 +9,6 @@ import type {EditingMode} from '../ToolBar.tsx'
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
 import {VerticalDividerLine} from './VerticalDividerLine.tsx'
-import {CreateStaffForm} from '../CreateStaffForm.tsx'
 import {InstrumentForm} from '../InstrumentForm.tsx'
 import type {Instrument} from '../../../domain/Instrument.ts'
 import {InstrumentTag} from './InstrumentTag.tsx'
@@ -48,6 +47,7 @@ interface ScorePageWorkSpaceProps {
 }
 
 export function ScorePageWorkSpace({project, page, pages, editingMode = 'select', onModeChange, selectedStaffId, onSelectStaff, onPageChange}: ScorePageWorkSpaceProps) {
+    const theme = useTheme()
     const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const dragTargetRef = useRef<Node | null>(null)
@@ -59,7 +59,8 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
         : !error && hoverCursor.mode === editingMode ? hoverCursor.value : 'default'
     const editable = !error && selectedStaffId === null
     const [staves, setStaves] = useState(() => [...page.staves.values()])
-    const [pendingStaff, setPendingStaff] = useState<{centerY: number, top: number, left: number} | null>(null)
+    const [pendingStaff, setPendingStaff] = useState<{startY: number, endY: number} | null>(null)
+    const [newStaff, setNewStaff] = useState<{centerY: number, height: number, position: {top: number, left: number}} | null>(null)
     const [editingInstrument, setEditingInstrument] = useState<{staffId: number, instrument: Instrument, position: {top: number, left: number}} | null>(null)
     const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number, height: number} | null>(null)
     const dragPreview = draggedStaff
@@ -103,15 +104,28 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
             onSelectStaff(Number(event.target.id()))
             return
         }
-        if (mode !== 'add-staff') return
-        onSelectStaff(null)
-        const pointer = stageRef.current?.getRelativePointerPosition()
-        if (!pointer) return
-        setPendingStaff({centerY: pointer.y, top: event.evt.clientY, left: event.evt.clientX})
+    }
+
+    const createStaff = (centerY: number, height: number, instrument: Instrument) => {
+        page.createStaff(centerY, height, instrument)
+        setStaves([...page.staves.values()])
+        onPageChange()
+    }
+
+    const finishStaff = (event: KonvaEventObject<MouseEvent>) => {
+        if (!pendingStaff) return
+        setPendingStaff(null)
+        const y = stageRef.current!.getRelativePointerPosition()!.y
+        const centerY = (pendingStaff.startY + y) / 2
+        const height = Math.abs(y - pendingStaff.startY)
+        if (!page.canPlaceStaff(centerY, height)) return
+        const instrument = recommendInstrument(project, pages, page, centerY)
+        if (instrument) createStaff(centerY, height, instrument)
+        else setNewStaff({centerY, height, position: {top: event.evt.clientY, left: event.evt.clientX}})
     }
 
     const updateInteraction = (target: Node | null, dragging = false) => {
-        if (error || pendingStaff || editingInstrument || selectedStaffId !== null) return
+        if (error || pendingStaff || newStaff || editingInstrument || selectedStaffId !== null) return
         const mode = modeFor(target, dragging)
         onModeChange(mode)
         setHoverCursor({mode, value: cursorFor(target, dragging, mode)})
@@ -129,10 +143,25 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
                     <Stage ref={stageRef} width={page.width * scale} height={page.height * scale}
                    scaleX={scale} scaleY={scale} onClick={handlePageClick}
                    role="region"
+                   onMouseDown={event => {
+                       if (event.evt.button !== 0 || !editable || modeFor(event.target) !== 'add-staff') return
+                       const pointer = stageRef.current!.getRelativePointerPosition()!
+                       onModeChange('add-staff')
+                       setPendingStaff({startY: pointer.y, endY: pointer.y})
+                   }}
+                   onMouseUp={finishStaff}
                    onMouseMove={event => {
+                       if (pendingStaff) {
+                           const pointer = stageRef.current!.getRelativePointerPosition()!
+                           setPendingStaff({...pendingStaff, endY: pointer.y})
+                           return
+                       }
                        updateInteraction(dragTargetRef.current ?? event.target, !!dragTargetRef.current)
                    }}
-                   onMouseLeave={() => setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})}
+                   onMouseLeave={() => {
+                       setPendingStaff(null)
+                       setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})
+                   }}
                    onDragStart={event => {
                        dragTargetRef.current = event.target
                        updateInteraction(event.target, true)
@@ -148,6 +177,10 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
                     {image && <PageImage image={image} width={page.width} height={page.height}/>}
                 </Layer>
                 <Layer name="page-drawings">
+                    {pendingStaff && [pendingStaff.startY, pendingStaff.endY].map((y, index) => (
+                        <Line key={index} points={[page.leftDivider.x, y, page.rightDivider.x, y]}
+                              stroke={theme.palette.secondary.dark} strokeWidth={3} listening={false}/>
+                    ))}
                     {staves.map(staff => (
                         <StaffRect key={staff.id} staff={staff}
                                    selected={selectedStaffId === staff.id}
@@ -216,19 +249,14 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}
                 </Box>
             </Box>
-            {pendingStaff && editingMode === 'add-staff' && (
-                <CreateStaffForm position={{top: pendingStaff.top, left: pendingStaff.left}}
-                                 instruments={project.instruments}
-                                 instrument={recommendInstrument(project, pages, page, pendingStaff.centerY)}
-                                 page={page} centerY={pendingStaff.centerY}
-                                 onCancel={() => setPendingStaff(null)}
-                                 onCreate={(height, instrumentName, shortcut) => {
-                                     const instrument = project.getOrCreateInstrument(instrumentName, shortcut)
-                                     page.createStaff(pendingStaff.centerY, height, instrument)
-                                     onPageChange()
-                                     setStaves([...page.staves.values()])
-                                     setPendingStaff(null)
-                                 }}/>
+            {newStaff && (
+                <InstrumentForm position={newStaff.position} instruments={project.instruments}
+                                title="Add Staff" submitLabel="Create"
+                                onCancel={() => setNewStaff(null)}
+                                onSubmit={(name, shortcut) => {
+                                    createStaff(newStaff.centerY, newStaff.height, project.getOrCreateInstrument(name, shortcut))
+                                    setNewStaff(null)
+                                }}/>
             )}
             {editingInstrument && (
                 <InstrumentForm position={editingInstrument.position} instruments={project.instruments}
