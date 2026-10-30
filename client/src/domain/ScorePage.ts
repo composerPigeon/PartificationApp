@@ -12,16 +12,13 @@ export class ScorePage {
     number: number;
     blob: Blob;
     isChanged: boolean = true;
-    private changeVersion: number = 0;
 
-    get version(): number { return this.changeVersion; }
-
-    markSaved(version: number = this.changeVersion): void {
-        if (version === this.changeVersion) this.isChanged = false;
+    markSaved(): void {
+        this.isChanged = false;
+        for (const staff of this.staves) staff.isChanged = false;
     }
 
     private markChanged(): void {
-        this.changeVersion++;
         this.isChanged = true;
     }
 
@@ -118,6 +115,7 @@ export class ScorePage {
         if (staff.y === y && staff.height === height) return true;
         this.staves.move(id, y);
         staff.height = height;
+        staff.isChanged = true;
         this.markChanged();
         return true;
     }
@@ -126,7 +124,9 @@ export class ScorePage {
     changeInstrumentForStaff(staffId: number, instrument: Instrument): boolean {
         const staff = this.staves.get(staffId);
         if (!staff) return false;
+        if (staff.instrument === instrument) return true;
         staff.instrument = instrument;
+        staff.isChanged = true;
         this.markChanged();
         return true;
     }

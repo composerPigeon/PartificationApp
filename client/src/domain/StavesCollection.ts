@@ -65,11 +65,13 @@ export class StavesCollection implements Iterable<Staff> {
         const node = this.nodes.get(staffId);
         if (!node) return false;
         if (!Number.isFinite(y)) throw new RangeError('Staff Y must be finite.');
+        if (node.staff.y === y) return true;
         const movingUp = y < node.staff.y;
         const nextBeforeMove = node.next;
 
         this.unlink(node);
         node.staff.y = y;
+        node.staff.isChanged = true;
         this.insert(node);
 
         // No neighbors were crossed, so the order is unchanged.
@@ -87,14 +89,18 @@ export class StavesCollection implements Iterable<Staff> {
 
     moveLeftDivider(n: number): void {
         for (const staff of this) {
+            if (staff.x === n) continue;
             staff.width = staff.x + staff.width - n;
             staff.x = n;
+            staff.isChanged = true;
         }
     }
 
     moveRightDivider(n: number): void {
         for (const staff of this) {
+            if (staff.width === n - staff.x) continue;
             staff.width = n - staff.x;
+            staff.isChanged = true;
         }
     }
 
@@ -112,7 +118,11 @@ export class StavesCollection implements Iterable<Staff> {
     private updateOrder(start: StaffNode | undefined, end?: StaffNode): void {
         let order = (start?.prev?.staff.order ?? 0) + 1;
         for (let node = start; node && node !== end; node = node.next) {
-            node.staff.order = order++;
+            if (node.staff.order !== order) {
+                node.staff.order = order;
+                node.staff.isChanged = true;
+            }
+            order++;
         }
     }
 

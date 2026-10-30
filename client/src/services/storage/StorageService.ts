@@ -12,7 +12,7 @@ export interface StorageService {
     saveMusicorpus(projectId: string, musicorpus: MusicorpusMetadata): Promise<void>;
     /** Saves metadata; pass true to also create the page folder and image. */
     savePage(page: StoredScorePage, create?: boolean): Promise<void>;
-    saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<StoredStaffImage>): Promise<void>;
+    saveStaffImage(projectId: string, pageNumber: number, image: StoredStaffImage): Promise<void>;
     saveRootMetadata(metadata: RootMetadata): Promise<void>;
 
     loadProjects(): Promise<Project[]>;

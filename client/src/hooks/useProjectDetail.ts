@@ -14,25 +14,29 @@ export function useProjectDetail(project: Project) {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState<string | null>(null)
     const savePending = useRef(false)
-    const hasChanges = pages.some(page => page.isChanged)
+    const hasUnsavedPages = () => pages.some(page => page.isChanged)
+    const hasChanges = saving || hasUnsavedPages()
 
     function pageChanged() {
         setPages(current => [...current])
+        void save()
     }
 
     async function save() {
-        if (savePending.current || loading || error || !hasChanges) return
+        if (savePending.current || loading || error || !hasUnsavedPages()) return
         savePending.current = true
         setSaving(true)
         setSaveError(null)
         try {
-            await projectManager.saveProject(project, pages)
+            while (hasUnsavedPages()) {
+                await projectManager.saveProject(project, pages)
+            }
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : 'Unable to save project.')
         } finally {
             savePending.current = false
             setSaving(false)
-            pageChanged()
+            setPages(current => [...current])
         }
     }
 

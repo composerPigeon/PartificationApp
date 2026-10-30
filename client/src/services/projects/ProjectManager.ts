@@ -54,18 +54,28 @@ export class ProjectManager implements IProjectManager {
     }
 
     private async savePage(page: ScorePage, create: boolean = false): Promise<void> {
-        const version = page.version;
         const storedPage = StoredScorePage.fromPage(page);
-        const bounds = [...page.staves].map(staff => ({order: staff.order, ...staff.bounds}));
-        await this.storage.savePage(storedPage, create);
-        await this.storage.saveStaffImages(page.projectId, page.number, this.staffImageService.crop(storedPage.blob, bounds));
-        page.markSaved(version);
+        const changedStaves = [...page.staves].filter(staff => create || staff.isChanged);
+        const bounds = changedStaves.map(staff => ({order: staff.order, ...staff.bounds}));
+        // New edits during these writes must stay dirty for the next save.
+        page.isChanged = false;
+        for (const staff of changedStaves) staff.isChanged = false;
+        try {
+            await this.storage.savePage(storedPage, create);
+            for await (const image of this.staffImageService.crop(storedPage.blob, bounds)) {
+                await this.storage.saveStaffImage(page.projectId, page.number, image);
+            }
+        } catch (error) {
+            page.isChanged = true;
+            for (const staff of changedStaves) staff.isChanged = true;
+            throw error;
+        }
     }
 
     private async createProjectPages(projectId: string, pages: AsyncIterable<ConvertedPdfPage>): Promise<number> {
         let pageNumber: number = 0
         for await (const converted of pages) {
-            let page = new ScorePage(
+            const page = new ScorePage(
                 projectId,
                 pageNumber + 1,
                 converted.width,
@@ -83,17 +93,17 @@ export class ProjectManager implements IProjectManager {
         const account = authService.currentAccount;
         if (!account?.userId.trim()) throw new Error('Select an account to create a project.');
         const userId = account.userId;
-        let projectId = FileSystemEntryNames.getProjectId(userId, projectName);
+        const projectId = FileSystemEntryNames.getProjectId(userId, projectName);
         await this.storage.createProjectDir(projectId);
 
         await this.storage.saveMusicorpus(projectId, MusicorpusMetadata.createNew(userId, projectName))
 
-        let pageCount = await this.createProjectPages(
+        const pageCount = await this.createProjectPages(
             projectId,
             await this.pagesConverter.convert(pdf, onProgress)
         );
 
-        let project = new Project(
+        const project = new Project(
             projectId,
             projectName,
             projectId,

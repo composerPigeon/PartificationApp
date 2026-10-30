@@ -13,6 +13,7 @@ export interface StaffBounds {
 @Serializable()
 export class Staff implements ScoreElement {
     id: number
+    isChanged: boolean = true
     /** One-based page order, maintained by StavesCollection; 0 when not in a collection. */
     order: number = 0
 

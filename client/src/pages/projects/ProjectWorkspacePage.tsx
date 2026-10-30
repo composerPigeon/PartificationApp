@@ -42,7 +42,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
                 <ToolBar editingMode={editingMode} onModeChange={changeMode} disabled={toolsDisabled}
                          modeLocked={selectedStaffId !== null}
-                         hasChanges={model.hasChanges} saving={model.saving} onSave={model.save}
+                         saving={model.saving}
                          onExport={() => {
                              void navigate({to: '/$userId/$projectName/export', params: {userId, projectName}, state: {project}})
                          }}/>

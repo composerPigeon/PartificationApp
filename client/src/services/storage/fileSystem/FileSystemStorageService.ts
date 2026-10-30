@@ -128,23 +128,20 @@ export class FileSystemStorageService implements StorageService {
         await this.writeJsonFile(pageDir, FileSystemEntryNames.subdivisionsMetadataFile, page.subdivisions);
     }
 
-    async saveStaffImages(projectId: string, pageNumber: number, images: AsyncIterable<StoredStaffImage>): Promise<void> {
+    private async getStavesDirectory(projectId: string, pageNumber: number): Promise<FileSystemDirectoryHandle> {
         const projectDir = await this.getProjectDirectory(projectId);
         const pageDir = await projectDir.getDirectoryHandle(FileSystemEntryNames.getPageDirName(projectId, pageNumber));
-        const stavesDir = await pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory, {create: true});
-        const savedOrders = new Set<string>();
-        for await (const {order, blob} of images) {
-            const name = String(order);
-            const staffDir = await stavesDir.getDirectoryHandle(name, {create: true});
-            await this.writeFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile, blob);
-            savedOrders.add(name);
-        }
-        // Remove stale crops only after all current images have been written successfully.
-        for await (const [name, entry] of stavesDir) {
-            if (entry.kind === 'directory' && /^[1-9]\d*$/.test(name) && !savedOrders.has(name)) {
-                await stavesDir.removeEntry(name, {recursive: true});
-            }
-        }
+        return pageDir.getDirectoryHandle(FileSystemEntryNames.stavesDirectory, {create: true});
+    }
+
+    private async writeStaffImage(stavesDir: FileSystemDirectoryHandle, {order, blob}: StoredStaffImage): Promise<void> {
+        const staffDir = await stavesDir.getDirectoryHandle(String(order), {create: true});
+        await this.writeFileAsBlob(staffDir, FileSystemEntryNames.pageImageFile, blob);
+    }
+
+    async saveStaffImage(projectId: string, pageNumber: number, image: StoredStaffImage): Promise<void> {
+        const stavesDir = await this.getStavesDirectory(projectId, pageNumber);
+        await this.writeStaffImage(stavesDir, image);
     }
 
     private async readPageMetadata(directory: FileSystemDirectoryHandle): Promise<ScorePageMetadata> {

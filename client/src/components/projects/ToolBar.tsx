@@ -10,13 +10,11 @@ interface ToolBarProps {
     onModeChange(mode: EditingMode): void
     disabled?: boolean
     modeLocked?: boolean
-    hasChanges: boolean
     saving: boolean
-    onSave(): void
     onExport(): void
 }
 
-export function ToolBar({editingMode, onModeChange, disabled = false, modeLocked = false, hasChanges, saving, onSave, onExport}: ToolBarProps) {
+export function ToolBar({editingMode, onModeChange, disabled = false, modeLocked = false, saving, onExport}: ToolBarProps) {
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -45,8 +43,6 @@ export function ToolBar({editingMode, onModeChange, disabled = false, modeLocked
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
             <ToolActionButton label="Export" disabled={disabled || saving} onClick={onExport}
                               icon={<ButtonIcon name="export" viewBox="0 0 24 24"/>}/>
-            <ToolActionButton label={saving ? 'Saving…' : 'Save'} disabled={disabled || saving || !hasChanges} onClick={onSave}
-                              icon={<ButtonIcon name="save"/>}/>
         </Paper>
     )
 }
