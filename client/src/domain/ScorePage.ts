@@ -3,7 +3,7 @@ import {Staff} from "./Staff.ts";
 import {Instrument} from './Instrument.ts';
 import {GrandStaff} from "./GrandStaff.ts";
 import {StaffSystem} from "./StaffSystem.ts";
-import {StavesCollection} from './StavesCollection.ts';
+import {StaffCollection} from './StaffCollection.ts';
 import {VerticalDivider} from "./VerticalDivider.ts";
 
 @Serializable()
@@ -27,7 +27,7 @@ export class ScorePage {
     @JsonProperty()
     height: number;
 
-    staves: StavesCollection;
+    staves: StaffCollection;
     grandStaves: Map<number, GrandStaff>;
     systems: Map<number, StaffSystem>;
     leftDivider: VerticalDivider;
@@ -42,7 +42,7 @@ export class ScorePage {
         this.leftDivider = new VerticalDivider(0);
         this.rightDivider = new VerticalDivider(width);
 
-        this.staves = new StavesCollection();
+        this.staves = new StaffCollection();
         this.grandStaves = new Map();
         this.systems = new Map();
     }
@@ -101,7 +101,7 @@ export class ScorePage {
     }
 
     moveStaff(id: number, y: number): boolean {
-        const staff = this.staves.get(id);
+        const staff = this.getStaff(id);
         if (!staff || !this.canPlaceStaff(y + staff.height / 2, staff.height, id)) return false;
         if (staff.y === y) return true;
         this.staves.move(id, y);
@@ -110,7 +110,7 @@ export class ScorePage {
     }
 
     resizeStaff(id: number, y: number, height: number): boolean {
-        const staff = this.staves.get(id);
+        const staff = this.getStaff(id);
         if (!staff || !this.canPlaceStaff(y + height / 2, height, id)) return false;
         if (staff.y === y && staff.height === height) return true;
         this.staves.move(id, y);
@@ -122,7 +122,7 @@ export class ScorePage {
 
     /** Pass the Instrument instance from the owning project. */
     changeInstrumentForStaff(staffId: number, instrument: Instrument): boolean {
-        const staff = this.staves.get(staffId);
+        const staff = this.getStaff(staffId);
         if (!staff) return false;
         if (staff.instrument === instrument) return true;
         staff.instrument = instrument;
@@ -131,7 +131,7 @@ export class ScorePage {
         return true;
     }
 
-    getStaff(staffNumber: number): Staff | undefined {
-        return this.staves.get(staffNumber);
+    getStaff(id: number): Staff | undefined {
+        return this.staves.get(id);
     }
 }

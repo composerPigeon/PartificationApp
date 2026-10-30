@@ -69,7 +69,7 @@ function ProjectDetail({project: snapshot}: {project: Project}) {
                                  data-editing-mode={editingMode}
                                  sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
                                 <ScorePageWorkSpace key={`${project.id}:${currentPage.number}`}
-                                                  project={project} page={currentPage} editingMode={editingMode}
+                                                  project={project} page={currentPage} pages={model.pages} editingMode={editingMode}
                                                   onModeChange={changeMode}
                                                   selectedStaffId={selectedStaffId} onSelectStaff={setSelectedStaffId}
                                                   onPageChange={model.pageChanged}/>

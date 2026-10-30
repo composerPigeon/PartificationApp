@@ -9,7 +9,7 @@ class StaffNode {
 }
 
 /** Ordered by ascending Y, then ID. Move staff through move() to preserve order. */
-export class StavesCollection implements Iterable<Staff> {
+export class StaffCollection implements Iterable<Staff> {
     private readonly nodes = new Map<number, StaffNode>();
     private head: StaffNode | undefined;
     private tail: StaffNode | undefined;

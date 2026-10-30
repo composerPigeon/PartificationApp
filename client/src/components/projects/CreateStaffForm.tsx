@@ -7,19 +7,20 @@ import {InstrumentForm} from './InstrumentForm.tsx'
 interface CreateStaffFormProps {
     position: {top: number, left: number}
     instruments: Instrument[]
+    instrument?: Instrument
     page: ScorePage
     centerY: number
     onCancel(): void
     onCreate(height: number, instrumentName: string, shortcut: string): void
 }
 
-export function CreateStaffForm({position, instruments, page, centerY, onCancel, onCreate}: CreateStaffFormProps) {
+export function CreateStaffForm({position, instruments, instrument, page, centerY, onCancel, onCreate}: CreateStaffFormProps) {
     const [height, setHeight] = useState('75')
     const validHeight = Number.isFinite(Number(height)) && Number(height) > 0
     const fits = validHeight && page.canPlaceStaff(centerY, Number(height))
 
     return (
-        <InstrumentForm position={position} instruments={instruments} title="Add Staff" submitLabel="Create"
+        <InstrumentForm position={position} instruments={instruments} instrument={instrument} title="Add Staff" submitLabel="Create"
                         valid={fits} onCancel={onCancel}
                         onSubmit={(instrumentName, shortcut) => onCreate(Number(height), instrumentName, shortcut)}>
             <TextField label="Height" type="number" size="small" autoFocus required

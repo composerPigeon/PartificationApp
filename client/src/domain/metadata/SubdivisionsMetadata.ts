@@ -1,6 +1,6 @@
 import {JsonProperty, Serializable} from 'ts-jackson';
 import type {ScorePage} from '../ScorePage.ts';
-import type {StavesCollection} from '../StavesCollection.ts';
+import type {StaffCollection} from '../StaffCollection.ts';
 import type {Staff} from '../Staff.ts';
 
 @Serializable()
@@ -17,7 +17,7 @@ export class StaffMetadata {
 export class StavesMetadata {
     [number: string]: StaffMetadata;
 
-    public static create(staves: StavesCollection): StavesMetadata {
+    public static create(staves: StaffCollection): StavesMetadata {
         return Object.fromEntries([...staves].map(staff => [staff.order, new StaffMetadata([...staff.bbox])]));
     }
 }

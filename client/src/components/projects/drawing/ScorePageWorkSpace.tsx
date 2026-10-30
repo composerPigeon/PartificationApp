@@ -15,6 +15,7 @@ import type {Instrument} from '../../../domain/Instrument.ts'
 import {InstrumentTag} from './InstrumentTag.tsx'
 import type {StaffDivider} from '../../../domain/StaffDivider.ts'
 import type {Node} from 'konva/lib/Node'
+import {recommendInstrument} from '../../../services/projects/recommendInstrument.ts'
 
 function cursorFor(target: Node | null, dragging = false, mode: EditingMode = 'edit-staff') {
     if (target?.hasName('vertical-divider')) return 'ew-resize'
@@ -38,6 +39,7 @@ function resizeBounds(divider: StaffDivider, y: number) {
 interface ScorePageWorkSpaceProps {
     project: Project
     page: ScorePage
+    pages: ScorePage[]
     editingMode?: EditingMode
     onModeChange(mode: EditingMode): void
     selectedStaffId: number | null
@@ -45,7 +47,7 @@ interface ScorePageWorkSpaceProps {
     onPageChange(): void
 }
 
-export function ScorePageWorkSpace({project, page, editingMode = 'select', onModeChange, selectedStaffId, onSelectStaff, onPageChange}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({project, page, pages, editingMode = 'select', onModeChange, selectedStaffId, onSelectStaff, onPageChange}: ScorePageWorkSpaceProps) {
     const projectName = project.projectName
     const stageRef = useRef<KonvaStage>(null)
     const dragTargetRef = useRef<Node | null>(null)
@@ -217,6 +219,7 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
             {pendingStaff && editingMode === 'add-staff' && (
                 <CreateStaffForm position={{top: pendingStaff.top, left: pendingStaff.left}}
                                  instruments={project.instruments}
+                                 instrument={recommendInstrument(project, pages, page, pendingStaff.centerY)}
                                  page={page} centerY={pendingStaff.centerY}
                                  onCancel={() => setPendingStaff(null)}
                                  onCreate={(height, instrumentName, shortcut) => {
@@ -229,7 +232,8 @@ export function ScorePageWorkSpace({project, page, editingMode = 'select', onMod
             )}
             {editingInstrument && (
                 <InstrumentForm position={editingInstrument.position} instruments={project.instruments}
-                                instrument={editingInstrument.instrument}
+                                instrument={recommendInstrument(project, pages, page, page.getStaff(editingInstrument.staffId)!.y)
+                                    ?? editingInstrument.instrument}
                                 onCancel={() => setEditingInstrument(null)}
                                 onSubmit={(instrumentName, shortcut) => {
                                     if (!page.getStaff(editingInstrument.staffId)) return

@@ -1,12 +1,12 @@
 import type {ScorePage} from '../../domain/ScorePage.ts';
 import type {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
-import {StavesCollection} from '../../domain/StavesCollection.ts';
+import {StaffCollection} from '../../domain/StaffCollection.ts';
 import {Staff} from '../../domain/Staff.ts';
 import {GrandStaff} from '../../domain/GrandStaff.ts';
 import {StaffSystem} from '../../domain/StaffSystem.ts';
 import {Instrument} from '../../domain/Instrument.ts';
 
-function rangeMembers(key: string, staves: StavesCollection): Staff[] {
+function rangeMembers(key: string, staves: StaffCollection): Staff[] {
     const match = /^([1-9]\d*)(?:-([1-9]\d*))?$/.exec(key);
     if (!match) throw new Error(`Invalid subdivision range: ${key}.`);
     const first = Number(match[1]);
@@ -22,7 +22,7 @@ function rangeMembers(key: string, staves: StavesCollection): Staff[] {
 export class SubdivisionsMapper {
     /** Instrument references are resolved by ProjectManager from the project's instruments. */
     public static initializePage(page: ScorePage, metadata: SubdivisionsMetadata, instruments: Record<string, Instrument> = {}): void {
-        const staves = new StavesCollection();
+        const staves = new StaffCollection();
         for (const [key, entry] of Object.entries(metadata.staves)) {
             const id = Number(key);
             const box = entry.bbox;

@@ -13,7 +13,7 @@ interface InstrumentTagProps {
 export function InstrumentTag({staff, scale, y, height, selected, onEdit}: InstrumentTagProps) {
     return (
         <Box role="button" tabIndex={0} aria-label={`Edit instrument ${staff.instrument.title}`}
-             onDoubleClick={event => onEdit({top: event.clientY, left: event.clientX})}
+             onClick={event => onEdit({top: event.clientY, left: event.clientX})}
              onKeyDown={event => {
                  if (event.key !== 'Enter' && event.key !== ' ') return
                  event.preventDefault()
