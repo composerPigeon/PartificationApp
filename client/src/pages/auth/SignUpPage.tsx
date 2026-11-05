@@ -17,20 +17,18 @@ function SignUpPage() {
 
     return (
         <FormPage title="Create new account" hideProfile>
-            {state.error.value && (
+            {state.error && (
                 <Alert severity="error" sx={{mb: 2}}>
-                    {state.error.value}
+                    {state.error}
                 </Alert>
             )}
 
-            <Form submitButtonText="Create account" isBusy={state.isSubmitting.value}
+            <Form submitButtonText="Create account" isBusy={state.isSubmitting}
                   isFormIncomplete={state.isIncomplete} handleSubmit={state.handleSignUp}>
-                <UserNameField value={state.userName.value} setValue={state.userName.set} showHelp/>
-                <EmailField setValue={state.email.set} value={state.email.value}/>
-                <PasswordField passwordType={PasswordType.New} value={state.password.value}
-                               setValue={state.password.set}/>
-                <PasswordField passwordType={PasswordType.Confirm} value={state.confirmPassword.value}
-                               setValue={state.confirmPassword.set}/>
+                <UserNameField state={state} showHelp/>
+                <EmailField state={state}/>
+                <PasswordField passwordType={PasswordType.New} state={state} field="password"/>
+                <PasswordField passwordType={PasswordType.Confirm} state={state} field="confirmPassword"/>
             </Form>
 
             <Typography align="center" color="text.secondary" sx={{mt: 3}}>

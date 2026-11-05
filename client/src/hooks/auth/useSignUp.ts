@@ -61,13 +61,19 @@ export function useSignUp(): SignUpState {
     )
 
     return {
-        userName: {value: userName, set: setUserName},
-        email: {value: email, set: setEmail},
-        password: {value: password, set: setPassword},
-        confirmPassword: {value: confirmPassword, set: setConfirmPassword},
-        error: {value: error, set: setError},
-        isSubmitting: {value: isSubmitting, set: setIsSubmitting},
-        isIncomplete,
+        get userName() { return userName; },
+        set userName(value: string) { setUserName(value); },
+        get email() { return email; },
+        set email(value: string) { setEmail(value); },
+        get password() { return password; },
+        set password(value: string) { setPassword(value); },
+        get confirmPassword() { return confirmPassword; },
+        set confirmPassword(value: string) { setConfirmPassword(value); },
+        get error() { return error; },
+        set error(value: string | null) { setError(value); },
+        get isSubmitting() { return isSubmitting; },
+        set isSubmitting(value: boolean) { setIsSubmitting(value); },
+        get isIncomplete() { return isIncomplete; },
         handleSignUp
     }
 }

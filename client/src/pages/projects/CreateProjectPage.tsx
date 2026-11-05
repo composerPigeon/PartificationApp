@@ -20,7 +20,7 @@ export default function CreateProjectPage() {
                     <Typography color="text.secondary">Name your project and choose the PDF you want to work
                         with.</Typography>
                     {model.error && <Alert severity="error">{model.error}</Alert>}
-                    <NameField label="Project name" value={model.name} setValue={model.setName}
+                    <NameField label="Project name" state={model}
                                required disabled={model.busy} autoComplete="project-name"/>
                     <PdfFileField disabled={model.busy} onChange={model.chooseFile}/>
                     <Typography role="status" variant="body2">{model.progress}</Typography>

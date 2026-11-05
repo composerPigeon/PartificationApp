@@ -46,5 +46,9 @@ export function useCreateProject() {
         }
     }
 
-    return {name, setName, file, chooseFile, error, busy, progress, submit}
+    return {
+        get name() { return name; },
+        set name(value: string) { setName(value); },
+        file, chooseFile, error, busy, progress, submit,
+    }
 }

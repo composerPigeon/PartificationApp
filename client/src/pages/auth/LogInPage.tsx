@@ -18,17 +18,16 @@ function LogInPage() {
 
     return (
         <FormPage title="Log in" hideProfile>
-            {state.error.value && (
+            {state.error && (
                 <Alert severity="error" sx={{mb: 2}}>
-                    {state.error.value}
+                    {state.error}
                 </Alert>
             )}
 
-            <Form submitButtonText="Log in" isBusy={state.isSubmitting.value} isFormIncomplete={state.isIncomplete}
+            <Form submitButtonText="Log in" isBusy={state.isSubmitting} isFormIncomplete={state.isIncomplete}
                   handleSubmit={state.handleLogin}>
-                <UserNameField setValue={state.userName.set} value={state.userName.value}/>
-                <PasswordField passwordType={PasswordType.Normal} setValue={state.password.set}
-                               value={state.password.value}/>
+                <UserNameField state={state}/>
+                <PasswordField passwordType={PasswordType.Normal} state={state} field="password"/>
             </Form>
 
             <Typography align="center" color="text.secondary" sx={{mt: 3}}>

@@ -1,17 +1,16 @@
 import {TextField} from "@mui/material";
 
 interface NameFieldProps {
-    value: string,
-    setValue: (value: string) => void,
+    state: { name: string },
     disabled?: boolean,
     label: string,
     autoComplete: string
     required: boolean
 }
 
-export default function NameField({value, setValue, disabled, label, autoComplete, required}:NameFieldProps) {
+export default function NameField({state, disabled, label, autoComplete, required}:NameFieldProps) {
 
-    return <TextField label={label} type="text" value={value} fullWidth margin="normal"
-        onChange={event => setValue(event.target.value)}
+    return <TextField label={label} type="text" value={state.name} fullWidth margin="normal"
+        onChange={event => { state.name = event.target.value; }}
         autoComplete={autoComplete} disabled={disabled} required={required}/>
 }

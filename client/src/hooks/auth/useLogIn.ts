@@ -2,13 +2,15 @@ import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
 import {serverProxy} from "../../services";
 import {useAuth} from './useAuth';
-import type {PropertyState} from "../states/PropertyState.ts";
 import type {FormBaseState} from "../states/FormBaseState.ts";
 
 
 export interface LoginState extends FormBaseState {
-    userName: PropertyState<string>,
-    password: PropertyState<string>,
+    get userName(): string,
+    set userName(value: string),
+
+    get password(): string,
+    set password(value: string),
 
     handleLogin: (event: SubmitEvent<HTMLFormElement>) => Promise<void>,
 }
@@ -50,11 +52,15 @@ export function useLogIn(): LoginState {
     }
 
     return {
-        userName: {value: userName, set: setUserName},
-        password: {value: password, set: setPassword},
+        get userName() { return userName; },
+        set userName(value: string) { setUserName(value); },
+        get password() { return password; },
+        set password(value: string) { setPassword(value); },
         handleLogin,
-        error: {value: error, set: setError},
-        isSubmitting: {value: isSubmitting, set: setIsSubmitting},
-        isIncomplete: false,
+        get error() { return error; },
+        set error(value: string | null) { setError(value); },
+        get isSubmitting() { return isSubmitting; },
+        set isSubmitting(value: boolean) { setIsSubmitting(value); },
+        get isIncomplete() { return !userName.trim() || !password; },
     }
 }

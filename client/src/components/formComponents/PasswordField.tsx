@@ -1,14 +1,14 @@
 import {TextField} from "@mui/material";
 import PasswordType from "./PasswordType.ts";
 
-interface PasswordFieldProps {
-    value: string;
-    setValue: (value: string) => void;
+interface PasswordFieldProps<K extends 'password' | 'confirmPassword'> {
+    state: Record<K, string>;
+    field: K;
     disabled?: boolean;
     passwordType: PasswordType;
 }
 
-export default function PasswordField({ value, setValue, disabled, passwordType}: PasswordFieldProps) {
+export default function PasswordField<K extends 'password' | 'confirmPassword'>({state, field, disabled, passwordType}: PasswordFieldProps<K>) {
     let label = "Password";
     let name = "password";
     let autoComplete = "password";
@@ -22,7 +22,7 @@ export default function PasswordField({ value, setValue, disabled, passwordType}
         autoComplete = "confirm-password";
     }
 
-    return <TextField label={label} name={name} type="password" value={value}
-        onChange={event => setValue(event.target.value)} fullWidth margin="normal"
+    return <TextField label={label} name={name} type="password" value={state[field]}
+        onChange={event => { state[field] = event.target.value; }} fullWidth margin="normal"
         autoComplete={autoComplete} disabled={disabled} required/>
 }
