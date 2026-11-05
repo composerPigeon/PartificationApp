@@ -1,4 +1,5 @@
 import { Project, ScorePage} from '../../domain';
+import type {ProjectScoreDetails} from '../../domain';
 import StorageType from "../storage/StorageType.ts";
 import type {StorageService} from "../storage/StorageService.ts";
 import {FileSystemEntryNames} from "../storage/fileSystem/storageHelpers.ts";
@@ -22,7 +23,8 @@ export interface IProjectManager {
     useLocalStorage(fileSystemStorage: StorageService): void;
     getCurrentStorageType(): StorageType;
 
-    createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project>;
+    createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void,
+                  score: ProjectScoreDetails, allowLayoutModelTraining?: boolean): Promise<Project>;
     loadProjects(): Promise<Project[]>;
     deleteProject(projectId: string): Promise<void>;
     saveProject(project: Project, pages: ScorePage[]): Promise<void>;
@@ -89,7 +91,9 @@ export class ProjectManager implements IProjectManager {
         return pageNumber;
     }
 
-    async createProject(projectName: string, pdf: File, onProgress: (count: number, total: number) => void): Promise<Project> {
+    async createProject(projectName: string, pdf: File, onProgress: (count: number, total: number) => void,
+                        score: ProjectScoreDetails, allowLayoutModelTraining = false): Promise<Project> {
+        if (!score.title.trim()) throw new Error('Enter a score title.');
         const account = authService.currentAccount;
         if (!account?.userId.trim()) throw new Error('Select an account to create a project.');
         const userId = account.userId;
@@ -109,6 +113,12 @@ export class ProjectManager implements IProjectManager {
             projectId,
             pageCount
         );
+        project.title = score.title.trim();
+        project.subtitle = score.subtitle.trim();
+        project.author = score.author.trim();
+        project.authorDate = score.authorDate.trim();
+        project.genre = score.genre.trim();
+        project.allowLayoutModelTraining = allowLayoutModelTraining;
         await this.storage.saveProject(project);
         return project;
     }

@@ -9,11 +9,11 @@ import Form from "../../components/formComponents/Form.tsx";
 import PasswordField from "../../components/formComponents/PasswordField.tsx";
 import FormPage from "../../components/formComponents/FormPage.tsx";
 
-import {type LoginState, useLogIn} from "../../hooks/auth/useLogIn.ts";
+import {useLogIn} from "../../hooks/auth/useLogIn.ts";
 import PasswordType from "../../components/formComponents/PasswordType.ts";
 
 function LogInPage() {
-    var state: LoginState = useLogIn();
+    const state = useLogIn();
 
 
     return (
@@ -25,7 +25,7 @@ function LogInPage() {
             )}
 
             <Form submitButtonText="Log in" isBusy={state.isSubmitting} isFormIncomplete={state.isIncomplete}
-                  handleSubmit={state.handleLogin}>
+                  handleSubmit={state.handleLogIn}>
                 <UserNameField state={state}/>
                 <PasswordField passwordType={PasswordType.Normal} state={state} field="password"/>
             </Form>

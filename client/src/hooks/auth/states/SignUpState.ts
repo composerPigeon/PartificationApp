@@ -1,4 +1,4 @@
-import type {FormBaseState} from "../FormBaseState.ts";
+import type {FormBaseState} from "../../states/FormBaseState.ts";
 import type {SubmitEvent} from "react";
 
 export interface SignUpState extends FormBaseState {

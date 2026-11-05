@@ -1,8 +1,9 @@
 import {JsonProperty, Serializable} from "ts-jackson";
 import {Instrument} from "./Instrument.ts";
+import type {ProjectScoreDetails} from './ProjectScoreDetails.ts';
 
 @Serializable()
-export class Project {
+export class Project implements ProjectScoreDetails {
     @JsonProperty()
     id: string;
 
@@ -14,6 +15,24 @@ export class Project {
 
     @JsonProperty({path: "page_count"})
     pageCount: number;
+
+    @JsonProperty()
+    title: string = '';
+
+    @JsonProperty()
+    subtitle: string = '';
+
+    @JsonProperty()
+    author: string = '';
+
+    @JsonProperty({path: 'author_date'})
+    authorDate: string = '';
+
+    @JsonProperty()
+    genre: string = '';
+
+    @JsonProperty({path: 'allow_layout_model_training'})
+    allowLayoutModelTraining: boolean = false;
 
     @JsonProperty({path: "instruments"})
     private readonly _instruments: Instrument[];
@@ -52,8 +71,15 @@ export class Project {
 
     /** Browser history preserves data but removes class prototypes and getters. */
     public static fromSnapshot(data: Project): Project {
-        return new Project(data.id, data.projectName, data.directoryName, data.pageCount,
+        const project = new Project(data.id, data.projectName, data.directoryName, data.pageCount,
             (data._instruments ?? data.instruments ?? []).map(instrument =>
                 new Instrument(instrument.title, instrument.shortcut)));
+        project.title = data.title ?? '';
+        project.subtitle = data.subtitle ?? '';
+        project.author = data.author ?? '';
+        project.authorDate = data.authorDate ?? '';
+        project.genre = data.genre ?? '';
+        project.allowLayoutModelTraining = data.allowLayoutModelTraining === true;
+        return project;
     }
 }

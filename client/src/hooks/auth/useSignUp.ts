@@ -1,8 +1,9 @@
-import type {SignUpState} from "../states/auth/SignUpState.ts";
+import type {SignUpState} from "./states/SignUpState.ts";
 
 import {serverProxy} from "../../services";
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
+import {useFormBase} from '../useFormBase.ts';
 
 export function useSignUp(): SignUpState {
     const navigate = useNavigate()
@@ -10,26 +11,22 @@ export function useSignUp(): SignUpState {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
-    const [error, setError] = useState<string | null>(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const formState = useFormBase()
+    formState.isIncomplete = !userName.trim() || !email.trim() || !password || !confirmPassword
 
     async function handleSignUp(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
-        setError(null)
+        await formState.submit(async () => {
+            const form = event.currentTarget
+            if (!form.checkValidity()) {
+                form.reportValidity()
+                return
+            }
+            if (password !== confirmPassword) {
+                formState.error = 'Passwords do not match.'
+                return
+            }
 
-        const form = event.currentTarget
-        if (!form.checkValidity()) {
-            form.reportValidity()
-            return
-        }
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.')
-            return
-        }
-
-        setIsSubmitting(true)
-
-        try {
             const result = await serverProxy.executeSignup(
                 userName.trim().toLowerCase(),
                 email.trim(),
@@ -37,30 +34,15 @@ export function useSignUp(): SignUpState {
             )
 
             if (!result.ok) {
-                setError(result.error ?? 'Unable to create your account.')
+                formState.error = result.error ?? 'Unable to create your account.'
                 return
             }
 
             await navigate({ to: '/login' })
-        } catch (caughtError) {
-            setError(
-                caughtError instanceof Error
-                    ? caughtError.message
-                    : 'Unable to create your account. Please try again.',
-            )
-        } finally {
-            setIsSubmitting(false)
-        }
+        }, 'Unable to create your account. Please try again.')
     }
 
-    const isIncomplete = Boolean(
-        !userName.trim() ||
-        !email.trim() ||
-        !password ||
-        !confirmPassword,
-    )
-
-    return {
+    return formState.extend({
         get userName() { return userName; },
         set userName(value: string) { setUserName(value); },
         get email() { return email; },
@@ -69,11 +51,6 @@ export function useSignUp(): SignUpState {
         set password(value: string) { setPassword(value); },
         get confirmPassword() { return confirmPassword; },
         set confirmPassword(value: string) { setConfirmPassword(value); },
-        get error() { return error; },
-        set error(value: string | null) { setError(value); },
-        get isSubmitting() { return isSubmitting; },
-        set isSubmitting(value: boolean) { setIsSubmitting(value); },
-        get isIncomplete() { return isIncomplete; },
         handleSignUp
-    }
+    })
 }
