@@ -1,13 +1,13 @@
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
 import {serverProxy} from "../../services";
-import {useAuth} from './useAuth';
+import {useAuthState} from './useAuthState';
 import type {LogInState} from "./states/LogInState.ts";
 import {useFormBase} from '../useFormBase.ts';
 
 
 export function useLogIn(): LogInState {
-    const {addAccount, authenticate} = useAuth();
+    const {addAccount, authenticate} = useAuthState();
     const navigate = useNavigate()
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')

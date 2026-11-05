@@ -1,18 +1,26 @@
 import {useId} from 'react'
+import {useBlocker} from '@tanstack/react-router'
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from '@mui/material'
 
 interface UnsavedChangesDialogProps {
-    open: boolean
-    onStay(): void
-    onLeave(): void
+    hasChanges: boolean
 }
 
-export function UnsavedChangesDialog({open, onStay, onLeave}: UnsavedChangesDialogProps) {
+export function UnsavedChangesDialog({hasChanges}: UnsavedChangesDialogProps) {
     const titleId = useId()
     const descriptionId = useId()
+    const blocker = useBlocker({
+        shouldBlockFn: ({current, next}) => hasChanges && current.pathname !== next.pathname,
+        enableBeforeUnload: hasChanges,
+        disabled: !hasChanges,
+        withResolver: true,
+    })
+
+    const onStay = () => blocker.reset?.()
+    const onLeave = () => blocker.proceed?.()
 
     return (
-        <Dialog open={open} onClose={onStay} maxWidth="xs" fullWidth
+        <Dialog open={blocker.status === 'blocked'} onClose={onStay} maxWidth="xs" fullWidth
                 aria-labelledby={titleId} aria-describedby={descriptionId}>
             <DialogTitle id={titleId}>Leave without saving?</DialogTitle>
             <DialogContent>

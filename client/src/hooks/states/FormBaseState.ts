@@ -1,7 +1,6 @@
-export interface FormBaseState {
-    get error(): string | null,
-    set error(value: string | null),
+import type {BaseState} from './BaseState.ts';
 
+export interface FormBaseState extends BaseState {
     get isSubmitting(): boolean,
     set isSubmitting(value: boolean),
 

@@ -1,18 +1,23 @@
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useEffectEvent, useRef, useState} from 'react'
 import {Alert, Box, CircularProgress} from '@mui/material'
 import {getDocument, GlobalWorkerOptions} from 'pdfjs-dist'
 import type {PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask} from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import type {PagingState} from '../../hooks/states/PagingState.ts'
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
 interface ExportPdfViewerProps {
     pdf: Blob
-    pageIndex: number
-    onPageCount(count: number): void
+    paging: PagingState
 }
 
-export function ExportPdfViewer({pdf, pageIndex, onPageCount}: ExportPdfViewerProps) {
+export function ExportPdfViewer({pdf, paging}: ExportPdfViewerProps) {
+    const pageIndex = paging.pageIndex
+    const reportPageCount = useEffectEvent((count: number) => {
+        // eslint-disable-next-line react-hooks/immutability -- The accessor delegates to the paging hook's React state setter.
+        paging.pageCount = count
+    })
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const [document, setDocument] = useState<PDFDocumentProxy | null>(null)
     const [rendering, setRendering] = useState(true)
@@ -30,12 +35,12 @@ export function ExportPdfViewer({pdf, pageIndex, onPageCount}: ExportPdfViewerPr
                     standardFontDataUrl: `${assets}standard_fonts/`, wasmUrl: `${assets}wasm/`, iccUrl: `${assets}iccs/`})
                 const loaded = await task.promise
                 if (active) {
-                    onPageCount(loaded.numPages)
+                    reportPageCount(loaded.numPages)
                     setDocument(loaded)
                 }
             } catch (error) {
                 if (active) {
-                    onPageCount(0)
+                    reportPageCount(0)
                     setError(error instanceof Error ? error.message : 'Unable to display PDF preview.')
                     setRendering(false)
                 }
@@ -46,7 +51,7 @@ export function ExportPdfViewer({pdf, pageIndex, onPageCount}: ExportPdfViewerPr
             active = false
             void task?.destroy().catch(() => {})
         }
-    }, [pdf, onPageCount])
+    }, [pdf])
 
     useEffect(() => {
         if (!document) return

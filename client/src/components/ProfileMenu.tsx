@@ -4,7 +4,7 @@ import {
     Menu, MenuItem, SvgIcon, Tooltip, Typography,
 } from '@mui/material';
 import {Link, useNavigate} from '@tanstack/react-router';
-import {useAuth} from '../hooks/auth/useAuth';
+import {useAuthState} from '../hooks/auth/useAuthState';
 
 function initials(userName: string): string {
     const parts = userName.trim().split(/[\s._-]+/).filter(Boolean);
@@ -14,7 +14,7 @@ function initials(userName: string): string {
 }
 
 export default function ProfileMenu({readOnly = false}: {readOnly?: boolean}) {
-    const {currentAccount, accounts, setCurrent} = useAuth();
+    const {currentAccount, accounts, setCurrent} = useAuthState();
     const navigate = useNavigate();
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const id = useId();

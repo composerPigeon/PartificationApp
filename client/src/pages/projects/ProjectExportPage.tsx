@@ -1,23 +1,27 @@
-import {useLoaderData, useNavigate, useParams} from '@tanstack/react-router'
+import {useNavigate, useParams} from '@tanstack/react-router'
 import {Alert, Box, CircularProgress, Container, Stack, Typography} from '@mui/material'
 import {useEffect, useRef, useState} from 'react'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
-import {Project} from '../../domain/Project.ts'
+import {useProjectState} from '../../hooks/projects/useProjectState.ts'
+import {useProjectSave} from '../../hooks/projects/useProjectSave.ts'
 import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
+import {usePaging} from '../../hooks/usePaging.ts'
+import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
 
-function ProjectExport({project: snapshot}: {project: Project}) {
+export default function ProjectExportPage() {
     const {userId, projectName} = useParams({from: '/$userId/$projectName/export'})
-    const [project] = useState(() => Project.fromSnapshot(snapshot))
+    const projectState = useProjectState()
+    const saveState = useProjectSave(projectState.project, projectState.pages)
+    const {project} = projectState
     const [editingMode, setEditingMode] = useState<'select'>('select')
     const [selectedInstrumentIds, setSelectedInstrumentIds] = useState<Set<string>>(() => new Set())
     const navigate = useNavigate()
     const [previewPdf, setPreviewPdf] = useState<Blob | null>(null)
     const previewUrlRef = useRef<string | null>(null)
-    const [pageIndex, setPageIndex] = useState(0)
-    const [pageCount, setPageCount] = useState(0)
+    const paging = usePaging()
     const [generating, setGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -41,9 +45,10 @@ function ProjectExport({project: snapshot}: {project: Project}) {
         setGenerating(true)
         setError(null)
         setPreviewPdf(null)
-        setPageIndex(0)
-        setPageCount(0)
+        paging.reset()
+        paging.pageCount = 0
         try {
+            if (!await saveState.save()) throw new Error('Save the project successfully before exporting.');
             const instruments = project.instruments.filter(instrument => selectedInstrumentIds.has(instrument.id))
             setPreviewPdf(await exportPdfService.createPdf(project, instruments))
         } catch (error) {
@@ -57,23 +62,20 @@ function ProjectExport({project: snapshot}: {project: Project}) {
         <ProjectPage title="Export" projectTitle={project.projectName} previewInsets={{
             left: {xs: '240px', sm: '312px', md: '352px'},
             right: {xs: '8px', sm: '24px'},
-        }} pagination={{
-            pageIndex, pageCount,
-            onPrevious: () => setPageIndex(index => Math.max(0, index - 1)),
-            onNext: () => setPageIndex(index => Math.min(pageCount - 1, index + 1)),
-        }}>
+        }} pagination={paging}>
+            <UnsavedChangesDialog hasChanges={saveState.hasChanges}/>
             <Box sx={{flex: 1, py: 2, pl: {xs: '240px', sm: '312px', md: '352px'}, pr: {xs: 1, sm: 3}}}>
                 <ExportToolBar editingMode={editingMode} onModeChange={setEditingMode}
                                generating={generating} onPreview={createPreview}
                                hasPreview={!!previewPdf} onPrint={printPreview}
                                hasSelectedInstruments={selectedInstrumentIds.size > 0} onBack={() => {
-                    void navigate({to: '/$userId/$projectName', params: {userId, projectName}, state: {project}})
+                    void navigate({to: '/$userId/$projectName', params: {userId, projectName}})
                 }}/>
                 <InstrumentsBar instruments={project.instruments} selectedIds={selectedInstrumentIds} disabled={generating}
                                 onToggle={(id, selected) => {
                                     setPreviewPdf(null)
-                                    setPageCount(0)
-                                    setPageIndex(0)
+                                    paging.pageCount = 0
+                                    paging.reset()
                                     setError(null)
                                     setSelectedInstrumentIds(current => {
                                     const next = new Set(current)
@@ -96,7 +98,7 @@ function ProjectExport({project: snapshot}: {project: Project}) {
                             ) : error ? (
                                 <Alert severity="error">{error}</Alert>
                             ) : previewPdf ? (
-                                <ExportPdfViewer pdf={previewPdf} pageIndex={pageIndex} onPageCount={setPageCount}/>
+                                <ExportPdfViewer pdf={previewPdf} paging={paging}/>
                             ) : (
                                 <Typography variant="body2" sx={{color: 'text.secondary'}}>Select instruments and click Preview.</Typography>
                             )}
@@ -105,9 +107,4 @@ function ProjectExport({project: snapshot}: {project: Project}) {
             </Box>
         </ProjectPage>
     )
-}
-
-export default function ProjectExportPage() {
-    const {project} = useLoaderData({from: '/$userId/$projectName/export'})
-    return <ProjectExport key={project.id} project={project}/>
 }

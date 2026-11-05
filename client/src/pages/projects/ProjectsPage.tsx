@@ -1,4 +1,4 @@
-import {useAuth} from '../../hooks/auth/useAuth'
+import {useAuthState} from '../../hooks/auth/useAuthState'
 import {ButtonIcon} from '../../components/buttons/ButtonIcon'
 import {useEffect, useState} from 'react'
 import {
@@ -12,7 +12,7 @@ import {FloatButton} from '../../components/buttons/FloatButton'
 import ProjectCard from '../../components/projects/ProjectCard'
 
 function ProjectsPage() {
-    const {currentAccount} = useAuth()
+    const {currentAccount} = useAuthState()
     const userId = currentAccount?.userId
     const [projects, setProjects] = useState<Project[]>([])
     const [error, setError] = useState<string | null>(null)

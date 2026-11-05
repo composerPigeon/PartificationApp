@@ -1,4 +1,4 @@
-import {Outlet, createRootRoute, createRoute, createRouter, notFound} from '@tanstack/react-router'
+import {Outlet, createRootRoute, createRoute, createRouter} from '@tanstack/react-router'
 import HomePage from './pages/HomePage'
 import LogInPage from './pages/auth/LogInPage.tsx'
 import SignUpPage from './pages/auth/SignUpPage'
@@ -8,16 +8,7 @@ import CreateProjectPage from './pages/projects/CreateProjectPage.tsx'
 import ProjectWorkspacePage from './pages/projects/ProjectWorkspacePage.tsx'
 import ProjectExportPage from './pages/projects/ProjectExportPage.tsx'
 import MapDirectoryPage from "./pages/settings/MapDirectoryPage.tsx";
-import type {Project} from "./domain";
-import {authService, projectManager} from './services';
-
-async function loadProject({userId, projectName}: {userId: string; projectName: string}) {
-    if (authService.currentAccount?.userId !== userId) throw notFound();
-    const projects = await projectManager.loadProjects();
-    const project = projects.find(project => project.projectName === projectName);
-    if (!project) throw notFound();
-    return {project};
-}
+import {ProjectRouter} from './components/projects/ProjectRouter.tsx';
 
 const rootRoute = createRootRoute({
     component: Outlet,
@@ -65,21 +56,26 @@ const createProjectRoute = createRoute({
     component: CreateProjectPage,
 })
 
-const detailProjectRoute = createRoute({
+const projectRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/$userId/$projectName',
-    loader: ({params}) => loadProject(params),
+    component: ProjectRouter,
+})
+
+const detailProjectRoute = createRoute({
+    getParentRoute: () => projectRoute,
+    path: '/',
     component: ProjectWorkspacePage,
 })
 
 const exportRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/$userId/$projectName/export',
-    loader: ({params}) => loadProject(params),
+    getParentRoute: () => projectRoute,
+    path: 'export',
     component: ProjectExportPage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute, detailProjectRoute, exportRoute])
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, signUpRoute, mapDirectoryRoute, profileRoute, projectsRoute, createProjectRoute,
+    projectRoute.addChildren([detailProjectRoute, exportRoute])])
 
 export const router = createRouter({routeTree})
 
@@ -88,7 +84,4 @@ declare module '@tanstack/react-router' {
         router: typeof router
     }
 
-    interface HistoryState {
-        project?: Project
-    }
 }

@@ -26,6 +26,7 @@ export interface IProjectManager {
     createProject(name: string, pdf: File, onProgress: (count: number, total: number) => void,
                   score: ProjectScoreDetails, allowLayoutModelTraining?: boolean): Promise<Project>;
     loadProjects(): Promise<Project[]>;
+    loadProject(projectName: string): Promise<Project>;
     deleteProject(projectId: string): Promise<void>;
     saveProject(project: Project, pages: ScorePage[]): Promise<void>;
 
@@ -125,6 +126,13 @@ export class ProjectManager implements IProjectManager {
 
     async loadProjects(): Promise<Project[]> {
         return this.storage.loadProjects();
+    }
+
+    async loadProject(projectName: string): Promise<Project> {
+        const projects = await this.loadProjects();
+        const project = projects.find(project => project.projectName === projectName);
+        if (!project) throw new Error('Project not found.');
+        return project;
     }
 
     async saveProject(project: Project, pages: ScorePage[]): Promise<void> {
