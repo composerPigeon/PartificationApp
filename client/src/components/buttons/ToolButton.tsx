@@ -15,7 +15,7 @@ export function ToolButton({label, icon, selected, onSelect, disabled = false}: 
         <Tooltip title={label} placement="right" arrow>
             <span>
                 <ToggleButton value={label} type="button" aria-label={label} selected={selected}
-                              disabled={disabled} onChange={onSelect}
+                              disabled={disabled} onClick={onSelect}
                               sx={{
                                   width: {xs: 36, sm: 44}, height: {xs: 36, sm: 44}, p: 0,
                                   border: 0, borderRadius: '50%', color: 'text.secondary',

@@ -19,7 +19,7 @@ export default function MainNavBar({title, hideProfile = false}: MainNavBarProps
         })}>
             <Toolbar sx={{display: 'grid', gridTemplateColumns: 'minmax(96px, 1fr) minmax(0, 2fr) minmax(96px, 1fr)', gap: {xs: 1, sm: 2}}}>
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-                    <Link to="/projects" aria-label="Partification projects" style={{display: 'flex'}}>
+                    <Link to="/project" aria-label="Partification projects" style={{display: 'flex'}}>
                         <AppIcon color="primary" sx={{width: 40, height: 40}}/>
                     </Link>
                     <IconButton aria-label="Settings" title="Settings" color="primary" size="large">

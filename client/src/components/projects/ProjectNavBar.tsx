@@ -38,7 +38,7 @@ export function ProjectNavBar({title, pagination, previewInsets}: ProjectNavBarP
                 display: 'flex', alignItems: 'center', gap: 1.5,
                 color: 'secondary.dark', fontWeight: 800, overflowWrap: 'anywhere',
             }}>
-                <Link to="/projects" aria-label="Partification projects" style={{display: 'flex', flexShrink: 0}}>
+                <Link to="/project" aria-label="Partification projects" style={{display: 'flex', flexShrink: 0}}>
                     <AppIcon color="secondary" sx={{width: 40, height: 40}}/>
                 </Link>
                 {title}

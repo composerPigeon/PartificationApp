@@ -50,7 +50,7 @@ function HomePage() {
                     </Typography>
                 </Container>
             </Box>
-            <FloatButton to="/projects">
+            <FloatButton to="/project">
                 Start
             </FloatButton>
         </NavPage>

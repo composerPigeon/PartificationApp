@@ -47,24 +47,45 @@ export class ScorePage {
         this.systems = new Map();
     }
 
-    moveLeftDivider(n: number): void {
-        if (this.leftDivider.x === n) return;
+    moveLeftDivider(n: number): boolean {
+        if (!Number.isFinite(n) || n < 0 || n > this.rightDivider.x - 1) return false;
+        if (this.leftDivider.x === n) return true;
         this.leftDivider.x = n;
         this.staves.moveLeftDivider(n);
         this.markChanged();
+        return true;
     }
 
-    moveRightDivider(n: number): void {
-        if (this.rightDivider.x === n) return;
+    moveRightDivider(n: number): boolean {
+        if (!Number.isFinite(n) || n < this.leftDivider.x + 1 || n > this.width) return false;
+        if (this.rightDivider.x === n) return true;
         this.rightDivider.x = n;
         this.staves.moveRightDivider(n);
         this.markChanged();
+        return true;
     }
 
     addStaff(staff: Staff): void {
         if (this.staves.has(staff.id)) return;
         this.staves.add(staff);
         this.markChanged();
+    }
+
+    deleteStaff(id: number): boolean {
+        if (!this.staves.delete(id)) return false;
+        for (const [key, grandStaff] of this.grandStaves) {
+            if (grandStaff.firstStaff.id === id || grandStaff.secondStaff.id === id) {
+                this.grandStaves.delete(key);
+            }
+        }
+        for (const [key, system] of this.systems) {
+            if (!system.staves.has(id)) continue;
+            const remaining = [...system.staves.values()].filter(staff => staff.id !== id);
+            if (remaining.length) this.systems.set(key, new StaffSystem(system.id, remaining));
+            else this.systems.delete(key);
+        }
+        this.markChanged();
+        return true;
     }
 
     createStaff(centerY: number, height: number = 75, instrument: Instrument): Staff {

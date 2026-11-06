@@ -1,68 +1,36 @@
 // @refresh reset
-import {useLayoutEffect, useRef, useState} from 'react'
+import {useLayoutEffect, useState} from 'react'
 import {Alert, Box, useTheme} from '@mui/material'
 import {Image as PageImage, Layer, Line, Stage} from 'react-konva'
-import type {KonvaEventObject} from 'konva/lib/Node'
-import type {Stage as KonvaStage} from 'konva/lib/Stage'
-import type {Project, ScorePage, Instrument, StaffDivider} from '../../../domain';
-import type {EditingMode} from '../ToolBar.tsx'
+import type {ScorePage} from '../../../domain';
+import type {ProjectState, ProjectSaveState} from '../../../hooks/project';
+import {useScorePageEditor, useScorePageInteraction} from '../../../hooks/scorePage';
+import type {EditingModeState, StaffSelectionState} from '../../../hooks/scorePage';
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
 import {VerticalDividerLine} from './VerticalDividerLine.tsx'
 import {InstrumentForm} from '../InstrumentForm.tsx'
 import {InstrumentTag} from './InstrumentTag.tsx'
-import type {Node} from 'konva/lib/Node'
-import {recommendInstrument} from '../../../services/projects/recommendInstrument.ts'
-
-function cursorFor(target: Node | null, dragging = false, mode: EditingMode = 'edit-staff') {
-    if (target?.hasName('vertical-divider')) return 'ew-resize'
-    if (target?.hasName('staff-divider')) return 'ns-resize'
-    if (target?.hasName('staff-body')) return dragging ? 'grabbing' : mode === 'select' ? 'pointer' : 'grab'
-    return 'default'
-}
-
-function modeFor(target: Node | null, dragging = false): EditingMode {
-    if (dragging || target?.hasName('staff-divider') || target?.hasName('vertical-divider')) return 'edit-staff'
-    return target?.hasName('staff-body') ? 'select' : 'add-staff'
-}
-
-function resizeBounds(divider: StaffDivider, y: number) {
-    const staff = divider.staff
-    const top = divider === staff.topDivider ? Math.min(y, staff.y + staff.height - 1) : staff.y
-    const bottom = divider === staff.bottomDivider ? Math.max(y, staff.y + 1) : staff.y + staff.height
-    return {y: top, height: bottom - top}
-}
 
 interface ScorePageWorkSpaceProps {
-    project: Project
+    projectState: ProjectState
     page: ScorePage
-    pages: ScorePage[]
-    editingMode?: EditingMode
-    onModeChange(mode: EditingMode): void
-    selectedStaffId: number | null
-    onSelectStaff(staffId: number | null): void
-    onPageChange(): void
+    saveState: ProjectSaveState
+    editing: EditingModeState
+    selection: StaffSelectionState
 }
 
-export function ScorePageWorkSpace({project, page, pages, editingMode = 'select', onModeChange, selectedStaffId, onSelectStaff, onPageChange}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({projectState, page, saveState, editing, selection}: ScorePageWorkSpaceProps) {
+    const {project} = projectState
     const theme = useTheme()
+    const editor = useScorePageEditor(page, saveState.pageChanged)
     const projectName = project.projectName
-    const stageRef = useRef<KonvaStage>(null)
-    const dragTargetRef = useRef<Node | null>(null)
     const [scale, setScale] = useState(800 / page.width)
     const [image, setImage] = useState<HTMLImageElement | null>(null)
     const [error, setError] = useState(false)
-    const [hoverCursor, setHoverCursor] = useState({mode: editingMode, value: 'default'})
-    const cursor = selectedStaffId !== null ? 'default' : editingMode === 'add-staff' && !error ? 'crosshair'
-        : !error && hoverCursor.mode === editingMode ? hoverCursor.value : 'default'
-    const editable = !error && selectedStaffId === null
-    const [staves, setStaves] = useState(() => [...page.staves.values()])
-    const [pendingStaff, setPendingStaff] = useState<{startY: number, endY: number} | null>(null)
-    const [newStaff, setNewStaff] = useState<{centerY: number, height: number, position: {top: number, left: number}} | null>(null)
-    const [editingInstrument, setEditingInstrument] = useState<{staffId: number, instrument: Instrument, position: {top: number, left: number}} | null>(null)
-    const [draggedStaff, setDraggedStaff] = useState<{id: number, y: number, height: number} | null>(null)
-    const dragPreview = draggedStaff
-    const dividers = [...new Set(staves.flatMap(staff => [staff.topDivider, staff.bottomDivider]))]
+    const interaction = useScorePageInteraction({projectState, page, editor, editing,
+        selection, disabled: error})
+    const {stageRef, cursor, pendingStaff, newStaff, editingInstrument, dragPreview} = interaction
 
     useLayoutEffect(() => {
         const container = stageRef.current!.container()
@@ -83,51 +51,7 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
             source.onload = source.onerror = null
             URL.revokeObjectURL(url)
         }
-    }, [page, projectName])
-
-    const handlePageClick = (event: KonvaEventObject<MouseEvent>) => {
-        if (event.evt.button !== 0 || error) return
-        if (selectedStaffId !== null) {
-            if (event.target.hasName('staff-body')) {
-                const staffId = Number(event.target.id())
-                onSelectStaff(staffId === selectedStaffId ? null : staffId)
-            } else {
-                onSelectStaff(null)
-            }
-            return
-        }
-        const mode = modeFor(event.target)
-        onModeChange(mode)
-        if (event.target.hasName('staff-body')) {
-            onSelectStaff(Number(event.target.id()))
-            return
-        }
-    }
-
-    const createStaff = (centerY: number, height: number, instrument: Instrument) => {
-        page.createStaff(centerY, height, instrument)
-        setStaves([...page.staves.values()])
-        onPageChange()
-    }
-
-    const finishStaff = (event: KonvaEventObject<MouseEvent>) => {
-        if (!pendingStaff) return
-        setPendingStaff(null)
-        const y = stageRef.current!.getRelativePointerPosition()!.y
-        const centerY = (pendingStaff.startY + y) / 2
-        const height = Math.abs(y - pendingStaff.startY)
-        if (!page.canPlaceStaff(centerY, height)) return
-        const instrument = recommendInstrument(project, pages, page, centerY)
-        if (instrument) createStaff(centerY, height, instrument)
-        else setNewStaff({centerY, height, position: {top: event.evt.clientY, left: event.evt.clientX}})
-    }
-
-    const updateInteraction = (target: Node | null, dragging = false) => {
-        if (error || pendingStaff || newStaff || editingInstrument || selectedStaffId !== null) return
-        const mode = modeFor(target, dragging)
-        onModeChange(mode)
-        setHoverCursor({mode, value: cursorFor(target, dragging, mode)})
-    }
+    }, [page, projectName, stageRef])
 
     return (
         <>
@@ -139,37 +63,14 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
                     '& .konvajs-content, & canvas': {cursor: 'inherit'},
                 }}>
                     <Stage ref={stageRef} width={page.width * scale} height={page.height * scale}
-                   scaleX={scale} scaleY={scale} onClick={handlePageClick}
-                   role="region"
-                   onMouseDown={event => {
-                       if (event.evt.button !== 0 || !editable || modeFor(event.target) !== 'add-staff') return
-                       const pointer = stageRef.current!.getRelativePointerPosition()!
-                       onModeChange('add-staff')
-                       setPendingStaff({startY: pointer.y, endY: pointer.y})
-                   }}
-                   onMouseUp={finishStaff}
-                   onMouseMove={event => {
-                       if (pendingStaff) {
-                           const pointer = stageRef.current!.getRelativePointerPosition()!
-                           setPendingStaff({...pendingStaff, endY: pointer.y})
-                           return
-                       }
-                       updateInteraction(dragTargetRef.current ?? event.target, !!dragTargetRef.current)
-                   }}
-                   onMouseLeave={() => {
-                       setPendingStaff(null)
-                       setHoverCursor({mode: editingMode, value: cursorFor(dragTargetRef.current, !!dragTargetRef.current, editingMode)})
-                   }}
-                   onDragStart={event => {
-                       dragTargetRef.current = event.target
-                       updateInteraction(event.target, true)
-                   }}
-                   onDragEnd={() => {
-                       dragTargetRef.current = null
-                       const stage = stageRef.current!
-                       const pointer = stage.getPointerPosition()
-                       updateInteraction(pointer ? stage.getIntersection(pointer) : null)
-                   }}
+                   scaleX={scale} scaleY={scale} role="region"
+                   onClick={interaction.onClick}
+                   onMouseDown={interaction.onMouseDown}
+                   onMouseUp={interaction.onMouseUp}
+                   onMouseMove={interaction.onMouseMove}
+                   onMouseLeave={interaction.onMouseLeave}
+                   onDragStart={interaction.onDragStart}
+                   onDragEnd={interaction.onDragEnd}
                    style={{background: 'white', boxShadow: '0 3px 12px #0003'}}>
                 <Layer name="page-image" listening={false}>
                     {image && <PageImage image={image} width={page.width} height={page.height}/>}
@@ -179,96 +80,53 @@ export function ScorePageWorkSpace({project, page, pages, editingMode = 'select'
                         <Line key={index} points={[page.leftDivider.x, y, page.rightDivider.x, y]}
                               stroke={theme.palette.secondary.dark} strokeWidth={3} listening={false}/>
                     ))}
-                    {staves.map(staff => (
-                        <StaffRect key={staff.id} staff={staff}
-                                   selected={selectedStaffId === staff.id}
+                    {editor.staves.map(staff => (
+                        <StaffRect key={staff.id} staff={staff} editor={editor} interaction={interaction}
+                                   selected={selection.isSelected(staff.id)}
                                    y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
-                                   height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}
-                                   editable={editable}
-                                   onDrag={y => {
-                                       setDraggedStaff({id: staff.id, y, height: staff.height})
-                                   }}
-                                   onDragEnd={y => {
-                                       if (page.moveStaff(staff.id, y)) onPageChange()
-                                       setStaves([...page.staves.values()])
-                                       setDraggedStaff(null)
-                                       return staff.y
-                                   }}/>
+                                   height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>
                     ))}
-                    {dividers.map((divider, index) => {
+                    {editor.dividers.map((divider, index) => {
                         const isTop = divider === divider.staff.topDivider
                         const preview = dragPreview?.id === divider.staff.id ? dragPreview : null
                         return (
-                            <StaffDividerLine key={index} divider={divider} scale={scale}
-                                              y={preview ? preview.y + (isTop ? 0 : preview.height) : divider.y}
-                                              editable={editable}
-                                              onDrag={y => {
-                                                  const bounds = resizeBounds(divider, y)
-                                                  setDraggedStaff({id: divider.staff.id, ...bounds})
-                                                  return bounds.y + (isTop ? 0 : bounds.height)
-                                              }}
-                                              onDragEnd={y => {
-                                                  const bounds = resizeBounds(divider, y)
-                                                  if (page.resizeStaff(divider.staff.id, bounds.y, bounds.height)) onPageChange()
-                                                  setStaves([...page.staves.values()])
-                                                  setDraggedStaff(null)
-                                                  return divider.y
-                                              }}/>
+                            <StaffDividerLine key={index} divider={divider} editor={editor} interaction={interaction} scale={scale}
+                                              y={preview ? preview.y + (isTop ? 0 : preview.height) : divider.y}/>
                         )
                     })}
                     <VerticalDividerLine divider={page.leftDivider} height={page.height} scale={scale}
-                                         editable={editable}
+                                         editable={interaction.editable}
                                          minX={0} maxX={page.rightDivider.x - 1}
                                          onDragEnd={n => {
-                                             page.moveLeftDivider(n)
-                                             setStaves([...page.staves.values()])
-                                             onPageChange()
+                                             editor.moveLeftDivider(n)
                                          }}/>
                     <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
-                                         editable={editable}
+                                         editable={interaction.editable}
                                          minX={page.leftDivider.x + 1} maxX={page.width}
                                          onDragEnd={n => {
-                                             page.moveRightDivider(n)
-                                             setStaves([...page.staves.values()])
-                                             onPageChange()
+                                             editor.moveRightDivider(n)
                                          }}/>
                 </Layer>
                     </Stage>
                 </Box>
                 <Box component="aside" aria-label="Staff instruments" sx={{position: 'relative'}}>
-                    {staves.map(staff => <InstrumentTag key={staff.id} staff={staff} scale={scale}
-                                                       selected={selectedStaffId === staff.id}
+                    {editor.staves.map(staff => <InstrumentTag key={staff.id} staff={staff} editor={editor} interaction={interaction} scale={scale}
+                                                       selected={selection.isSelected(staff.id)}
                                                        y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
-                                                       onEdit={position => {
-                                                           onSelectStaff(staff.id)
-                                                           onModeChange('select')
-                                                           setEditingInstrument({staffId: staff.id, instrument: staff.instrument, position})
-                                                       }}
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}
                 </Box>
             </Box>
             {newStaff && (
                 <InstrumentForm position={newStaff.position} instruments={project.instruments}
                                 title="Add Staff" submitLabel="Create"
-                                onCancel={() => setNewStaff(null)}
-                                onSubmit={(name, shortcut) => {
-                                    createStaff(newStaff.centerY, newStaff.height, project.getOrCreateInstrument(name, shortcut))
-                                    setNewStaff(null)
-                                }}/>
+                                onCancel={interaction.cancelInstrument}
+                                onSubmit={interaction.submitInstrument}/>
             )}
             {editingInstrument && (
                 <InstrumentForm position={editingInstrument.position} instruments={project.instruments}
-                                instrument={recommendInstrument(project, pages, page, page.getStaff(editingInstrument.staffId)!.y)
-                                    ?? editingInstrument.instrument}
-                                onCancel={() => setEditingInstrument(null)}
-                                onSubmit={(instrumentName, shortcut) => {
-                                    if (!page.getStaff(editingInstrument.staffId)) return
-                                    const instrument = project.getOrCreateInstrument(instrumentName, shortcut)
-                                    page.changeInstrumentForStaff(editingInstrument.staffId, instrument)
-                                    onPageChange()
-                                    setStaves([...page.staves.values()])
-                                    setEditingInstrument(null)
-                                }}/>
+                                instrument={editingInstrument.instrument}
+                                onCancel={interaction.cancelInstrument}
+                                onSubmit={interaction.submitInstrument}/>
             )}
             {error && <Alert severity="error">Page {page.number} could not be displayed.</Alert>}
         </>

@@ -8,6 +8,7 @@ import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
 import {usePaging} from '../../hooks';
+import {useEditingMode} from '../../hooks/scorePage';
 import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
 
 export default function ProjectExportPage() {
@@ -15,7 +16,7 @@ export default function ProjectExportPage() {
     const projectState = useProject()
     const saveState = useProjectSave(projectState.project, projectState.pages)
     const {project} = projectState
-    const [editingMode, setEditingMode] = useState<'select'>('select')
+    const editing = useEditingMode()
     const [selectedInstrumentIds, setSelectedInstrumentIds] = useState<Set<string>>(() => new Set())
     const navigate = useNavigate()
     const [previewPdf, setPreviewPdf] = useState<Blob | null>(null)
@@ -45,6 +46,7 @@ export default function ProjectExportPage() {
         setError(null)
         setPreviewPdf(null)
         paging.reset()
+        // eslint-disable-next-line react-hooks/immutability -- The property setter updates React state.
         paging.pageCount = 0
         try {
             if (!await saveState.save()) throw new Error('Save the project successfully before exporting.');
@@ -64,7 +66,7 @@ export default function ProjectExportPage() {
         }} pagination={paging}>
             <UnsavedChangesDialog hasChanges={saveState.hasChanges}/>
             <Box sx={{flex: 1, py: 2, pl: {xs: '240px', sm: '312px', md: '352px'}, pr: {xs: 1, sm: 3}}}>
-                <ExportToolBar editingMode={editingMode} onModeChange={setEditingMode}
+                <ExportToolBar editing={editing}
                                generating={generating} onPreview={createPreview}
                                hasPreview={!!previewPdf} onPrint={printPreview}
                                hasSelectedInstruments={selectedInstrumentIds.size > 0} onBack={() => {
@@ -73,6 +75,7 @@ export default function ProjectExportPage() {
                 <InstrumentsBar instruments={project.instruments} selectedIds={selectedInstrumentIds} disabled={generating}
                                 onToggle={(id, selected) => {
                                     setPreviewPdf(null)
+                                    // eslint-disable-next-line react-hooks/immutability -- The property setter updates React state.
                                     paging.pageCount = 0
                                     paging.reset()
                                     setError(null)
@@ -85,7 +88,7 @@ export default function ProjectExportPage() {
                                 }}/>
                 <Container maxWidth="xl" disableGutters>
                         <Box component="section" aria-label="Export PDF viewer"
-                             data-editing-mode={editingMode}
+                             data-editing-mode={editing.mode}
                              sx={{minWidth: 0, minHeight: 'calc(100svh - 120px)', bgcolor: 'action.hover',
                                  border: '1px solid', borderColor: 'divider', borderRadius: 3,
                                  display: 'grid', placeItems: 'center', p: 3}}>

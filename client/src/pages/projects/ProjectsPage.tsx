@@ -94,7 +94,7 @@ function ProjectsPage() {
                     )}
                 </Stack>
             </Container>
-            <FloatButton to="/projects/new" icon aria-label="Create project">
+            <FloatButton to="/project/new" icon aria-label="Create project">
                 <ButtonIcon name="add" aria-hidden="true"/>
             </FloatButton>
         </NavPage>
