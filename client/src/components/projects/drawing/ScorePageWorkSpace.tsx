@@ -31,7 +31,7 @@ export function ScorePageWorkSpace({projectState, page, editor, editing, selecti
     const [image, setImage] = useState<HTMLImageElement | null>(null)
     const [error, setError] = useState(false)
     const interaction = useScorePageInteraction({projectState, page, editor, editing, selection, disabled: error})
-    const {stageRef, cursor, pendingStaff, newStaff, editingInstrument, dragPreview} = interaction
+    const {stageRef, cursor, pendingStaff, instrumentForm, dragPreview} = interaction
 
     useLayoutEffect(() => {
         const container = stageRef.current!.container()
@@ -99,15 +99,11 @@ export function ScorePageWorkSpace({projectState, page, editor, editing, selecti
                     <VerticalDividerLine divider={page.leftDivider} height={page.height} scale={scale}
                                          editable={interaction.editable}
                                          minX={0} maxX={page.rightDivider.x - 1}
-                                         onDragEnd={n => {
-                                             interaction.moveLeftDivider(n)
-                                         }}/>
+                                         onDragEnd={interaction.moveLeftDivider}/>
                     <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
                                          editable={interaction.editable}
                                          minX={page.leftDivider.x + 1} maxX={page.width}
-                                         onDragEnd={n => {
-                                             interaction.moveRightDivider(n)
-                                         }}/>
+                                         onDragEnd={interaction.moveRightDivider}/>
                 </Layer>
                     </Stage>
                 </Box>
@@ -118,15 +114,11 @@ export function ScorePageWorkSpace({projectState, page, editor, editing, selecti
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}
                 </Box>
             </Box>
-            {newStaff && (
-                <InstrumentForm position={newStaff.position} instruments={project.instruments}
-                                title="Add Staff" submitLabel="Create"
-                                onCancel={interaction.cancelInstrument}
-                                onSubmit={interaction.submitInstrument}/>
-            )}
-            {editingInstrument && (
-                <InstrumentForm position={editingInstrument.position} instruments={project.instruments}
-                                instrument={editingInstrument.instrument}
+            {instrumentForm && (
+                <InstrumentForm position={instrumentForm.position} instruments={project.instruments}
+                                instrument={'staffId' in instrumentForm ? instrumentForm.instrument : undefined}
+                                title={'staffId' in instrumentForm ? 'Edit Instrument' : 'Add Staff'}
+                                submitLabel={'staffId' in instrumentForm ? 'Save' : 'Create'}
                                 onCancel={interaction.cancelInstrument}
                                 onSubmit={interaction.submitInstrument}/>
             )}
