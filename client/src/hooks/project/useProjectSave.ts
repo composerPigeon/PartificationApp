@@ -30,10 +30,6 @@ export function useProjectSave(project: Project, pages: ScorePage[]): ProjectSav
     return base.extend({
         get saving() { return saving; },
         get hasChanges() { return saving || hasUnsavedPages(); },
-        pageChanged() {
-            base.refresh();
-            void save();
-        },
         save,
     });
 }

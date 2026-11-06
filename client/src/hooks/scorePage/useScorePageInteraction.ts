@@ -3,11 +3,11 @@ import {useRef, useState} from 'react';
 import {useBaseState} from '..';
 import type {KonvaEventObject, Node} from 'konva/lib/Node';
 import type {Stage} from 'konva/lib/Stage';
-import type {Instrument, ScorePage, Staff} from '../../domain';
+import type {Instrument, ScorePage, Staff, StaffDivider} from '../../domain';
 import type {ProjectState} from '../project';
 import type {StaffSelectionState} from './states/StaffSelectionState';
 import type {EditingModeState} from './states/EditingModeState';
-import type {ScorePageEditorState, StaffResizeBounds} from './states/ScorePageEditorState';
+import type {ScorePageEditorState} from './states/ScorePageEditorState';
 import {recommendInstrument} from '../../services/projects/recommendInstrument';
 
 type Position = {top: number, left: number};
@@ -15,7 +15,7 @@ type PageEvent = KonvaEventObject<MouseEvent>;
 
 interface ScorePageInteractionOptions {
     projectState: ProjectState;
-    page: ScorePage;
+    page: ScorePage | undefined;
     editor: ScorePageEditorState;
     editing: EditingModeState;
     selection: StaffSelectionState;
@@ -34,22 +34,33 @@ export function useScorePageInteraction({projectState, page, editor, editing, se
     const [newStaff, setNewStaff] = useState<{centerY: number, height: number, position: Position} | null>(null);
     const [editingInstrument, setEditingInstrument] = useState<{staffId: number, instrument: Instrument, position: Position} | null>(null);
     const [dragPreview, setDragPreview] = useState<{id: number, y: number, height: number} | null>(null);
-    const editable = !disabled && !selection.hasSelection;
+    const editable = !!page && !disabled && !selection.hasSelection;
     const cursor = !editable ? 'default' : editing.mode === 'add-staff' ? 'crosshair'
         : hoverCursor.mode === editing.mode ? hoverCursor.value : 'default';
 
     function updateInteraction(target: Node | null, dragging = false) {
         if (!editable || pendingStaff || newStaff || editingInstrument) return;
-        const mode = editing.modeFor(target, dragging);
-        editing.mode = mode;
+        const mode = editing.updateForTarget(target, dragging);
         setHoverCursor({mode, value: editing.cursorFor(target, dragging, mode)});
     }
 
     // eslint-disable-next-line react-hooks/refs -- extend preserves descriptors; it never reads stageRef.current.
     return base.extend({
         stageRef, editable, cursor, pendingStaff, newStaff, editingInstrument, dragPreview,
+        copyStavesLayoutToNextPage() {
+            if (disabled || !page) return false;
+            return editor.copyStavesLayoutToNextPage();
+        },
+        moveLeftDivider(x: number) {
+            if (!editable) return false;
+            return editor.moveLeftDivider(x);
+        },
+        moveRightDivider(x: number) {
+            if (!editable) return false;
+            return editor.moveRightDivider(x);
+        },
         onClick(event: PageEvent) {
-            if (event.evt.button !== 0 || disabled) return;
+            if (event.evt.button !== 0 || disabled || !page) return;
             if (!selection.hasSelection) editing.mode = editing.modeFor(event.target);
             if (event.target.hasName('staff-body')) selection.toggle(Number(event.target.id()));
             else selection.clear();
@@ -66,7 +77,7 @@ export function useScorePageInteraction({projectState, page, editor, editing, se
             if (!pendingStaff || event.evt.button !== 0) return;
             setPendingStaff(null);
             const pointer = stageRef.current?.getRelativePointerPosition();
-            if (!pointer || !editable) return;
+            if (!pointer || !editable || !page) return;
             const centerY = (pendingStaff.startY + pointer.y) / 2;
             const height = Math.abs(pointer.y - pendingStaff.startY);
             if (!editor.canPlaceStaff(centerY, height)) return;
@@ -99,20 +110,34 @@ export function useScorePageInteraction({projectState, page, editor, editing, se
         previewStaff(staff: Staff, y: number) {
             setDragPreview({id: staff.id, y, height: staff.height});
         },
-        previewStaffResize(staff: Staff, bounds: StaffResizeBounds) {
-            setDragPreview({id: staff.id, ...bounds});
+        previewStaffResize(divider: StaffDivider, y: number) {
+            const bounds = editor.getStaffResizeBounds(divider, y);
+            setDragPreview({id: divider.staff.id, ...bounds});
+            return bounds.y + (divider === divider.staff.topDivider ? 0 : bounds.height);
         },
-        clearPreview() { setDragPreview(null); },
+        finishStaffDrag(staff: Staff, y: number) {
+            const moved = editor.moveStaff(staff.id, y);
+            setDragPreview(null);
+            return moved;
+        },
+        finishStaffResize(divider: StaffDivider, y: number) {
+            const resized = editor.moveStaffDivider(divider, y);
+            setDragPreview(null);
+            return resized;
+        },
         editInstrument(staff: Staff, position: Position) {
+            if (!page) return;
             editing.mode = 'select';
             selection.staffId = staff.id;
             const instrument = recommendInstrument(project, pages, page, staff.y) ?? staff.instrument;
             setEditingInstrument({staffId: staff.id, instrument, position});
         },
-        staffDeleted(id: number) {
+        deleteStaff(id: number) {
+            if (!editor.deleteStaff(id)) return false;
             selection.clear(id);
             if (editingInstrument?.staffId === id) setEditingInstrument(null);
             if (dragPreview?.id === id) setDragPreview(null);
+            return true;
         },
         cancelInstrument() {
             setNewStaff(null);

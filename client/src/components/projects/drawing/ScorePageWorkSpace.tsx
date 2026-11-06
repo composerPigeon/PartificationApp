@@ -2,34 +2,35 @@
 import {useLayoutEffect, useState} from 'react'
 import {Alert, Box, useTheme} from '@mui/material'
 import {Image as PageImage, Layer, Line, Stage} from 'react-konva'
-import type {ScorePage} from '../../../domain';
 import type {ProjectState, ProjectSaveState} from '../../../hooks/project';
-import {useScorePageEditor, useScorePageInteraction} from '../../../hooks/scorePage';
-import type {EditingModeState, StaffSelectionState} from '../../../hooks/scorePage';
+import type {ScorePage} from '../../../domain';
+import {useScorePageInteraction} from '../../../hooks/scorePage';
+import type {EditingModeState, StaffSelectionState, ScorePageEditorState} from '../../../hooks/scorePage';
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
 import {VerticalDividerLine} from './VerticalDividerLine.tsx'
 import {InstrumentForm} from '../InstrumentForm.tsx'
 import {InstrumentTag} from './InstrumentTag.tsx'
+import {ToolBar} from '../ToolBar'
 
 interface ScorePageWorkSpaceProps {
     projectState: ProjectState
     page: ScorePage
-    saveState: ProjectSaveState
+    editor: ScorePageEditorState
     editing: EditingModeState
     selection: StaffSelectionState
+    saveState: ProjectSaveState
+    onExport(): void
 }
 
-export function ScorePageWorkSpace({projectState, page, saveState, editing, selection}: ScorePageWorkSpaceProps) {
+export function ScorePageWorkSpace({projectState, page, editor, editing, selection, saveState, onExport}: ScorePageWorkSpaceProps) {
     const {project} = projectState
     const theme = useTheme()
-    const editor = useScorePageEditor(page, saveState.pageChanged)
     const projectName = project.projectName
     const [scale, setScale] = useState(800 / page.width)
     const [image, setImage] = useState<HTMLImageElement | null>(null)
     const [error, setError] = useState(false)
-    const interaction = useScorePageInteraction({projectState, page, editor, editing,
-        selection, disabled: error})
+    const interaction = useScorePageInteraction({projectState, page, editor, editing, selection, disabled: error})
     const {stageRef, cursor, pendingStaff, newStaff, editingInstrument, dragPreview} = interaction
 
     useLayoutEffect(() => {
@@ -55,6 +56,7 @@ export function ScorePageWorkSpace({projectState, page, saveState, editing, sele
 
     return (
         <>
+            <ToolBar editing={editing} editor={editor} interaction={interaction} saveState={saveState} onExport={onExport}/>
             <Box sx={{width: '100%', maxWidth: 1104, display: 'grid', gridTemplateColumns: 'clamp(64px, 12vw, 144px) minmax(0, 800px) clamp(64px, 12vw, 144px)', gap: 1}}>
                 <Box sx={{
                     minWidth: 0,
@@ -81,7 +83,7 @@ export function ScorePageWorkSpace({projectState, page, saveState, editing, sele
                               stroke={theme.palette.secondary.dark} strokeWidth={3} listening={false}/>
                     ))}
                     {editor.staves.map(staff => (
-                        <StaffRect key={staff.id} staff={staff} editor={editor} interaction={interaction}
+                        <StaffRect key={staff.id} staff={staff} interaction={interaction}
                                    selected={selection.isSelected(staff.id)}
                                    y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                    height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>
@@ -90,7 +92,7 @@ export function ScorePageWorkSpace({projectState, page, saveState, editing, sele
                         const isTop = divider === divider.staff.topDivider
                         const preview = dragPreview?.id === divider.staff.id ? dragPreview : null
                         return (
-                            <StaffDividerLine key={index} divider={divider} editor={editor} interaction={interaction} scale={scale}
+                            <StaffDividerLine key={index} divider={divider} interaction={interaction} scale={scale}
                                               y={preview ? preview.y + (isTop ? 0 : preview.height) : divider.y}/>
                         )
                     })}
@@ -98,19 +100,19 @@ export function ScorePageWorkSpace({projectState, page, saveState, editing, sele
                                          editable={interaction.editable}
                                          minX={0} maxX={page.rightDivider.x - 1}
                                          onDragEnd={n => {
-                                             editor.moveLeftDivider(n)
+                                             interaction.moveLeftDivider(n)
                                          }}/>
                     <VerticalDividerLine divider={page.rightDivider} height={page.height} scale={scale}
                                          editable={interaction.editable}
                                          minX={page.leftDivider.x + 1} maxX={page.width}
                                          onDragEnd={n => {
-                                             editor.moveRightDivider(n)
+                                             interaction.moveRightDivider(n)
                                          }}/>
                 </Layer>
                     </Stage>
                 </Box>
                 <Box component="aside" aria-label="Staff instruments" sx={{position: 'relative'}}>
-                    {editor.staves.map(staff => <InstrumentTag key={staff.id} staff={staff} editor={editor} interaction={interaction} scale={scale}
+                    {editor.staves.map(staff => <InstrumentTag key={staff.id} staff={staff} interaction={interaction} scale={scale}
                                                        selected={selection.isSelected(staff.id)}
                                                        y={dragPreview?.id === staff.id ? dragPreview.y : staff.y}
                                                        height={dragPreview?.id === staff.id ? dragPreview.height : staff.height}/>)}

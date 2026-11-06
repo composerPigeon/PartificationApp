@@ -11,6 +11,9 @@ export interface ScorePageEditorState extends BaseState {
     get dividers(): readonly StaffDivider[];
     get leftDivider(): VerticalDivider;
     get rightDivider(): VerticalDivider;
+    get canCopyStavesLayout(): boolean;
+
+    copyStavesLayoutToNextPage(): boolean;
 
     getStaff(id: number): Staff | undefined;
     canPlaceStaff(centerY: number, height: number, excludedStaffId?: number): boolean;

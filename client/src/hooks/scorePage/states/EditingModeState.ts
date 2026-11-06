@@ -12,5 +12,6 @@ export interface EditingModeState extends BaseState {
     get locked(): boolean;
 
     modeFor(target: EditingTarget | null, dragging?: boolean): EditingMode;
+    updateForTarget(target: EditingTarget | null, dragging?: boolean): EditingMode;
     cursorFor(target: EditingTarget | null, dragging?: boolean, mode?: EditingMode): string;
 }

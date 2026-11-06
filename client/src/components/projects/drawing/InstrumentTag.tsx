@@ -1,11 +1,10 @@
 import {Box, ButtonBase, IconButton, Tooltip, Typography} from '@mui/material'
 import {ButtonIcon} from '../../buttons/ButtonIcon'
 import type {Staff} from '../../../domain';
-import type {ScorePageEditorState, ScorePageInteractionState} from '../../../hooks/scorePage';
+import type {ScorePageInteractionState} from '../../../hooks/scorePage';
 
 interface InstrumentTagProps {
     staff: Staff
-    editor: ScorePageEditorState
     interaction: ScorePageInteractionState
     scale: number
     y: number
@@ -13,7 +12,7 @@ interface InstrumentTagProps {
     selected: boolean
 }
 
-export function InstrumentTag({staff, editor, scale, y, height, selected, interaction}: InstrumentTagProps) {
+export function InstrumentTag({staff, scale, y, height, selected, interaction}: InstrumentTagProps) {
     return (
         <Box sx={{
             display: 'flex',
@@ -47,7 +46,7 @@ export function InstrumentTag({staff, editor, scale, y, height, selected, intera
             <Tooltip title="Delete staff">
                 <IconButton size="small" aria-label={`Delete staff ${staff.instrument.title}`}
                             onClick={() => {
-                                if (editor.deleteStaff(staff.id)) interaction.staffDeleted(staff.id)
+                                interaction.deleteStaff(staff.id)
                             }} sx={{color: 'inherit', mr: 0.5}}>
                     <ButtonIcon name="delete" fontSize="small"/>
                 </IconButton>

@@ -1,18 +1,17 @@
 import {alpha, useTheme} from '@mui/material'
 import {Rect} from 'react-konva'
 import type {Staff} from '../../../domain';
-import type {ScorePageEditorState, ScorePageInteractionState} from '../../../hooks/scorePage';
+import type {ScorePageInteractionState} from '../../../hooks/scorePage';
 
 interface StaffRectProps {
     staff: Staff
-    editor: ScorePageEditorState
     interaction: ScorePageInteractionState
     y: number
     height: number
     selected: boolean
 }
 
-export function StaffRect({staff, editor, y, height, interaction, selected}: StaffRectProps) {
+export function StaffRect({staff, y, height, interaction, selected}: StaffRectProps) {
     const theme = useTheme()
     return (
         <Rect id={String(staff.id)} name="staff-body" x={staff.x} y={y} width={staff.width} height={height}
@@ -22,8 +21,7 @@ export function StaffRect({staff, editor, y, height, interaction, selected}: Sta
                   interaction.previewStaff(staff, event.target.y())
               }}
               onDragEnd={event => {
-                  editor.moveStaff(staff.id, event.target.y())
-                  interaction.clearPreview()
+                  interaction.finishStaffDrag(staff, event.target.y())
                   event.target.position({x: staff.x, y: staff.y})
               }}
               stroke={selected ? theme.palette.primary.main : undefined}

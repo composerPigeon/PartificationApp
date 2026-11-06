@@ -71,6 +71,47 @@ export class ScorePage {
         this.markChanged();
     }
 
+    /** Copies independent geometry to the next empty page, scaled to its dimensions. */
+    copyStavesLayoutTo(nextPage: ScorePage): boolean {
+        if (nextPage === this || nextPage.projectId !== this.projectId || nextPage.number !== this.number + 1
+            || !this.staves.size || nextPage.staves.size) return false;
+        if (![this.width, this.height, nextPage.width, nextPage.height]
+            .every(value => Number.isFinite(value) && value > 0)) return false;
+
+        const scaleX = nextPage.width / this.width;
+        const scaleY = nextPage.height / this.height;
+        const staves = new StaffCollection();
+        for (const staff of this.staves) {
+            staves.add(Staff.copy(staff, scaleX, scaleY));
+        }
+
+        const grandStaves = new Map<number, GrandStaff>();
+        for (const [id, grandStaff] of this.grandStaves) {
+            const first = staves.get(grandStaff.firstStaff.id);
+            const second = staves.get(grandStaff.secondStaff.id);
+            if (!first || !second) return false;
+            grandStaves.set(id, new GrandStaff(grandStaff.id, grandStaff.instrument, first, second));
+        }
+        const systems = new Map<number, StaffSystem>();
+        for (const [id, system] of this.systems) {
+            const members: Staff[] = [];
+            for (const staff of system.staves.values()) {
+                const copy = staves.get(staff.id);
+                if (!copy) return false;
+                members.push(copy);
+            }
+            systems.set(id, new StaffSystem(system.id, members));
+        }
+
+        nextPage.staves = staves;
+        nextPage.grandStaves = grandStaves;
+        nextPage.systems = systems;
+        nextPage.leftDivider = new VerticalDivider(this.leftDivider.x * scaleX);
+        nextPage.rightDivider = new VerticalDivider(this.rightDivider.x * scaleX);
+        nextPage.markChanged();
+        return true;
+    }
+
     deleteStaff(id: number): boolean {
         if (!this.staves.delete(id)) return false;
         for (const [key, grandStaff] of this.grandStaves) {

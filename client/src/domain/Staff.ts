@@ -32,6 +32,15 @@ export class Staff implements ScoreElement {
         this.bottomDivider = new StaffDivider(this, this.y + this.height)
     }
 
+    static copy(staff: Staff, scaleX = 1, scaleY = 1): Staff {
+        return new Staff(staff.id, {
+            x: staff.x * scaleX,
+            y: staff.y * scaleY,
+            width: staff.width * scaleX,
+            height: staff.height * scaleY,
+        }, staff.instrument)
+    }
+
     get bounds(): StaffBounds {
         return {
             x: this.bbox[0],
