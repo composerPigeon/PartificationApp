@@ -1,6 +1,6 @@
 import {useTheme} from '@mui/material'
 import {Line} from 'react-konva'
-import type {VerticalDivider} from '../../../domain/VerticalDivider.ts'
+import type {VerticalDivider} from '../../../domain';
 
 interface VerticalDividerLineProps {
     divider: VerticalDivider

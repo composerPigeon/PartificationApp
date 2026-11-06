@@ -1,9 +1,9 @@
-import type {SignUpState} from "./states/SignUpState.ts";
+import type {SignUpState} from './states';
 
 import {serverProxy} from "../../services";
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
-import {useFormBase} from '../useFormBase.ts';
+import {useFormBase} from '..';
 
 export function useSignUp(): SignUpState {
     const navigate = useNavigate()

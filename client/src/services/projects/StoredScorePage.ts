@@ -1,6 +1,5 @@
-import {ScorePageMetadata} from '../../domain/metadata/ScorePageMetadata.ts';
-import {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
-import {ScorePage} from "../../domain";
+import {ScorePageMetadata, SubdivisionsMetadata} from '../../domain/metadata';
+import {ScorePage} from '../../domain';
 
 /**
  * Page data passed between ProjectManager and storage, combining the image and

@@ -46,13 +46,13 @@ const profileRoute = createRoute({
 
 const projectsRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/projects',
+    path: '/project',
     component: ProjectsPage,
 })
 
 const createProjectRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/projects/new',
+    path: '/project/new',
     component: CreateProjectPage,
 })
 

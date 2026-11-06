@@ -1,5 +1,5 @@
 import {Alert, Stack, Typography} from '@mui/material'
-import {useCreateProject} from '../../hooks/projects/useCreateProject.ts'
+import {useCreateProject} from '../../hooks/project';
 import {PdfFileField} from '../../components/PdfFileField.tsx'
 import Form from '../../components/formComponents/Form.tsx'
 import FormPage from '../../components/formComponents/FormPage.tsx'

@@ -1,6 +1,6 @@
 import {useState, type ReactNode} from 'react'
 import {Autocomplete, Box, Button, Popover, Stack, TextField} from '@mui/material'
-import {Instrument} from '../../domain/Instrument.ts'
+import {Instrument} from '../../domain';
 import {ContextFormHeading} from '../formComponents/ContextFormHeading.tsx'
 
 interface InstrumentFormProps {

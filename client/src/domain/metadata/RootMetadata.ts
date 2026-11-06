@@ -1,4 +1,4 @@
-import {Account} from "../Account.ts";
+import {Account} from '..';
 import {JsonProperty, Serializable} from "ts-jackson";
 
 @Serializable()

@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import type {Project, ScorePage} from '../../domain';
 import {projectManager} from '../../services';
-import {useBaseState} from '../useBaseState.ts';
-import type {ProjectSaveState} from './states/ProjectSaveState.ts';
+import {useBaseState} from '..';
+import type {ProjectSaveState} from './states';
 
 // Each call owns its saving state; no provider is required.
 export function useProjectSave(project: Project, pages: ScorePage[]): ProjectSaveState {

@@ -1,5 +1,5 @@
-import {Account} from '../../domain/Account';
-import {RootMetadata} from '../../domain/metadata/RootMetadata';
+import {Account} from '../../domain';
+import {RootMetadata} from '../../domain/metadata';
 import type {StorageService} from '../storage/StorageService';
 import {AuthorisationService} from './AuthorisationService';
 

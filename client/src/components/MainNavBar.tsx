@@ -10,7 +10,7 @@ interface MainNavBarProps {
 }
 
 export default function MainNavBar({title, hideProfile = false}: MainNavBarProps) {
-    const readOnlyProfile = useMatches({select: matches => matches.some(match => match.routeId === '/projects/new')});
+    const readOnlyProfile = useMatches({select: matches => matches.some(match => match.routeId === '/project/new')});
 
     return (
         <AppBar position="static" color="inherit" elevation={1} sx={theme => ({

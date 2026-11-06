@@ -1,7 +1,6 @@
 import {PDFDocument, PageSizes, StandardFonts} from 'pdf-lib';
 import type {PDFFont, PDFPage} from 'pdf-lib';
-import type {Project} from '../../../domain';
-import type {Instrument} from '../../../domain/Instrument.ts';
+import type {Project, Instrument} from '../../../domain';
 import type {IProjectManager} from '../../projects/ProjectManager.ts';
 import appIconUrl from '../../../../public/icons/app-icon.svg?url';
 

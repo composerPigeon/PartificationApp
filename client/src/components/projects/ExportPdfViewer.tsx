@@ -3,7 +3,7 @@ import {Alert, Box, CircularProgress} from '@mui/material'
 import {getDocument, GlobalWorkerOptions} from 'pdfjs-dist'
 import type {PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask} from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-import type {PagingState} from '../../hooks/states/PagingState.ts'
+import type {PagingState} from '../../hooks/states';
 
 GlobalWorkerOptions.workerSrc = workerUrl
 

@@ -1,5 +1,5 @@
 import {useRef, useState} from 'react';
-import type {FormBaseState} from './states/FormBaseState.ts';
+import type {FormBaseState} from './states';
 import {useBaseState} from './useBaseState.ts';
 
 interface FormState extends FormBaseState {

@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {AuthState} from './states/AuthState.ts';
+import type {AuthState} from './states';
 import {authService} from '../../services';
 
 // Creates auth state and actions; called only by AuthProvider.

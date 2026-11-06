@@ -3,17 +3,16 @@ import {Alert, Box, CircularProgress, Container, Stack, Typography} from '@mui/m
 import {useEffect, useRef, useState} from 'react'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
-import {useProjectState} from '../../hooks/projects/useProjectState.ts'
-import {useProjectSave} from '../../hooks/projects/useProjectSave.ts'
+import {useProject, useProjectSave} from '../../hooks/project';
 import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
-import {usePaging} from '../../hooks/usePaging.ts'
+import {usePaging} from '../../hooks';
 import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
 
 export default function ProjectExportPage() {
     const {userId, projectName} = useParams({from: '/$userId/$projectName/export'})
-    const projectState = useProjectState()
+    const projectState = useProject()
     const saveState = useProjectSave(projectState.project, projectState.pages)
     const {project} = projectState
     const [editingMode, setEditingMode] = useState<'select'>('select')

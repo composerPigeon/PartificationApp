@@ -1,10 +1,6 @@
-import type {ScorePage} from '../../domain/ScorePage.ts';
-import type {SubdivisionsMetadata} from '../../domain/metadata/SubdivisionsMetadata.ts';
-import {StaffCollection} from '../../domain/StaffCollection.ts';
-import {Staff} from '../../domain/Staff.ts';
-import {GrandStaff} from '../../domain/GrandStaff.ts';
-import {StaffSystem} from '../../domain/StaffSystem.ts';
-import {Instrument} from '../../domain/Instrument.ts';
+import {StaffCollection, Staff, GrandStaff, StaffSystem, Instrument} from '../../domain';
+import type {ScorePage} from '../../domain';
+import type {SubdivisionsMetadata} from '../../domain/metadata';
 
 function rangeMembers(key: string, staves: StaffCollection): Staff[] {
     const match = /^([1-9]\d*)(?:-([1-9]\d*))?$/.exec(key);

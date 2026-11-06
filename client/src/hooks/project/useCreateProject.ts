@@ -2,8 +2,8 @@ import {useState} from 'react'
 import type {SubmitEvent} from 'react'
 import {useNavigate} from '@tanstack/react-router'
 import {projectManager} from '../../services'
-import {useFormBase} from '../useFormBase.ts'
-import type {CreateProjectState} from './states/CreateProjectState.ts'
+import {useFormBase} from '..';
+import type {CreateProjectState} from './states';
 
 export function useCreateProject(): CreateProjectState {
     const navigate = useNavigate()
@@ -32,7 +32,7 @@ export function useCreateProject(): CreateProjectState {
                 await projectManager.createProject(name, file, onPageConvertProgress, {
                     title, subtitle, author, authorDate, genre,
                 }, allowLayoutModelTraining);
-                await navigate({to: '/projects'})
+                await navigate({to: '/project'})
             } finally {
                 setProgress('')
             }

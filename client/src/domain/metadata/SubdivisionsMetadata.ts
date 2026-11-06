@@ -1,7 +1,5 @@
 import {JsonProperty, Serializable} from 'ts-jackson';
-import type {ScorePage} from '../ScorePage.ts';
-import type {StaffCollection} from '../StaffCollection.ts';
-import type {Staff} from '../Staff.ts';
+import type {ScorePage, StaffCollection, Staff} from '..';
 
 @Serializable()
 export class StaffMetadata {

@@ -3,7 +3,7 @@ import {Link} from '@tanstack/react-router';
 import {AppIcon} from '../AppIcon';
 import ProfileMenu from '../ProfileMenu';
 import {PageNavigation} from './PageNavigation';
-import type {PagingState} from '../../hooks/states/PagingState.ts';
+import type {PagingState} from '../../hooks/states';
 
 export interface PreviewInsets {
     left: {xs: string; sm: string; md?: string};

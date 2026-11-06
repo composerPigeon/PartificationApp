@@ -1,15 +1,14 @@
-import { Project, ScorePage} from '../../domain';
-import type {ProjectScoreDetails} from '../../domain';
+import {Project, ScorePage} from '../../domain';
+import type {ProjectScoreDetails, Instrument} from '../../domain';
 import StorageType from "../storage/StorageType.ts";
 import type {StorageService} from "../storage/StorageService.ts";
 import {FileSystemEntryNames} from "../storage/fileSystem/storageHelpers.ts";
 import {browserStorage} from '../dataAccess';
 import {authService} from '../index';
-import {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
+import {MusicorpusMetadata} from '../../domain/metadata';
 import {type IConvertPdfPagesService, ConvertPdfPagesService} from "../pdf/import/ConvertPdfPagesService.ts";
 import type {ConvertedPdfPage} from '../pdf/import/ConvertPdfPagesService.ts';
 import {SubdivisionsMapper} from './SubdivisionsMapper.ts';
-import type {Instrument} from '../../domain/Instrument.ts';
 import {StaffImageService, type IStaffImageService} from '../images/StaffImageService.ts';
 import {StoredScorePage} from "./StoredScorePage.ts";
 

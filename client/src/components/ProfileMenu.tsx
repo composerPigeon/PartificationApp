@@ -4,7 +4,7 @@ import {
     Menu, MenuItem, SvgIcon, Tooltip, Typography,
 } from '@mui/material';
 import {Link, useNavigate} from '@tanstack/react-router';
-import {useAuthState} from '../hooks/auth/useAuthState';
+import {useAuthState} from '../hooks/auth';
 
 function initials(userName: string): string {
     const parts = userName.trim().split(/[\s._-]+/).filter(Boolean);
@@ -37,7 +37,7 @@ export default function ProfileMenu({readOnly = false}: {readOnly?: boolean}) {
     function selectAccount(userId: string) {
         setCurrent(userId);
         close();
-        void navigate({to: '/projects'});
+        void navigate({to: '/project'});
     }
 
     return (

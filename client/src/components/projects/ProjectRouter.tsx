@@ -3,8 +3,7 @@ import {Outlet, useParams} from '@tanstack/react-router';
 import {Alert, Button, CircularProgress, Container} from '@mui/material';
 import type {Project, ScorePage} from '../../domain';
 import {projectManager} from '../../services';
-import {useBaseState} from '../../hooks/useBaseState.ts';
-import {usePaging} from '../../hooks/usePaging.ts';
+import {useBaseState, usePaging} from '../../hooks';
 import {ProjectProvider} from './ProjectProvider.tsx';
 import {ProjectPage} from './ProjectPage.tsx';
 

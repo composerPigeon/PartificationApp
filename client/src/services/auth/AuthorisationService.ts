@@ -1,5 +1,5 @@
-import {Account} from '../../domain/Account';
-import type {RootMetadata} from "../../domain/metadata/RootMetadata.ts";
+import {Account} from '../../domain';
+import type {RootMetadata} from '../../domain/metadata';
 
 export interface IAuthorisationService {
     readonly currentAccount: Account | null;

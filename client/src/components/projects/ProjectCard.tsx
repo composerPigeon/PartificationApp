@@ -1,8 +1,8 @@
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Box, CircularProgress, IconButton, Paper, Typography} from '@mui/material';
 import {Link} from '@tanstack/react-router';
-import type {Project} from '../../domain/Project';
-import {useAuthState} from '../../hooks/auth/useAuthState';
+import type {Project} from '../../domain';
+import {useAuthState} from '../../hooks/auth';
 
 interface ProjectCardProps {
     project: Project;

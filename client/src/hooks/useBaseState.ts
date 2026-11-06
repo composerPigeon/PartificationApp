@@ -1,4 +1,4 @@
-import type {BaseState} from './states/BaseState.ts';
+import type {BaseState} from './states';
 import {useState} from 'react';
 
 export function useBaseState(): BaseState {

@@ -2,8 +2,8 @@ import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
 import {serverProxy} from "../../services";
 import {useAuthState} from './useAuthState';
-import type {LogInState} from "./states/LogInState.ts";
-import {useFormBase} from '../useFormBase.ts';
+import type {LogInState} from './states';
+import {useFormBase} from '..';
 
 
 export function useLogIn(): LogInState {
@@ -26,7 +26,7 @@ export function useLogIn(): LogInState {
 
             addAccount(result.userId, result.userName)
             authenticate(result.userId)
-            await navigate({to: '/projects'})
+            await navigate({to: '/project'})
         }, 'Unable to log in. Please try again.')
     }
 

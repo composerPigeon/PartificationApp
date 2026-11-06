@@ -1,6 +1,6 @@
 import {alpha, useTheme} from '@mui/material'
 import {Rect} from 'react-konva'
-import type {Staff} from '../../../domain/Staff.ts'
+import type {Staff} from '../../../domain';
 
 interface StaffRectProps {
     staff: Staff

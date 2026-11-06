@@ -1,7 +1,6 @@
 import type {PropsWithChildren} from 'react';
 import type {Project, ScorePage} from '../../domain';
-import {ProjectContext} from '../../hooks/projects/useProjectState.ts';
-import {useInitProjectState} from '../../hooks/projects/init/useInitProjectState.ts';
+import {ProjectContext, useInitProject} from '../../hooks/project';
 
 interface ProjectProviderProps {
     project: Project;
@@ -9,7 +8,7 @@ interface ProjectProviderProps {
 }
 
 export function ProjectProvider({project, pages, children}: PropsWithChildren<ProjectProviderProps>) {
-    const state = useInitProjectState(project, pages);
+    const state = useInitProject(project, pages);
     return (
         <ProjectContext.Provider value={state}>
             {children}

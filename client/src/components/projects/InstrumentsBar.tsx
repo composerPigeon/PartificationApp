@@ -1,5 +1,5 @@
 import {alpha, Box, Checkbox, FormControlLabel, List, ListItem, Paper, Typography} from '@mui/material'
-import type {Instrument} from '../../domain/Instrument.ts'
+import type {Instrument} from '../../domain';
 
 interface InstrumentsBarProps {
     instruments: readonly Instrument[]

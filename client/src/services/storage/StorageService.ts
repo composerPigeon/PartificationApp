@@ -1,8 +1,7 @@
-import type {Project} from "../../domain";
+import type {Project} from '../../domain';
 import type {StoredScorePage} from '../projects/StoredScorePage.ts';
 import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
-import type {MusicorpusMetadata} from "../../domain/metadata/MusicorpusMetadata.ts";
-import type {RootMetadata} from "../../domain/metadata/RootMetadata.ts";
+import type {MusicorpusMetadata, RootMetadata} from '../../domain/metadata';
 
 
 export interface StorageService {

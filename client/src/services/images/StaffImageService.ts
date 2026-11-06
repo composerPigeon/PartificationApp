@@ -1,4 +1,4 @@
-import type {StaffBounds} from '../../domain/Staff.ts';
+import type {StaffBounds} from '../../domain';
 import Konva from 'konva';
 import type {StoredStaffImage} from '../projects/StoredStaffImage.ts';
 

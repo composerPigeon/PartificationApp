@@ -1,6 +1,6 @@
 import {useTheme} from '@mui/material'
 import {Line} from 'react-konva'
-import type {StaffDivider} from '../../../domain/StaffDivider.ts'
+import type {StaffDivider} from '../../../domain';
 
 interface StaffDividerLineProps {
     divider: StaffDivider

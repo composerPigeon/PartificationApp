@@ -1,4 +1,4 @@
-import {useAuthState} from '../../hooks/auth/useAuthState'
+import {useAuthState} from '../../hooks/auth';
 import {ButtonIcon} from '../../components/buttons/ButtonIcon'
 import {useEffect, useState} from 'react'
 import {
@@ -6,7 +6,7 @@ import {
     Paper, Stack, Typography,
 } from '@mui/material'
 import {projectManager} from '../../services'
-import type {Project} from '../../domain/Project.ts'
+import type {Project} from '../../domain';
 import NavPage from '../../components/NavPage'
 import {FloatButton} from '../../components/buttons/FloatButton'
 import ProjectCard from '../../components/projects/ProjectCard'
@@ -48,7 +48,7 @@ function ProjectsPage() {
                     setProjects(loaded)
                 }
             } catch (error) {
-                if (active) setError(error instanceof Error ? error.message : 'Unable to load projects.')
+                if (active) setError(error instanceof Error ? error.message : 'Unable to load project.')
             } finally {
                 if (active) setIsLoading(false)
             }

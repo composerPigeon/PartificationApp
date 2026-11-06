@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {useBaseState} from './useBaseState.ts';
-import type {PagingState} from './states/PagingState.ts';
+import type {PagingState} from './states';
 
 // Navigation for any paged content. Page indexes are zero-based, including empty content.
 export function usePaging(initialPageCount = 0): PagingState {

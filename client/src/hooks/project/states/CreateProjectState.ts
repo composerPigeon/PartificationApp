@@ -1,5 +1,5 @@
 import type {SubmitEvent} from 'react';
-import type {FormBaseState} from '../../states/FormBaseState.ts';
+import type {FormBaseState} from '../../states';
 
 export interface CreateProjectState extends FormBaseState {
     get name(): string;

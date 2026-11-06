@@ -1,5 +1,4 @@
-import type {Project, ScorePage} from '../../domain';
-import type {Instrument} from '../../domain/Instrument.ts';
+import type {Project, ScorePage, Instrument} from '../../domain';
 
 export function recommendInstrument(project: Project, pages: ScorePage[], page: ScorePage, y: number): Instrument | undefined {
     if (!project.instruments.length) return undefined;

@@ -1,5 +1,5 @@
 import {createContext, useContext} from 'react';
-import type {AuthState} from './states/AuthState.ts';
+import type {AuthState} from './states';
 
 export const AuthContext = createContext<AuthState | undefined>(undefined);
 

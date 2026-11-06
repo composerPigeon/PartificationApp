@@ -1,5 +1,5 @@
 import {JsonProperty, Serializable} from 'ts-jackson';
-import type {ScorePage} from '../ScorePage.ts';
+import type {ScorePage} from '..';
 
 @Serializable()
 export class ScorePageMetadata {

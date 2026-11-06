@@ -116,7 +116,7 @@ test('conversion failure cleans up only the new project', async () => {
     assert.deepEqual([...root.entries.keys()], [existing.id])
 })
 
-test('empty names and zero-page conversions cannot create projects', async () => {
+test('empty names and zero-page conversions cannot create project', async () => {
     const {manager, root} = setup()
     await assert.rejects(manager.createProject(' ', pdf(), pages()), /project name/)
     await assert.rejects(manager.createProject('Empty', pdf(), (async function* () {

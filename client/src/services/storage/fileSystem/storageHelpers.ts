@@ -3,7 +3,7 @@ import StorageType from "./StorageType.ts";
 import type {StorageService} from "./StorageService.ts";
 import {browserStorage} from "./index.ts";
 import type {Project} from "../../domain";
-import type {IProjectManager} from "../projects/ProjectManager.ts";
+import type {IProjectManager} from "../project/ProjectManager.ts";
 
 type PickerWindow = Window & {
     showDirectoryPicker?: (options: {mode: 'readwrite'; id: string}) => Promise<FileSystemDirectoryHandle>;

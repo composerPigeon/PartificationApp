@@ -1,5 +1,5 @@
 import {Box, Typography} from '@mui/material'
-import type {Staff} from '../../../domain/Staff.ts'
+import type {Staff} from '../../../domain';
 
 interface InstrumentTagProps {
     staff: Staff

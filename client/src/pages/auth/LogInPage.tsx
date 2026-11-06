@@ -9,7 +9,7 @@ import Form from "../../components/formComponents/Form.tsx";
 import PasswordField from "../../components/formComponents/PasswordField.tsx";
 import FormPage from "../../components/formComponents/FormPage.tsx";
 
-import {useLogIn} from "../../hooks/auth/useLogIn.ts";
+import {useLogIn} from '../../hooks/auth';
 import PasswordType from "../../components/formComponents/PasswordType.ts";
 
 function LogInPage() {

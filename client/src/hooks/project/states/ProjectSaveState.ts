@@ -1,4 +1,4 @@
-import type {BaseState} from '../../states/BaseState.ts';
+import type {BaseState} from '../../states';
 
 export interface ProjectSaveState extends BaseState {
     get saving(): boolean;

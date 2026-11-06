@@ -1,14 +1,12 @@
 import {authService} from '../../index.ts';
 import type {StorageService} from "../StorageService.ts";
-import {Project} from "../../../domain";
+import {Project} from '../../../domain';
 import {FileSystemEntryNames} from "./storageHelpers.ts";
-import type {MusicorpusMetadata} from "../../../domain/metadata/MusicorpusMetadata.ts";
+import {SubdivisionsMetadata, ScorePageMetadata, RootMetadata} from '../../../domain/metadata';
+import type {MusicorpusMetadata} from '../../../domain/metadata';
 import {deserialize, serialize} from "ts-jackson";
-import {SubdivisionsMetadata} from '../../../domain/metadata/SubdivisionsMetadata.ts';
-import {ScorePageMetadata} from '../../../domain/metadata/ScorePageMetadata.ts';
 import {StoredScorePage} from '../../projects/StoredScorePage.ts';
 import type {StoredStaffImage} from '../../projects/StoredStaffImage.ts';
-import {RootMetadata} from '../../../domain/metadata/RootMetadata.ts';
 
 export class FileSystemStorageService implements StorageService {
     private readonly rootDir: FileSystemDirectoryHandle;
@@ -19,7 +17,7 @@ export class FileSystemStorageService implements StorageService {
 
     private async getUserDirectory(): Promise<FileSystemDirectoryHandle> {
         const account = authService.currentAccount;
-        if (!account?.userId.trim()) throw new Error('Select an account to access your projects.');
+        if (!account?.userId.trim()) throw new Error('Select an account to access your project.');
         const userId = account.userId;
         return this.rootDir.getDirectoryHandle(`user-${encodeURIComponent(userId)}`, {create: true});
     }

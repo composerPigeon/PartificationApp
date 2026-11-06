@@ -2,7 +2,7 @@ import type {PropsWithChildren} from 'react'
 import {Box} from '@mui/material'
 import {ProjectNavBar} from './ProjectNavBar'
 import type {PreviewInsets} from './ProjectNavBar'
-import type {PagingState} from '../../hooks/states/PagingState.ts'
+import type {PagingState} from '../../hooks/states';
 
 type ProjectPageProps = PropsWithChildren<{
     title: string

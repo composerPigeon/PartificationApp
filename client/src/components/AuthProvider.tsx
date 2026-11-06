@@ -1,6 +1,5 @@
 import type {ReactNode} from 'react';
-import {AuthContext} from '../hooks/auth/useAuthState';
-import {useInitAuthState} from '../hooks/auth/useInitAuthState';
+import {AuthContext, useInitAuthState} from '../hooks/auth';
 
 export function AuthProvider({children}: {children: ReactNode}) {
     const state = useInitAuthState();
