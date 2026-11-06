@@ -1,11 +1,10 @@
 import type {BaseState} from '../../states';
 
 export interface StaffSelectionState extends BaseState {
-    get staffId(): number | null;
-    set staffId(value: number | null);
+    get staffIds(): ReadonlySet<number>;
     get hasSelection(): boolean;
 
     isSelected(id: number): boolean;
-    toggle(id: number): void;
+    select(id: number, additive?: boolean): void;
     clear(id?: number): void;
 }

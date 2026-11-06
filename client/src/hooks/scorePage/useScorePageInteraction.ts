@@ -60,8 +60,8 @@ export function useScorePageInteraction({projectState, page, editor, editing, se
         },
         onClick(event: PageEvent) {
             if (event.evt.button !== 0 || disabled) return;
-            if (!selection.hasSelection) editing.mode = editing.modeFor(event.target);
-            if (event.target.hasName('staff-body')) selection.toggle(Number(event.target.id()));
+            if (!selection.hasSelection) editing.updateForTarget(event.target);
+            if (event.target.hasName('staff-body')) selection.select(Number(event.target.id()), event.evt.shiftKey);
             else selection.clear();
         },
         onMouseDown(event: PageEvent) {
@@ -126,7 +126,7 @@ export function useScorePageInteraction({projectState, page, editor, editing, se
         },
         editInstrument(staff: Staff, position: Position) {
             editing.mode = 'select';
-            selection.staffId = staff.id;
+            selection.select(staff.id);
             const instrument = recommendInstrument(project, pages, page, staff.y) ?? staff.instrument;
             setInstrumentForm({staffId: staff.id, instrument, position});
         },
