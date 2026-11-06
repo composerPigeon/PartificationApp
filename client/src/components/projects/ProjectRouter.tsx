@@ -1,4 +1,4 @@
-import {useEffect, useEffectEvent, useState} from 'react';
+import {useEffect, useEffectEvent, useRef, useState} from 'react';
 import {Outlet, useParams} from '@tanstack/react-router';
 import {Alert, Button, CircularProgress, Container} from '@mui/material';
 import type {Project, ScorePage} from '../../domain';
@@ -13,35 +13,37 @@ export function ProjectRouter() {
     const state = useBaseState();
     const [project, setProject] = useState<Project | null>(null);
     const [pages, setPages] = useState<ScorePage[]>([]);
-    const reportError = useEffectEvent((error: string | null) => {
+    const loading = useRef<AbortController | null>(null);
+
+    async function loadProject() {
+        loading.current?.abort();
+        const controller = new AbortController();
+        loading.current = controller;
+        setProject(null);
         // eslint-disable-next-line react-hooks/immutability -- The accessor delegates to React's state setter.
-        state.error = error;
-    });
-
-    useEffect(() => {
-        let active = true;
-
-        async function loadProject() {
-            setProject(null);
-            reportError(null);
-            try {
-                const project = await projectManager.loadProject(projectName);
-                if (!active) return;
-                const pages = await projectManager.loadPages(project);
-                if (active) {
-                    setPages(pages);
-                    setProject(project);
-                }
-            } catch (error) {
-                if (active) reportError(error instanceof Error ? error.message : 'Unable to load project.');
+        state.error = null;
+        try {
+            const project = await projectManager.loadProject(projectName);
+            if (controller.signal.aborted) return;
+            const pages = await projectManager.loadPages(project);
+            if (!controller.signal.aborted) {
+                setPages(pages);
+                setProject(project);
             }
+        } catch (error) {
+            if (!controller.signal.aborted) state.error = error instanceof Error ? error.message : 'Unable to load project.';
         }
+    }
 
-        void loadProject();
-        return () => { active = false; };
-    }, [projectName, state.revision]);
+    // eslint-disable-next-line react-hooks/immutability -- loadProject updates error through a React state accessor.
+    const loadOnOpen = useEffectEvent(loadProject);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Starting a new load clears the previous project and error.
+        void loadOnOpen();
+        return () => { loading.current?.abort(); };
+    }, [projectName]);
 
-    if (state.error) return <ProjectStatus projectName={projectName} error={state.error} onRetry={state.refresh}/>;
+    if (state.error) return <ProjectStatus projectName={projectName} error={state.error} onRetry={loadProject}/>;
     if (!project || project.projectName !== projectName) return <ProjectStatus projectName={projectName}/>;
 
     return <ProjectProvider key={project.id} project={project} pages={pages}>
