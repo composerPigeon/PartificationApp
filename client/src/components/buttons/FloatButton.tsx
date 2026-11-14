@@ -3,14 +3,14 @@ import type {FabProps} from '@mui/material';
 import {Link} from '@tanstack/react-router';
 import type {LinkProps} from '@tanstack/react-router';
 
-export type FloatButtonProps = Pick<FabProps, 'children' | 'disabled' | 'aria-label'> & {
+export type FloatButtonProps = Pick<FabProps, 'children' | 'disabled' | 'aria-label' | 'color'> & {
     to: LinkProps['to'];
     icon?: boolean;
 };
 
-export function FloatButton({children, to, icon = false, ...props}: FloatButtonProps) {
+export function FloatButton({children, to, icon = false, color = 'primary', ...props}: FloatButtonProps) {
     return (
-        <Fab component={Link} to={to} color="primary" variant={icon ? 'circular' : 'extended'}
+        <Fab component={Link} to={to} color={color} variant={icon ? 'circular' : 'extended'}
              {...props}
              sx={{
                  position: 'fixed',

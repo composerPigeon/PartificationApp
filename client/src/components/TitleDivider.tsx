@@ -1,11 +1,11 @@
 import {Box} from '@mui/material';
 
-export default function TitleDivider() {
+export default function TitleDivider({color = 'primary'}: {color?: 'primary' | 'secondary'}) {
     return (
         <Box aria-hidden="true" sx={{
             width: 48,
             height: 4,
-            bgcolor: 'primary.main',
+            bgcolor: `${color}.main`,
             borderRadius: 2,
             mx: 'auto',
             my: {xs: 4, sm: 5},

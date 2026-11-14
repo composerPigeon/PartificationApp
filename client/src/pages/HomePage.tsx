@@ -16,7 +16,7 @@ function HomePage() {
                     textAlign: 'center',
                 }}>
                     <Typography component="h1" sx={{
-                        color: 'primary.main',
+                        color: 'secondary.main',
                         fontWeight: 800,
                         fontSize: {xs: 'clamp(1.75rem, 7vw, 3rem)', sm: '4rem', md: '4.5rem'},
                         letterSpacing: '-0.055em',
@@ -24,7 +24,7 @@ function HomePage() {
                     }}>
                         PartificationApp
                     </Typography>
-                    <TitleDivider/>
+                    <TitleDivider color="secondary"/>
                     <Box component="section" aria-labelledby="home-welcome">
                         <Typography id="home-welcome" component="h2" sx={{
                             fontWeight: 700,
@@ -34,7 +34,7 @@ function HomePage() {
                         }}>
                             Welcome to your next arrangement.
                         </Typography>
-                        <Typography component="p" sx={{mt: 2, fontSize: '1.125rem', color: 'primary.dark'}}>
+                        <Typography component="p" sx={{mt: 2, fontSize: '1.125rem', color: 'secondary.dark'}}>
                             Bring your score. Shape the parts you need.
                         </Typography>
                     </Box>
@@ -50,7 +50,7 @@ function HomePage() {
                     </Typography>
                 </Container>
             </Box>
-            <FloatButton to="/project">
+            <FloatButton to="/project" color="secondary">
                 Start
             </FloatButton>
         </NavPage>

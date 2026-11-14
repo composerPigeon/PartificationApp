@@ -24,7 +24,7 @@ export default function ProjectCard({project, deleting, onDelete}: ProjectCardPr
                     borderRadius: 3,
                     '&:hover': {bgcolor: 'action.hover'},
                 }}>
-                    <Typography variant="h6" sx={{color: 'primary.main', overflowWrap: 'anywhere'}}>
+                    <Typography variant="h6" sx={{color: 'secondary.main', overflowWrap: 'anywhere'}}>
                         {project.projectName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -32,7 +32,7 @@ export default function ProjectCard({project, deleting, onDelete}: ProjectCardPr
                     </Typography>
                 </Box>
             </Link>
-            <IconButton color="primary" aria-label={`Delete ${project.projectName}`} disabled={deleting}
+            <IconButton color="secondary" aria-label={`Delete ${project.projectName}`} disabled={deleting}
                         onClick={() => onDelete(project)}>
                 {deleting ? <CircularProgress size={24} color="inherit"/> : (
                     <ButtonIcon name="delete" aria-hidden="true"/>
