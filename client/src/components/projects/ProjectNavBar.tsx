@@ -38,7 +38,7 @@ export function ProjectNavBar({title, navigation, previewInsets}: ProjectNavBarP
                 color: 'secondary.dark', fontWeight: 800, overflowWrap: 'anywhere',
             }}>
                 <Link to="/project" aria-label="Partification projects" style={{display: 'flex', flexShrink: 0}}>
-                    <AppIcon color="primary" sx={{width: 40, height: 40}}/>
+                    <AppIcon color="secondary" sx={{width: 40, height: 40}}/>
                 </Link>
                 {title}
             </Typography>

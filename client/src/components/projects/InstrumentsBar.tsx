@@ -1,19 +1,16 @@
 import {alpha, Box, Checkbox, FormControlLabel, List, ListItem, Paper, Typography} from '@mui/material'
-import type {Instrument} from '../../domain';
+import {useProject} from '../../hooks/project';
+import {useInstrumentSelection} from '../../hooks/project/export';
 
-interface InstrumentsBarProps {
-    instruments: readonly Instrument[]
-    selectedIds: ReadonlySet<string>
-    onToggle(id: string, selected: boolean): void
-    disabled?: boolean
-}
-
-export function InstrumentsBar({instruments, selectedIds, onToggle, disabled = false}: InstrumentsBarProps) {
+export function InstrumentsBar() {
+    const {project} = useProject();
+    const instruments = project.instruments;
+    const {isSelected, toggle} = useInstrumentSelection();
     return (
         <Paper component="aside" aria-label="Project instruments" elevation={5}
                sx={theme => ({
-                   position: 'fixed', left: {xs: 64, sm: 88}, top: '50%', transform: 'translateY(-50%)',
-                   width: {xs: 160, sm: 208, md: 240}, maxHeight: 'calc(100svh - 160px)',
+                   position: 'fixed', right: {xs: 8, sm: 16}, top: '50%', transform: 'translateY(-50%)',
+                   width: 280, maxWidth: 'calc(100vw - 72px)', minWidth: 0, maxHeight: 'calc(100svh - 160px)',
                    display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 10,
                    borderRadius: 3, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.15),
                })}>
@@ -28,13 +25,13 @@ export function InstrumentsBar({instruments, selectedIds, onToggle, disabled = f
             {instruments.length ? (
                 <List disablePadding sx={{p: 1, overflowY: 'auto', minHeight: 0, scrollbarWidth: 'thin'}}>
                     {instruments.map(instrument => {
-                        const selected = selectedIds.has(instrument.id)
+                        const selected = isSelected(instrument.id)
                         return (
                             <ListItem key={instrument.id} disablePadding sx={{'&:not(:last-child)': {mb: 0.75}}}>
-                                <FormControlLabel disableTypography disabled={disabled}
+                                <FormControlLabel disableTypography
                                     control={<Checkbox color="primary" checked={selected}
                                                        slotProps={{input: {'aria-label': instrument.title}}}
-                                                       onChange={(_, checked) => onToggle(instrument.id, checked)}/>}
+                                                       onChange={(_, checked) => toggle(instrument.id, checked)}/>}
                                     label={<Box component="span" sx={{display: 'flex', flexDirection: 'column', minWidth: 0, py: 1}}>
                                         <Typography component="span" variant="body2" sx={{fontWeight: 700, overflowWrap: 'anywhere'}}>
                                             {instrument.title}

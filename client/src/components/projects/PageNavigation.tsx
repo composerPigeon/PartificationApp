@@ -1,4 +1,4 @@
-import {useExport} from '../../hooks/project/export';
+import {useExportPdf} from '../../hooks/project/export/pdf/useExportPdf';
 import {useWorkspacePaging} from '../../hooks/project/workspace';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Box, IconButton, Typography} from '@mui/material'
@@ -14,7 +14,7 @@ export function WorkspacePageNavigation(props: PageNavigationProps) {
 }
 
 export function ExportPageNavigation(props: PageNavigationProps) {
-    const {paging} = useExport();
+    const {paging} = useExportPdf();
     const {pageIndex, pageCount, previous, next} = paging;
     return <NavigationButtons {...props} pageIndex={pageIndex} pageCount={pageCount} onPrevious={previous} onNext={next}/>;
 }

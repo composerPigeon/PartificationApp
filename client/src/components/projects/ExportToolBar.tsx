@@ -1,18 +1,13 @@
+import {useBrowserPreview, useExportPreview, useGoToWorkspace} from '../../hooks/project/export';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Divider, Paper} from '@mui/material'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 import {ToolButton} from '../buttons/ToolButton'
 
-interface ExportToolBarProps {
-    onBack(): void
-    hasSelectedInstruments: boolean
-    generating: boolean
-    onPreview(): void
-    hasPreview: boolean
-    onPrint(): void
-}
-
-export function ExportToolBar({onBack, hasSelectedInstruments, generating, onPreview, hasPreview, onPrint}: ExportToolBarProps) {
+export function ExportToolBar() {
+    const onBack = useGoToWorkspace();
+    const {generating} = useExportPreview();
+    const {available, open} = useBrowserPreview();
     return (
         <Paper component="aside" aria-label="Export tools" elevation={5}
                sx={{
@@ -26,10 +21,8 @@ export function ExportToolBar({onBack, hasSelectedInstruments, generating, onPre
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
             <ToolActionButton label="Back to workspace" onClick={onBack}
                               icon={<ButtonIcon name="back"/>}/>
-            <ToolActionButton label={generating ? 'Generating preview…' : 'Preview'} disabled={!hasSelectedInstruments || generating} onClick={onPreview}
+            <ToolActionButton label={generating ? 'Generating preview…' : 'Browser preview'} disabled={!available || generating} onClick={open}
                               icon={<ButtonIcon name="preview"/>}/>
-            <ToolActionButton label="Print" disabled={!hasPreview || generating} onClick={onPrint}
-                              icon={<ButtonIcon name="print"/>}/>
         </Paper>
     )
 }
