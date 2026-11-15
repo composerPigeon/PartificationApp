@@ -1,12 +1,20 @@
+import {useWorkspaceSave} from '../../hooks/workspace';
+import {useExportSave} from '../../hooks/export';
 import {useId} from 'react'
 import {useBlocker} from '@tanstack/react-router'
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from '@mui/material'
 
-interface UnsavedChangesDialogProps {
-    hasChanges: boolean
+export function WorkspaceUnsavedChangesDialog() {
+    const {hasChanges} = useWorkspaceSave();
+    return <UnsavedChangesDialog hasChanges={hasChanges}/>;
 }
 
-export function UnsavedChangesDialog({hasChanges}: UnsavedChangesDialogProps) {
+export function ExportUnsavedChangesDialog() {
+    const {hasChanges} = useExportSave();
+    return <UnsavedChangesDialog hasChanges={hasChanges}/>;
+}
+
+function UnsavedChangesDialog({hasChanges}: {hasChanges: boolean}) {
     const titleId = useId()
     const descriptionId = useId()
     const blocker = useBlocker({

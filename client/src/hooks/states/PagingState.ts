@@ -1,6 +1,4 @@
-import type {BaseState} from './BaseState.ts';
-
-export interface PagingState extends BaseState {
+export interface PagingState {
     get pageIndex(): number;
     get pageCount(): number;
     set pageCount(value: number);

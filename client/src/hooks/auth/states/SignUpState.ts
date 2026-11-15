@@ -1,7 +1,12 @@
-import type {FormBaseState} from '../../states';
 import type {SubmitEvent} from "react";
 
-export interface SignUpState extends FormBaseState {
+export interface SignUpState {
+    get error(): string | null;
+    set error(value: string | null);
+    get isSubmitting(): boolean;
+    set isSubmitting(value: boolean);
+    get isIncomplete(): boolean;
+
     get userName(): string;
     set userName(value: string);
     get email(): string;

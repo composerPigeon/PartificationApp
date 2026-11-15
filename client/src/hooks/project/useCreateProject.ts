@@ -2,7 +2,7 @@ import {useState} from 'react'
 import type {SubmitEvent} from 'react'
 import {useNavigate} from '@tanstack/react-router'
 import {projectManager} from '../../services'
-import {useFormBase} from '..';
+import {useInitFormBase, useInitViewState} from '..';
 import type {CreateProjectState} from './states';
 
 export function useCreateProject(): CreateProjectState {
@@ -16,8 +16,7 @@ export function useCreateProject(): CreateProjectState {
     const [allowLayoutModelTraining, setAllowLayoutModelTraining] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState('')
-    const form = useFormBase()
-    form.isIncomplete = !file || !name.trim() || !title.trim()
+    const form = useInitFormBase(useInitViewState(), !file || !name.trim() || !title.trim())
 
     function onPageConvertProgress(count: number, total: number): void {
         setProgress(`Saving page ${count} of ${total}…`)
@@ -39,7 +38,12 @@ export function useCreateProject(): CreateProjectState {
         }, 'Unable to create the project.')
     }
 
-    return form.extend({
+    return {
+        get error() { return form.error; },
+        set error(value: string | null) { form.error = value; },
+        get isSubmitting() { return form.isSubmitting; },
+        set isSubmitting(value: boolean) { form.isSubmitting = value; },
+        get isIncomplete() { return form.isIncomplete; },
         get name() { return name; },
         set name(value: string) { setName(value); },
         get title() { return title; },
@@ -66,5 +70,5 @@ export function useCreateProject(): CreateProjectState {
         },
         get progress() { return progress; },
         handleCreateProject,
-    })
+    }
 }

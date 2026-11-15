@@ -1,17 +1,32 @@
+import {useExport} from '../../hooks/export';
+import {useWorkspacePaging} from '../../hooks/workspace';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Box, IconButton, Typography} from '@mui/material'
 
 export interface PageNavigationProps {
-    pageIndex: number
-    pageCount: number
     color?: 'primary' | 'secondary'
 
-    onPrevious(): void
-
-    onNext(): void
 }
 
-export function PageNavigation({pageIndex, pageCount, onPrevious, onNext, color = 'primary'}: PageNavigationProps) {
+export function WorkspacePageNavigation(props: PageNavigationProps) {
+    const {pageIndex, pageCount, previous, next} = useWorkspacePaging();
+    return <NavigationButtons {...props} pageIndex={pageIndex} pageCount={pageCount} onPrevious={previous} onNext={next}/>;
+}
+
+export function ExportPageNavigation(props: PageNavigationProps) {
+    const {paging} = useExport();
+    const {pageIndex, pageCount, previous, next} = paging;
+    return <NavigationButtons {...props} pageIndex={pageIndex} pageCount={pageCount} onPrevious={previous} onNext={next}/>;
+}
+
+interface NavigationButtonsProps extends PageNavigationProps {
+    pageIndex: number;
+    pageCount: number;
+    onPrevious(): void;
+    onNext(): void;
+}
+
+function NavigationButtons({color = 'primary', pageIndex, pageCount, onPrevious, onNext}: NavigationButtonsProps) {
     const currentPage = pageCount > 0 ? pageIndex + 1 : 0
     const arrowButtonSx = {
         width: 32, height: 32, bgcolor: `${color}.main`, color: `${color}.contrastText`,

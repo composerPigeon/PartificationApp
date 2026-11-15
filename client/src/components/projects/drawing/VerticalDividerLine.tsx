@@ -1,3 +1,4 @@
+import {useStaffDragging, useScorePageDomain} from '../../../hooks/workspace/scorePage';
 import {useTheme} from '@mui/material'
 import {Line} from 'react-konva'
 import type {VerticalDivider} from '../../../domain';
@@ -5,14 +6,15 @@ import type {VerticalDivider} from '../../../domain';
 interface VerticalDividerLineProps {
     divider: VerticalDivider
     height: number
-    editable: boolean
     scale: number
     minX: number
     maxX: number
-    onDragEnd(n: number): void
 }
 
-export function VerticalDividerLine({divider, height, editable, scale, minX, maxX, onDragEnd}: VerticalDividerLineProps) {
+export function VerticalDividerLine({divider, height, scale, minX, maxX}: VerticalDividerLineProps) {
+    const dragging = useStaffDragging()
+    const domain = useScorePageDomain()
+    const editable = dragging.editable
     const theme = useTheme()
     const constrainX = (n: number) => Math.max(minX, Math.min(maxX, n))
 
@@ -26,7 +28,8 @@ export function VerticalDividerLine({divider, height, editable, scale, minX, max
               onDragEnd={event => {
                   const n = constrainX(event.target.x())
                   event.target.position({x: n, y: 0})
-                  onDragEnd(n)
+                  if (divider === domain.leftDivider) dragging.moveLeftDivider(n)
+                  else dragging.moveRightDivider(n)
               }}/>
     )
 }

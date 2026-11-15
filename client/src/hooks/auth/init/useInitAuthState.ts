@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import type {AuthState} from './states';
-import {authService} from '../../services';
+import type {AuthState} from '../states';
+import {authService} from '../../../services';
 
 // Creates auth state and actions; called only by AuthProvider.
 export function useInitAuthState(): AuthState {

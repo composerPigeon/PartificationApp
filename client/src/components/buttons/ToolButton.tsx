@@ -9,7 +9,7 @@ interface ToolButtonProps {
     disabled?: boolean
 }
 
-/** A controlled editing-mode button; selecting the active tool keeps it active. */
+/** A controlled application-mode button; selecting the active tool keeps it active. */
 export function ToolButton({label, icon, selected, onSelect, disabled = false}: ToolButtonProps) {
     return (
         <Tooltip title={label} placement="right" arrow>

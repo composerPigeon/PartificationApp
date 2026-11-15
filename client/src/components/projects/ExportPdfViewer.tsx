@@ -3,16 +3,16 @@ import {Alert, Box, CircularProgress} from '@mui/material'
 import {getDocument, GlobalWorkerOptions} from 'pdfjs-dist'
 import type {PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask} from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-import type {PagingState} from '../../hooks/states';
+import {useExport} from '../../hooks/export';
 
 GlobalWorkerOptions.workerSrc = workerUrl
 
 interface ExportPdfViewerProps {
     pdf: Blob
-    paging: PagingState
 }
 
-export function ExportPdfViewer({pdf, paging}: ExportPdfViewerProps) {
+export function ExportPdfViewer({pdf}: ExportPdfViewerProps) {
+    const {paging} = useExport()
     const pageIndex = paging.pageIndex
     const reportPageCount = useEffectEvent((count: number) => {
         // eslint-disable-next-line react-hooks/immutability -- The accessor delegates to the paging hook's React state setter.

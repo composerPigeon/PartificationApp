@@ -1,23 +1,21 @@
-import {useState} from 'react';
-import type {ScorePage} from '../../domain';
-import {useBaseState} from '..';
-import type {StaffSelectionState} from './states/StaffSelectionState';
+import type {KonvaEventObject} from 'konva/lib/Node';
+import type {InteractionActivityState} from '../../init/useInitInteractionActivity';
+import type {PermissionsState} from '../../states/PermissionsState';
+import type {StaffSelectionState} from '../states/StaffSelectionState';
 
 // Owns selected staves and resets selection when the displayed page changes.
-export function useStaffSelection(page?: ScorePage): StaffSelectionState {
-    const base = useBaseState();
-    const [staffIds, setStaffIds] = useState<ReadonlySet<number>>(() => new Set());
-    const [selectedPage, setSelectedPage] = useState(page);
+export function useInitStaffSelection(activity: InteractionActivityState, permissions: PermissionsState): StaffSelectionState {
+    const {staffIds, setStaffIds} = activity;
 
-    if (selectedPage !== page) {
-        setSelectedPage(page);
-        setStaffIds(new Set());
-    }
-
-    const selection = base.extend({
+    const selection = {
         get staffIds() { return staffIds; },
         get hasSelection() { return staffIds.size > 0; },
         isSelected(id: number) { return staffIds.has(id); },
+        onClick(event: KonvaEventObject<MouseEvent>) {
+            if (event.evt.button !== 0 || !permissions.canChangeTool) return;
+            if (event.target.hasName('staff-body')) selection.select(Number(event.target.id()), event.evt.shiftKey);
+            else selection.clear();
+        },
         select(id: number, additive = false) {
             setStaffIds(current => {
                 if (!additive) return current.size === 1 && current.has(id) ? current : new Set([id]);
@@ -36,6 +34,6 @@ export function useStaffSelection(page?: ScorePage): StaffSelectionState {
                 return next;
             });
         },
-    });
+    };
     return selection;
 }

@@ -1,27 +1,29 @@
 import {alpha, useTheme} from '@mui/material'
 import {Rect} from 'react-konva'
 import type {Staff} from '../../../domain';
-import type {ScorePageInteractionState} from '../../../hooks/scorePage';
+import {useStaffDragging, useStaffSelection} from '../../../hooks/workspace/scorePage';
 
 interface StaffRectProps {
     staff: Staff
-    interaction: ScorePageInteractionState
-    y: number
-    height: number
-    selected: boolean
 }
 
-export function StaffRect({staff, y, height, interaction, selected}: StaffRectProps) {
+export function StaffRect({staff}: StaffRectProps) {
+    const dragging = useStaffDragging()
+    const selection = useStaffSelection()
+    const selected = selection.isSelected(staff.id)
+    const preview = dragging.dragPreview?.id === staff.id ? dragging.dragPreview : null
+    const y = preview?.y ?? staff.y
+    const height = preview?.height ?? staff.height
     const theme = useTheme()
     return (
         <Rect id={String(staff.id)} name="staff-body" x={staff.x} y={y} width={staff.width} height={height}
-              draggable={interaction.editable}
+              draggable={dragging.editable}
               onDragMove={event => {
                   event.target.x(staff.x)
-                  interaction.previewStaff(staff, event.target.y())
+                  dragging.previewStaff(staff, event.target.y())
               }}
               onDragEnd={event => {
-                  interaction.finishStaffDrag(staff, event.target.y())
+                  dragging.finishStaffDrag(staff, event.target.y())
                   event.target.position({x: staff.x, y: staff.y})
               }}
               stroke={selected ? theme.palette.primary.main : undefined}

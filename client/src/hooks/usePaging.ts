@@ -1,5 +1,4 @@
 import {useState} from 'react';
-import {useBaseState} from './useBaseState.ts';
 import type {PagingState} from './states';
 
 // Navigation for any paged content. Page indexes are zero-based, including empty content.
@@ -8,7 +7,6 @@ export function usePaging(initialPageCount = 0): PagingState {
         return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
     }
 
-    const base = useBaseState();
     const [index, setIndex] = useState(0);
     const [count, setCount] = useState(() => normalizeCount(initialPageCount));
 
@@ -17,7 +15,7 @@ export function usePaging(initialPageCount = 0): PagingState {
         return Math.max(0, Math.min(Math.floor(index), Math.max(0, count - 1)));
     }
 
-    return base.extend({
+    return {
         get pageIndex() { return index; },
 
         get pageCount() { return count; },
@@ -33,5 +31,5 @@ export function usePaging(initialPageCount = 0): PagingState {
             setIndex(current => clamp(current + 1));
         },
         reset() { setIndex(0); },
-    });
+    };
 }

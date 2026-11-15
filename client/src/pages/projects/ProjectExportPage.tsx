@@ -3,25 +3,29 @@ import {Alert, Box, CircularProgress, Container, Stack, Typography} from '@mui/m
 import {useEffect, useRef, useState} from 'react'
 import {ExportToolBar} from '../../components/projects/ExportToolBar.tsx'
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar.tsx'
-import {useProject, useProjectSave} from '../../hooks/project';
+import {useProject} from '../../hooks/project';
+import {ExportPageNavigation} from '../../components/projects/PageNavigation';
 import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
-import {usePaging} from '../../hooks';
-import {useEditingMode} from '../../hooks/scorePage';
-import {UnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
+import {useExport} from '../../hooks/export';
+import {ExportProvider} from '../../components/projects/ExportProvider';
+import {ExportUnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
 
 export default function ProjectExportPage() {
+    return <ExportProvider><ExportContent/></ExportProvider>;
+}
+
+function ExportContent() {
     const {userId, projectName} = useParams({from: '/$userId/$projectName/export'})
+    const state = useExport()
+    const {paging, saveState} = state
     const projectState = useProject()
-    const saveState = useProjectSave(projectState.project, projectState.pages)
     const {project} = projectState
-    const editing = useEditingMode()
     const [selectedInstrumentIds, setSelectedInstrumentIds] = useState<Set<string>>(() => new Set())
     const navigate = useNavigate()
     const [previewPdf, setPreviewPdf] = useState<Blob | null>(null)
     const previewUrlRef = useRef<string | null>(null)
-    const paging = usePaging()
     const [generating, setGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -60,13 +64,13 @@ export default function ProjectExportPage() {
     }
 
     return (
-        <ProjectPage title="Export" projectTitle={project.projectName} previewInsets={{
+        <ProjectPage navigation={<ExportPageNavigation color="secondary"/>} title="Export" projectTitle={project.projectName} previewInsets={{
             left: {xs: '240px', sm: '312px', md: '352px'},
             right: {xs: '8px', sm: '24px'},
-        }} pagination={paging}>
-            <UnsavedChangesDialog hasChanges={saveState.hasChanges}/>
+        }}>
+            <ExportUnsavedChangesDialog/>
             <Box sx={{flex: 1, py: 2, pl: {xs: '240px', sm: '312px', md: '352px'}, pr: {xs: 1, sm: 3}}}>
-                <ExportToolBar editing={editing}
+                <ExportToolBar
                                generating={generating} onPreview={createPreview}
                                hasPreview={!!previewPdf} onPrint={printPreview}
                                hasSelectedInstruments={selectedInstrumentIds.size > 0} onBack={() => {
@@ -88,7 +92,7 @@ export default function ProjectExportPage() {
                                 }}/>
                 <Container maxWidth="xl" disableGutters>
                         <Box component="section" aria-label="Export PDF viewer"
-                             data-editing-mode={editing.mode}
+                             data-editing-mode="select"
                              sx={{minWidth: 0, minHeight: 'calc(100svh - 120px)', bgcolor: 'action.hover',
                                  border: '1px solid', borderColor: 'divider', borderRadius: 3,
                                  display: 'grid', placeItems: 'center', p: 3}}>
@@ -100,7 +104,7 @@ export default function ProjectExportPage() {
                             ) : error ? (
                                 <Alert severity="error">{error}</Alert>
                             ) : previewPdf ? (
-                                <ExportPdfViewer pdf={previewPdf} paging={paging}/>
+                                <ExportPdfViewer pdf={previewPdf}/>
                             ) : (
                                 <Typography variant="body2" sx={{color: 'text.secondary'}}>Select instruments and click Preview.</Typography>
                             )}

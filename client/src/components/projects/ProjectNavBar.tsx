@@ -2,8 +2,7 @@ import {alpha, Box, Typography, useScrollTrigger} from '@mui/material';
 import {Link} from '@tanstack/react-router';
 import {AppIcon} from '../AppIcon';
 import ProfileMenu from '../ProfileMenu';
-import {PageNavigation} from './PageNavigation';
-import type {PagingState} from '../../hooks/states';
+import type {ReactNode} from 'react';
 
 export interface PreviewInsets {
     left: {xs: string; sm: string; md?: string};
@@ -12,11 +11,11 @@ export interface PreviewInsets {
 
 interface ProjectNavBarProps {
     title: string;
-    pagination: PagingState;
+    navigation?: ReactNode;
     previewInsets?: PreviewInsets;
 }
 
-export function ProjectNavBar({title, pagination, previewInsets}: ProjectNavBarProps) {
+export function ProjectNavBar({title, navigation, previewInsets}: ProjectNavBarProps) {
     const scrolled = useScrollTrigger({disableHysteresis: true, threshold: 80});
 
     return (
@@ -49,8 +48,7 @@ export function ProjectNavBar({title, pagination, previewInsets}: ProjectNavBarP
                 display: 'flex', justifyContent: 'center', pointerEvents: 'none',
                 '& > nav': {pointerEvents: 'auto'},
             }}>
-                <PageNavigation pageIndex={pagination.pageIndex} pageCount={pagination.pageCount}
-                                onPrevious={pagination.previous} onNext={pagination.next} color="secondary"/>
+                {navigation}
             </Box>
             <Box sx={{gridArea: '1 / 1', justifySelf: 'end', mx: 3}}>
                 <ProfileMenu readOnly/>

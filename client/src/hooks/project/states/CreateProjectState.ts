@@ -1,7 +1,12 @@
 import type {SubmitEvent} from 'react';
-import type {FormBaseState} from '../../states';
 
-export interface CreateProjectState extends FormBaseState {
+export interface CreateProjectState {
+    get error(): string | null;
+    set error(value: string | null);
+    get isSubmitting(): boolean;
+    set isSubmitting(value: boolean);
+    get isIncomplete(): boolean;
+
     get name(): string;
     set name(value: string);
 

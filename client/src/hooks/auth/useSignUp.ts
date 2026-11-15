@@ -3,7 +3,7 @@ import type {SignUpState} from './states';
 import {serverProxy} from "../../services";
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
-import {useFormBase} from '..';
+import {useInitFormBase, useInitViewState} from '..';
 
 export function useSignUp(): SignUpState {
     const navigate = useNavigate()
@@ -11,8 +11,7 @@ export function useSignUp(): SignUpState {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
-    const formState = useFormBase()
-    formState.isIncomplete = !userName.trim() || !email.trim() || !password || !confirmPassword
+    const formState = useInitFormBase(useInitViewState(), !userName.trim() || !email.trim() || !password || !confirmPassword)
 
     async function handleSignUp(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -42,7 +41,12 @@ export function useSignUp(): SignUpState {
         }, 'Unable to create your account. Please try again.')
     }
 
-    return formState.extend({
+    return {
+        get error() { return formState.error; },
+        set error(value: string | null) { formState.error = value; },
+        get isSubmitting() { return formState.isSubmitting; },
+        set isSubmitting(value: boolean) { formState.isSubmitting = value; },
+        get isIncomplete() { return formState.isIncomplete; },
         get userName() { return userName; },
         set userName(value: string) { setUserName(value); },
         get email() { return email; },
@@ -52,5 +56,5 @@ export function useSignUp(): SignUpState {
         get confirmPassword() { return confirmPassword; },
         set confirmPassword(value: string) { setConfirmPassword(value); },
         handleSignUp
-    })
+    }
 }

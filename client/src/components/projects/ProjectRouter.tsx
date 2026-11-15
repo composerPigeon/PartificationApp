@@ -3,13 +3,13 @@ import {Outlet, useParams} from '@tanstack/react-router';
 import {Alert, Button, CircularProgress, Container} from '@mui/material';
 import type {Project, ScorePage} from '../../domain';
 import {projectManager} from '../../services';
-import {useBaseState, usePaging} from '../../hooks';
+import {useInitViewState} from '../../hooks';
 import {ProjectProvider} from './ProjectProvider.tsx';
 import {ProjectPage} from './ProjectPage.tsx';
 
 export function ProjectRouter() {
     const {projectName} = useParams({from: '/$userId/$projectName'});
-    const state = useBaseState();
+    const state = useInitViewState();
     const [project, setProject] = useState<Project | null>(null);
     const [pages, setPages] = useState<ScorePage[]>([]);
     const loading = useRef<AbortController | null>(null);
@@ -51,8 +51,7 @@ export function ProjectRouter() {
 }
 
 function ProjectStatus({projectName, error, onRetry}: {projectName: string; error?: string; onRetry?(): void}) {
-    const paging = usePaging();
-    return <ProjectPage title={error ? 'Project error' : 'Loading project'} projectTitle={projectName} pagination={paging}>
+    return <ProjectPage title={error ? 'Project error' : 'Loading project'} projectTitle={projectName}>
         <Container maxWidth="sm" sx={{py: 4}}>
             <Alert severity={error ? 'error' : 'info'} role={error ? 'alert' : 'status'}
                    icon={error ? undefined : <CircularProgress size={18} aria-label="Loading project"/>}

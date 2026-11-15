@@ -1,7 +1,12 @@
-import type {FormBaseState} from '../../states';
 import type {SubmitEvent} from 'react'
 
-export interface LogInState extends FormBaseState {
+export interface LogInState {
+    get error(): string | null;
+    set error(value: string | null);
+    get isSubmitting(): boolean;
+    set isSubmitting(value: boolean);
+    get isIncomplete(): boolean;
+
     get userName(): string,
     set userName(value: string),
 

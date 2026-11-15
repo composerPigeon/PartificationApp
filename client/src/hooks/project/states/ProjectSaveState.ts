@@ -1,6 +1,5 @@
-import type {BaseState} from '../../states';
-
-export interface ProjectSaveState extends BaseState {
+export interface ProjectSaveState {
+    get error(): string | null;
     get saving(): boolean;
     get hasChanges(): boolean;
 

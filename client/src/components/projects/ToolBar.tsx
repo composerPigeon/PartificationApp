@@ -1,22 +1,19 @@
-/* eslint-disable react-hooks/immutability -- editing.mode delegates to React state setters. */
+/* eslint-disable react-hooks/immutability -- interactionMode.mode delegates to React state setters. */
+import {useGoToExport} from '../../hooks/workspace/useGoToExport';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Divider, Paper} from '@mui/material'
 import {ToolButton} from '../buttons/ToolButton'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 
-import type {EditingModeState, ScorePageEditorState, ScorePageInteractionState} from '../../hooks/scorePage';
-import type {ProjectSaveState} from '../../hooks/project';
+import {useInteractionMode, useScorePageDomain} from '../../hooks/workspace/scorePage';
+import {useWorkspaceSave, usePermissions} from '../../hooks/workspace';
 
-interface ToolBarProps {
-    editing: EditingModeState
-    editor: ScorePageEditorState
-    interaction?: ScorePageInteractionState
-    disabled?: boolean
-    saveState: ProjectSaveState
-    onExport(): void
-}
-
-export function ToolBar({editing, editor, interaction, disabled = false, saveState, onExport}: ToolBarProps) {
+export function ToolBar() {
+    const permissions = usePermissions();
+    const onExport = useGoToExport();
+    const interactionMode = useInteractionMode();
+    const domain = useScorePageDomain();
+    const saveState = useWorkspaceSave();
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -33,20 +30,20 @@ export function ToolBar({editing, editor, interaction, disabled = false, saveSta
                    borderRadius: 3,
                    zIndex: 10
                }}>
-            <ToolButton label="Select" selected={editing.mode === 'select'}
-                        onSelect={() => { editing.mode = 'select'; }} disabled={disabled}
+            <ToolButton label="Select" selected={interactionMode.mode === 'select'}
+                        onSelect={() => { interactionMode.mode = 'select'; }} disabled={!permissions.canChangeTool}
                         icon={<ButtonIcon name="select"/>}/>
-            <ToolButton label="Add staff" selected={editing.mode === 'add-staff'}
-                        onSelect={() => { editing.mode = 'add-staff'; }} disabled={disabled || editing.locked}
+            <ToolButton label="Add staff" selected={interactionMode.mode === 'add-staff'}
+                        onSelect={() => { interactionMode.mode = 'add-staff'; }} disabled={!permissions.canChangeTool}
                         icon={<ButtonIcon name="add-staff" viewBox="0 0 24 24" fill="none"/>}/>
-            <ToolButton label="Edit staff" selected={editing.mode === 'edit-staff'}
-                        onSelect={() => { editing.mode = 'edit-staff'; }} disabled={disabled || editing.locked}
+            <ToolButton label="Edit staff" selected={interactionMode.mode === 'edit-staff'}
+                        onSelect={() => { interactionMode.mode = 'edit-staff'; }} disabled={!permissions.canChangeTool}
                         icon={<ButtonIcon name="edit-staff" viewBox="0 0 24 24"/>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
-            <ToolActionButton label="Copy staves layout to the next page" disabled={disabled || !interaction || !editor.canCopyStavesLayout}
-                              onClick={() => { interaction?.copyStavesLayoutToNextPage(); }}
+            <ToolActionButton label="Copy staves layout to the next page" disabled={!permissions.canChangeTool || !domain.canCopyStavesLayout}
+                              onClick={() => { domain.copyStavesLayoutToNextPage(); }}
                               icon={<ButtonIcon name="copy-staves"/>}/>
-            <ToolActionButton label="Export" disabled={disabled || saveState.saving} onClick={onExport}
+            <ToolActionButton label="Export" disabled={permissions.canvasError || saveState.saving} onClick={onExport}
                               icon={<ButtonIcon name="export" viewBox="0 0 24 24"/>}/>
         </Paper>
     )

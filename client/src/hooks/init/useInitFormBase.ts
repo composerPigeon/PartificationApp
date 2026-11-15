@@ -1,17 +1,7 @@
 import {useRef, useState} from 'react';
-import type {FormBaseState} from './states';
-import {useBaseState} from './useBaseState.ts';
+import type {FormBaseState, ViewState} from '../states';
 
-interface FormState extends FormBaseState {
-    get isIncomplete(): boolean;
-    set isIncomplete(value: boolean);
-    submit: (action: () => Promise<void>, fallbackError: string) => Promise<void>;
-}
-
-export function useFormBase(): FormState {
-    // Derived by the owning form on each render; updating it needs no extra render.
-    let isIncomplete = false;
-    const base = useBaseState();
+export function useInitFormBase(base: ViewState, isIncomplete = false): FormBaseState {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const submitting = useRef(false);
 
@@ -22,6 +12,7 @@ export function useFormBase(): FormState {
 
     async function submit(action: () => Promise<void>, fallbackError: string) {
         if (submitting.current) return;
+        // eslint-disable-next-line react-hooks/immutability -- The accessor delegates to a React state setter.
         base.error = null;
         updateSubmitting(true);
         try {
@@ -33,11 +24,12 @@ export function useFormBase(): FormState {
         }
     }
 
-    return base.extend({
+    return {
+        get error() { return base.error; },
+        set error(value: string | null) { base.error = value; },
         get isSubmitting() { return isSubmitting; },
         set isSubmitting(value: boolean) { updateSubmitting(value); },
         get isIncomplete() { return isIncomplete; },
-        set isIncomplete(value: boolean) { isIncomplete = value; },
         submit,
-    });
+    };
 }

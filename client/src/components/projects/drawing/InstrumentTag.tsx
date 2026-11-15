@@ -1,18 +1,24 @@
 import {Box, ButtonBase, IconButton, Tooltip, Typography} from '@mui/material'
 import {ButtonIcon} from '../../buttons/ButtonIcon'
 import type {Staff} from '../../../domain';
-import type {ScorePageInteractionState} from '../../../hooks/scorePage';
+import {useInstrumentEditing, useStaffDragging, useStaffSelection} from '../../../hooks/workspace/scorePage';
+import {useDeleteStaff, usePermissions} from '../../../hooks/workspace';
 
 interface InstrumentTagProps {
     staff: Staff
-    interaction: ScorePageInteractionState
     scale: number
-    y: number
-    height: number
-    selected: boolean
 }
 
-export function InstrumentTag({staff, scale, y, height, selected, interaction}: InstrumentTagProps) {
+export function InstrumentTag({staff, scale}: InstrumentTagProps) {
+    const instrumentEditing = useInstrumentEditing()
+    const deleteStaff = useDeleteStaff()
+    const permissions = usePermissions()
+    const dragging = useStaffDragging()
+    const selection = useStaffSelection()
+    const selected = selection.isSelected(staff.id)
+    const preview = dragging.dragPreview?.id === staff.id ? dragging.dragPreview : null
+    const y = preview?.y ?? staff.y
+    const height = preview?.height ?? staff.height
     return (
         <Box sx={{
             display: 'flex',
@@ -33,9 +39,10 @@ export function InstrumentTag({staff, scale, y, height, selected, interaction}: 
             outlineOffset: 2,
         }}>
             <ButtonBase aria-label={`Edit instrument ${staff.instrument.title}`}
+                        disabled={!permissions.canChangeTool}
                         onClick={event => {
                             const bounds = event.currentTarget.getBoundingClientRect()
-                            interaction.editInstrument(staff, {top: bounds.top, left: bounds.left})
+                            instrumentEditing.editInstrument(staff, {top: bounds.top, left: bounds.left})
                         }}
                         sx={{flex: 1, minWidth: 0, justifyContent: 'flex-start', px: 1.5, py: 0.75,
                             '&.Mui-focusVisible': {outline: '2px solid currentColor'}}}>
@@ -45,8 +52,9 @@ export function InstrumentTag({staff, scale, y, height, selected, interaction}: 
             </ButtonBase>
             <Tooltip title="Delete staff">
                 <IconButton size="small" aria-label={`Delete staff ${staff.instrument.title}`}
+                            disabled={!permissions.canChangeTool}
                             onClick={() => {
-                                interaction.deleteStaff(staff.id)
+                                deleteStaff(staff.id)
                             }} sx={{color: 'inherit', mr: 0.5}}>
                     <ButtonIcon name="delete" fontSize="small"/>
                 </IconButton>
