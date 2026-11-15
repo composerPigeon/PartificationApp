@@ -1,5 +1,4 @@
-import {useCallback, useEffect, useState} from 'react'
-import {Link, useNavigate} from '@tanstack/react-router'
+import {Link} from '@tanstack/react-router'
 import {
     Alert,
     Box,
@@ -11,8 +10,7 @@ import {
     Stack,
     Typography,
 } from '@mui/material'
-import type {ProfileData} from '../../services/server/responses'
-import {serverProxy} from "../../services";
+import {useProfile} from '../../hooks/profile/useProfile';
 
 function formatCreatedAt(value?: Date | string): string {
     if (value === undefined) {
@@ -28,58 +26,7 @@ function formatCreatedAt(value?: Date | string): string {
 }
 
 function ProfilePage() {
-    const navigate = useNavigate()
-    const [profile, setProfile] = useState<ProfileData | null>(null)
-    const [error, setError] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
-
-    const loadProfile = useCallback(async (signal?: AbortSignal) => {
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            const result = await serverProxy.getProfile()
-
-            if (!result.ok && result.error) {
-                setError(result.error)
-            }
-
-            /*
-            if (result.status === 401) {
-              await navigate({ to: '/login' })
-              return
-            }
-            */
-
-            setProfile(result)
-        } catch (caughtError) {
-            if (caughtError instanceof DOMException && caughtError.name === 'AbortError') {
-                return
-            }
-
-            setError(
-                caughtError instanceof Error
-                    ? caughtError.message
-                    : 'Unable to load your profile.',
-            )
-        } finally {
-            if (!signal?.aborted) {
-                setIsLoading(false)
-            }
-        }
-    }, [navigate])
-
-    useEffect(() => {
-        const controller = new AbortController()
-        const timeoutId = window.setTimeout(() => {
-            void loadProfile(controller.signal)
-        }, 0)
-
-        return () => {
-            window.clearTimeout(timeoutId)
-            controller.abort()
-        }
-    }, [loadProfile])
+    const {profile, error, isLoading, retry} = useProfile()
 
     return (
         <Box component="main" sx={{minHeight: '100svh', py: {xs: 4, sm: 8}}}>
@@ -103,7 +50,7 @@ function ProfilePage() {
                     {!isLoading && error && (
                         <Alert
                             severity="error"
-                            action={<Button color="inherit" onClick={() => void loadProfile()}>Retry</Button>}
+                            action={<Button color="inherit" onClick={retry}>Retry</Button>}
                         >
                             {error}
                         </Alert>

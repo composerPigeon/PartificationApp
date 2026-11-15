@@ -1,76 +1,21 @@
-import {useAuthState} from '../../hooks/auth';
+import {useProjects} from '../../hooks/project';
 import {ButtonIcon} from '../../components/buttons/ButtonIcon'
-import {useEffect, useState} from 'react'
 import {
     Alert, Box, Button, CircularProgress, Container,
     Paper, Stack, Typography,
 } from '@mui/material'
-import {projectManager} from '../../services'
-import type {Project} from '../../domain';
 import NavPage from '../../components/NavPage'
 import {FloatButton} from '../../components/buttons/FloatButton'
 import ProjectCard from '../../components/projects/ProjectCard'
 
 function ProjectsPage() {
-    const {currentAccount} = useAuthState()
-    const userId = currentAccount?.userId
-    const [projects, setProjects] = useState<Project[]>([])
-    const [error, setError] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
-    const [attempt, setAttempt] = useState(0)
-    const [deletingIds, setDeletingIds] = useState<string[]>([])
-    const [deleteError, setDeleteError] = useState<string | null>(null)
-
-    async function deleteProject(project: Project) {
-        setDeleteError(null)
-        setDeletingIds(ids => [...ids, project.id])
-        try {
-            await projectManager.deleteProject(project.id)
-            setProjects(current => current.filter(item => item.id !== project.id))
-        } catch (error) {
-            setDeleteError(error instanceof Error ? error.message : 'Unable to delete project.')
-        } finally {
-            setDeletingIds(ids => ids.filter(id => id !== project.id))
-        }
-    }
-
-    useEffect(() => {
-        let active = true
-
-        async function load() {
-            setProjects([])
-            setError(null)
-            setDeleteError(null)
-            setIsLoading(true)
-            try {
-                const loaded = await projectManager.loadProjects()
-                if (active) {
-                    setProjects(loaded)
-                }
-            } catch (error) {
-                if (active) setError(error instanceof Error ? error.message : 'Unable to load project.')
-            } finally {
-                if (active) setIsLoading(false)
-            }
-        }
-
-        void load()
-        return () => {
-            active = false
-        }
-    }, [attempt, userId])
-
-    function retry() {
-        setError(null)
-        setIsLoading(true)
-        setAttempt(value => value + 1)
-    }
+    const {projects, error, isLoading, deletingIds, deleteError, deleteProject, retry, clearDeleteError} = useProjects()
 
     return (
         <NavPage title="Projects">
             <Container maxWidth="md" sx={{pt: {xs: 4, sm: 8}, pb: 'calc(112px + env(safe-area-inset-bottom, 0px))'}}>
                 <Stack spacing={3}>
-                    {deleteError && <Alert severity="error" onClose={() => setDeleteError(null)}>{deleteError}</Alert>}
+                    {deleteError && <Alert severity="error" onClose={clearDeleteError}>{deleteError}</Alert>}
                     {isLoading ? (
                         <Box sx={{p: 6, display: 'grid', placeItems: 'center'}}>
                             <CircularProgress aria-label="Loading projects"/>
