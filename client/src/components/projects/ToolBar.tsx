@@ -1,19 +1,16 @@
 /* eslint-disable react-hooks/immutability -- interactionMode.mode delegates to React state setters. */
-import {useGoToExport} from '../../hooks/project/workspace/useGoToExport';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Divider, Paper} from '@mui/material'
 import {ToolButton} from '../buttons/ToolButton'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 
 import {useInteractionMode, useScorePageDomain} from '../../hooks/project/workspace/scorePage';
-import {useWorkspaceSave, usePermissions} from '../../hooks/project/workspace';
+import {usePermissions} from '../../hooks/project/workspace';
 
 export function ToolBar() {
     const permissions = usePermissions();
-    const onExport = useGoToExport();
     const interactionMode = useInteractionMode();
     const domain = useScorePageDomain();
-    const saveState = useWorkspaceSave();
     return (
         <Paper component="aside" aria-label="Project tools" elevation={5}
                sx={{
@@ -43,8 +40,6 @@ export function ToolBar() {
             <ToolActionButton label="Copy staves layout to the next page" disabled={!permissions.canChangeTool || !domain.canCopyStavesLayout}
                               onClick={() => { domain.copyStavesLayoutToNextPage(); }}
                               icon={<ButtonIcon name="copy-staves"/>}/>
-            <ToolActionButton label="Export" disabled={permissions.canvasError || saveState.saving} onClick={onExport}
-                              icon={<ButtonIcon name="export" viewBox="0 0 24 24"/>}/>
         </Paper>
     )
 }

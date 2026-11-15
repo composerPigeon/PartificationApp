@@ -1,11 +1,10 @@
-import {useBrowserPreview, useExportPreview, useGoToWorkspace} from '../../hooks/project/export';
+import {useBrowserPreview, useExportPreview} from '../../hooks/project/export';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Divider, Paper} from '@mui/material'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 import {ToolButton} from '../buttons/ToolButton'
 
 export function ExportToolBar() {
-    const onBack = useGoToWorkspace();
     const {generating} = useExportPreview();
     const {available, open} = useBrowserPreview();
     return (
@@ -19,8 +18,6 @@ export function ExportToolBar() {
                         onSelect={() => {}}
                         icon={<ButtonIcon name="select"/>}/>
             <Divider sx={{width: '70%', borderColor: 'primary.main', borderBottomWidth: 2, my: 0.5}}/>
-            <ToolActionButton label="Back to workspace" onClick={onBack}
-                              icon={<ButtonIcon name="back"/>}/>
             <ToolActionButton label={generating ? 'Generating preview…' : 'Browser preview'} disabled={!available || generating} onClick={open}
                               icon={<ButtonIcon name="preview"/>}/>
         </Paper>

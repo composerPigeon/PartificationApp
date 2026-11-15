@@ -12,10 +12,11 @@ export interface PreviewInsets {
 interface ProjectNavBarProps {
     title: string;
     navigation?: ReactNode;
+    sectionNavigation?: ReactNode;
     previewInsets?: PreviewInsets;
 }
 
-export function ProjectNavBar({title, navigation, previewInsets}: ProjectNavBarProps) {
+export function ProjectNavBar({title, navigation, sectionNavigation, previewInsets}: ProjectNavBarProps) {
     const scrolled = useScrollTrigger({disableHysteresis: true, threshold: 80});
 
     return (
@@ -31,17 +32,15 @@ export function ProjectNavBar({title, navigation, previewInsets}: ProjectNavBarP
             borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
             borderBottom: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
         })}>
-            <Typography component="h1" variant="h6" sx={{
-                gridArea: '1 / 1', justifySelf: 'start', mx: 3, minWidth: 0,
-                maxWidth: {xs: 'calc(100% - 106px)', sm: 'calc(50% - 120px)'},
-                display: 'flex', alignItems: 'center', gap: 1.5,
-                color: 'secondary.dark', fontWeight: 800, overflowWrap: 'anywhere',
+            <Box sx={{
+                gridArea: '1 / 1', justifySelf: 'start', mx: {xs: 1.5, sm: 3},
+                display: 'flex', alignItems: 'center', gap: 3,
             }}>
                 <Link to="/project" aria-label="Partification projects" style={{display: 'flex', flexShrink: 0}}>
                     <AppIcon color="secondary" sx={{width: 40, height: 40}}/>
                 </Link>
-                {title}
-            </Typography>
+                {sectionNavigation}
+            </Box>
             <Box sx={{
                 gridArea: {xs: '2 / 1', sm: '1 / 1'}, minWidth: 0,
                 ml: previewInsets?.left ?? 0, mr: previewInsets?.right ?? 0,
@@ -50,7 +49,15 @@ export function ProjectNavBar({title, navigation, previewInsets}: ProjectNavBarP
             }}>
                 {navigation}
             </Box>
-            <Box sx={{gridArea: '1 / 1', justifySelf: 'end', mx: 3}}>
+            <Box sx={{
+                gridArea: '1 / 1', justifySelf: 'end', mx: {xs: 1.5, sm: 3}, minWidth: 0,
+                maxWidth: {xs: 'calc(100% - 184px)', sm: 'calc(50% - 104px)'},
+                display: 'flex', alignItems: 'center', gap: 1,
+            }}>
+                <Typography component="h1" variant="h6" noWrap title={title}
+                            sx={{minWidth: 0, color: 'primary.main', fontWeight: 800}}>
+                    {title}
+                </Typography>
                 <ProfileMenu readOnly/>
             </Box>
         </Box>

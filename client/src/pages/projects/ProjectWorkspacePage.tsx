@@ -1,3 +1,4 @@
+import {WorkspaceSectionNavigation} from '../../components/projects/ProjectSectionNavigation';
 import {Box, Container, Stack} from '@mui/material'
 import {useProject} from '../../hooks/project';
 import {useWorkspacePaging} from '../../hooks/project/workspace';
@@ -18,7 +19,7 @@ function WorkspaceContent() {
     const {currentPage} = useWorkspacePaging()
 
     return (
-        <ProjectPage navigation={<WorkspacePageNavigation color="secondary"/>} title="Workspace" projectTitle={projectState.project.projectName ?? 'Project'}>
+        <ProjectPage sectionNavigation={<WorkspaceSectionNavigation/>} navigation={<WorkspacePageNavigation color="secondary"/>} title="Workspace" projectTitle={projectState.project.projectName ?? 'Project'}>
             <WorkspaceUnsavedChangesDialog/>
             <Box sx={{flex: 1, bgcolor: 'background.default', py: 1, px: {xs: '64px', sm: '88px'}}}>
                 <Container maxWidth="lg" disableGutters>

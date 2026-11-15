@@ -18,7 +18,7 @@ export function InstrumentsBar() {
                 p: {xs: 1.5, sm: 2}, borderBottom: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.12),
                 background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)}, ${alpha(theme.palette.secondary.main, 0.08)})`,
             })}>
-                <Typography component="h2" variant="subtitle1" sx={{fontWeight: 800, color: 'primary.main'}}>
+                <Typography component="h2" variant="subtitle1" sx={{fontWeight: 800, color: 'primary.main', textAlign: 'center'}}>
                     Instruments
                 </Typography>
             </Box>

@@ -1,3 +1,4 @@
+import {ExportSectionNavigation} from '../../components/projects/ProjectSectionNavigation';
 import {Box, Container} from '@mui/material';
 import {ExportToolBar} from '../../components/projects/ExportToolBar';
 import {InstrumentsBar} from '../../components/projects/InstrumentsBar';
@@ -15,7 +16,7 @@ export default function ProjectExportPage() {
 
 function ExportContent() {
     const {project} = useProject();
-    return <ProjectPage navigation={<ExportPageNavigation color="secondary"/>} title="Export" projectTitle={project.projectName}>
+    return <ProjectPage sectionNavigation={<ExportSectionNavigation/>} navigation={<ExportPageNavigation color="secondary"/>} title="Export" projectTitle={project.projectName}>
         <ExportUnsavedChangesDialog/>
         <Box sx={{flex: 1, py: 1, px: {xs: '64px', sm: '88px'}}}>
             <ExportToolBar/>
