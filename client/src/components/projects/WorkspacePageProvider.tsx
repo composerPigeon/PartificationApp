@@ -1,5 +1,5 @@
 import type {PropsWithChildren} from 'react';
-import {WorkspacePageContext, useInitWorkspacePage} from '../../hooks/workspace';
+import {WorkspacePageContext, useInitWorkspacePage} from '../../hooks/project/workspace';
 import type {ScorePage} from '../../domain';
 
 // The keyed boundary gives every displayed page fresh editing state.

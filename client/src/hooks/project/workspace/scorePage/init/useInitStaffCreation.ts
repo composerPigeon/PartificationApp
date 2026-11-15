@@ -1,12 +1,12 @@
 import type {InteractionActivityState} from '../../init/useInitInteractionActivity';
 import type {KonvaEventObject} from 'konva/lib/Node';
-import type {ScorePage} from '../../../../domain';
-import type {ProjectState} from '../../../project';
+import type {ScorePage} from '../../../../../domain';
+import type {ProjectState} from '../../..';
 import type {PermissionsState} from '../../states/PermissionsState';
 import type {InteractionModeState} from '../states/InteractionModeState';
 import type {ScorePageDomainState} from '../states/ScorePageDomainState';
 import type {InstrumentEditingState} from './useInitInstrumentEditing';
-import {recommendInstrument} from '../../../../services/projects/recommendInstrument';
+import {recommendInstrument} from '../../../../../services/projects/recommendInstrument';
 
 type PageEvent = KonvaEventObject<MouseEvent>;
 

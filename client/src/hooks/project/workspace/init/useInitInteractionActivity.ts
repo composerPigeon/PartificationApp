@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {Instrument} from '../../../domain';
+import type {Instrument} from '../../../../domain';
 
 type InstrumentForm = {position: {top: number, left: number}} & (
     {staffId: number, instrument: Instrument} | {centerY: number, height: number}

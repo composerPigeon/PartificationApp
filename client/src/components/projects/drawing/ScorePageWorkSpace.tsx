@@ -2,10 +2,10 @@
 import {useEffectEvent, useLayoutEffect, useRef, useState} from 'react'
 import {Alert, Box, useTheme} from '@mui/material'
 import {Image as PageImage, Layer, Line, Stage} from 'react-konva'
-import {usePermissions, useWorkspacePage} from '../../../hooks/workspace';
+import {usePermissions, useWorkspacePage} from '../../../hooks/project/workspace';
 import {useProject} from '../../../hooks/project';
 import type {Stage as KonvaStage} from 'konva/lib/Stage';
-import {useInteractionMode, useStaffSelection, useScorePageDomain, useStaffCreation, useInstrumentEditing} from '../../../hooks/workspace/scorePage';
+import {useInteractionMode, useStaffSelection, useScorePageDomain, useStaffCreation, useInstrumentEditing} from '../../../hooks/project/workspace/scorePage';
 import {StaffRect} from './StaffRect.tsx'
 import {StaffDividerLine} from './StaffDividerLine.tsx'
 import {VerticalDividerLine} from './VerticalDividerLine.tsx'

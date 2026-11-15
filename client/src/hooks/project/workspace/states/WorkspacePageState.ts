@@ -1,4 +1,4 @@
-import type {ScorePage} from '../../../domain';
+import type {ScorePage} from '../../../../domain';
 import type {InstrumentEditingState, StaffCreationState, StaffDraggingState, InteractionModeState, ScorePageDomainState, StaffSelectionState} from '../scorePage';
 
 import type {PermissionsState} from './PermissionsState';

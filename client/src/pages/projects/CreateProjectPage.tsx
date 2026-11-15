@@ -1,4 +1,6 @@
-import {Alert, Stack, Typography} from '@mui/material'
+import {useSubmitting} from '../../hooks/form';
+import {FormProvider} from '../../components/formComponents/FormProvider';
+import {Stack, Typography} from '@mui/material'
 import {useCreateProject} from '../../hooks/project';
 import {PdfFileField} from '../../components/PdfFileField.tsx'
 import Form from '../../components/formComponents/Form.tsx'
@@ -8,28 +10,30 @@ import ScoreDetailField from '../../components/formComponents/ScoreDetailField.t
 import LayoutTrainingPermissionField from '../../components/formComponents/LayoutTrainingPermissionField.tsx';
 
 export default function CreateProjectPage() {
+    return <FormProvider><CreateProjectContent/></FormProvider>;
+}
+
+function CreateProjectContent() {
     const model = useCreateProject()
+    const {isSubmitting} = useSubmitting()
     return (
         <FormPage title="Create project">
             <Form
-                submitButtonText={model.isSubmitting ? 'Creating project…' : 'Create project'}
-                isBusy={model.isSubmitting}
-                isFormIncomplete={model.isIncomplete}
-                handleSubmit={model.handleCreateProject}
+                submitButtonText={isSubmitting ? 'Creating project…' : 'Create project'}
+                state={model}
             >
                 <Stack spacing={3}>
-                    {model.error && <Alert severity="error">{model.error}</Alert>}
                     <NameField label="Project name" state={model}
-                               required disabled={model.isSubmitting} autoComplete="project-name"/>
-                    <ScoreDetailField label="Title" field="title" state={model} required disabled={model.isSubmitting}/>
-                    <ScoreDetailField label="Subtitle" field="subtitle" state={model} disabled={model.isSubmitting}/>
-                    <ScoreDetailField label="Author" field="author" state={model} disabled={model.isSubmitting}/>
+                               required disabled={isSubmitting} autoComplete="project-name"/>
+                    <ScoreDetailField label="Title" field="title" state={model} required disabled={isSubmitting}/>
+                    <ScoreDetailField label="Subtitle" field="subtitle" state={model} disabled={isSubmitting}/>
+                    <ScoreDetailField label="Author" field="author" state={model} disabled={isSubmitting}/>
                     <Stack direction="row" spacing={2}>
-                        <ScoreDetailField label="Author date" field="authorDate" state={model} disabled={model.isSubmitting}/>
-                        <ScoreDetailField label="Genre" field="genre" state={model} disabled={model.isSubmitting}/>
+                        <ScoreDetailField label="Author date" field="authorDate" state={model} disabled={isSubmitting}/>
+                        <ScoreDetailField label="Genre" field="genre" state={model} disabled={isSubmitting}/>
                     </Stack>
-                    <PdfFileField disabled={model.isSubmitting} state={model}/>
-                    <LayoutTrainingPermissionField state={model} disabled={model.isSubmitting}/>
+                    <PdfFileField disabled={isSubmitting} state={model}/>
+                    <LayoutTrainingPermissionField state={model} disabled={isSubmitting}/>
                     {model.progress && <Typography role="status" variant="body2">{model.progress}</Typography>}
                 </Stack>
             </Form>

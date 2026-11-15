@@ -1,7 +1,7 @@
 import {alpha, useTheme} from '@mui/material'
 import {Rect} from 'react-konva'
 import type {Staff} from '../../../domain';
-import {useStaffDragging, useStaffSelection} from '../../../hooks/workspace/scorePage';
+import {useStaffDragging, useStaffSelection} from '../../../hooks/project/workspace/scorePage';
 
 interface StaffRectProps {
     staff: Staff

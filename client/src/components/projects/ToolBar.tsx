@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/immutability -- interactionMode.mode delegates to React state setters. */
-import {useGoToExport} from '../../hooks/workspace/useGoToExport';
+import {useGoToExport} from '../../hooks/project/workspace/useGoToExport';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Divider, Paper} from '@mui/material'
 import {ToolButton} from '../buttons/ToolButton'
 import {ToolActionButton} from '../buttons/ToolActionButton'
 
-import {useInteractionMode, useScorePageDomain} from '../../hooks/workspace/scorePage';
-import {useWorkspaceSave, usePermissions} from '../../hooks/workspace';
+import {useInteractionMode, useScorePageDomain} from '../../hooks/project/workspace/scorePage';
+import {useWorkspaceSave, usePermissions} from '../../hooks/project/workspace';
 
 export function ToolBar() {
     const permissions = usePermissions();

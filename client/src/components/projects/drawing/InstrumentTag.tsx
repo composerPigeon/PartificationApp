@@ -1,8 +1,8 @@
 import {Box, ButtonBase, IconButton, Tooltip, Typography} from '@mui/material'
 import {ButtonIcon} from '../../buttons/ButtonIcon'
 import type {Staff} from '../../../domain';
-import {useInstrumentEditing, useStaffDragging, useStaffSelection} from '../../../hooks/workspace/scorePage';
-import {useDeleteStaff, usePermissions} from '../../../hooks/workspace';
+import {useInstrumentEditing, useStaffDragging, useStaffSelection} from '../../../hooks/project/workspace/scorePage';
+import {useDeleteStaff, usePermissions} from '../../../hooks/project/workspace';
 
 interface InstrumentTagProps {
     staff: Staff

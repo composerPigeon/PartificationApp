@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {Staff, StaffDivider} from '../../../../domain';
+import type {Staff, StaffDivider} from '../../../../../domain';
 import type {PermissionsState} from '../../states/PermissionsState';
 import type {ScorePageDomainState} from '../states/ScorePageDomainState';
 

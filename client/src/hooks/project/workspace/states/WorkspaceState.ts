@@ -1,5 +1,5 @@
-import type {ViewState} from '../../states';
-import type {ProjectSaveState} from '../../project';
+import type {ViewState} from '../../../states';
+import type {ProjectSaveState} from '../..';
 import type {WorkspacePagingState} from './WorkspacePagingState';
 
 export interface WorkspaceState {

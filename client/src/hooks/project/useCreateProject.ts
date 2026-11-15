@@ -2,7 +2,8 @@ import {useState} from 'react'
 import type {SubmitEvent} from 'react'
 import {useNavigate} from '@tanstack/react-router'
 import {projectManager} from '../../services'
-import {useInitFormBase, useInitViewState} from '..';
+import {useView} from '../useView';
+import {useSubmitting} from '../form';
 import type {CreateProjectState} from './states';
 
 export function useCreateProject(): CreateProjectState {
@@ -16,16 +17,18 @@ export function useCreateProject(): CreateProjectState {
     const [allowLayoutModelTraining, setAllowLayoutModelTraining] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [progress, setProgress] = useState('')
-    const form = useInitFormBase(useInitViewState(), !file || !name.trim() || !title.trim())
+    const view = useView()
+    const submitting = useSubmitting()
+    const isIncomplete = !file || !name.trim() || !title.trim()
 
     function onPageConvertProgress(count: number, total: number): void {
         setProgress(`Saving page ${count} of ${total}…`)
     }
 
-    async function handleCreateProject(event: SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
-        if (!file || form.isIncomplete) return
-        await form.submit(async () => {
+        if (!file || isIncomplete) return
+        await submitting.submit(async () => {
             setProgress('Preparing PDF…')
             try {
                 await projectManager.createProject(name, file, onPageConvertProgress, {
@@ -39,11 +42,7 @@ export function useCreateProject(): CreateProjectState {
     }
 
     return {
-        get error() { return form.error; },
-        set error(value: string | null) { form.error = value; },
-        get isSubmitting() { return form.isSubmitting; },
-        set isSubmitting(value: boolean) { form.isSubmitting = value; },
-        get isIncomplete() { return form.isIncomplete; },
+        get isIncomplete() { return isIncomplete; },
         get name() { return name; },
         set name(value: string) { setName(value); },
         get title() { return title; },
@@ -60,15 +59,15 @@ export function useCreateProject(): CreateProjectState {
         set allowLayoutModelTraining(value: boolean) { setAllowLayoutModelTraining(value); },
         get file() { return file; },
         set file(selected: File | null) {
-            form.error = null
+            view.error = null
             if (selected && (!/\.pdf$/i.test(selected.name) || !selected.size)) {
                 setFile(null)
-                form.error = 'Choose a non-empty PDF file.'
+                view.error = 'Choose a non-empty PDF file.'
                 return
             }
             setFile(selected)
         },
         get progress() { return progress; },
-        handleCreateProject,
+        handleSubmit,
     }
 }

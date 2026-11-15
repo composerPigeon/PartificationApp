@@ -1,6 +1,6 @@
-import type {Instrument, ScorePage, StaffDivider} from '../../../../domain';
-import type {ProjectState, ProjectSaveState} from '../../../project';
-import type {ViewState} from '../../../states';
+import type {Instrument, ScorePage, StaffDivider} from '../../../../../domain';
+import type {ProjectState, ProjectSaveState} from '../../..';
+import type {ViewState} from '../../../../states';
 import type {WorkspacePagingState} from '../../states/WorkspacePagingState';
 import type {ScorePageDomainState, StaffResizeBounds} from '../states/ScorePageDomainState.ts';
 

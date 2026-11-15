@@ -1,5 +1,5 @@
-import type {PagingState} from '../../states';
-import type {ProjectState} from '../../project';
+import type {PagingState} from '../../../states';
+import type {ProjectState} from '../..';
 import type {WorkspacePagingState} from '../states/WorkspacePagingState';
 
 export function useInitWorkspacePaging(paging: PagingState, projectState: ProjectState): WorkspacePagingState {

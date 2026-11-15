@@ -1,6 +1,6 @@
-import type {ViewState, PagingState} from '../../states';
+import type {ViewState, PagingState} from '../../../states';
 
-import type {ProjectSaveState} from '../../project';
+import type {ProjectSaveState} from '../..';
 
 export interface ExportState {
     viewState: ViewState;

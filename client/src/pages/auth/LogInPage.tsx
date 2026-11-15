@@ -1,6 +1,6 @@
+import {FormProvider} from '../../components/formComponents/FormProvider';
 import {Link} from '@tanstack/react-router'
 import {
-    Alert,
     Link as MuiLink,
     Typography,
 } from '@mui/material'
@@ -13,19 +13,17 @@ import {useLogIn} from '../../hooks/auth';
 import PasswordType from "../../components/formComponents/PasswordType.ts";
 
 function LogInPage() {
+    return <FormProvider><LogInContent/></FormProvider>;
+}
+
+function LogInContent() {
     const state = useLogIn();
 
 
     return (
         <FormPage title="Log in" hideProfile>
-            {state.error && (
-                <Alert severity="error" sx={{mb: 2}}>
-                    {state.error}
-                </Alert>
-            )}
 
-            <Form submitButtonText="Log in" isBusy={state.isSubmitting} isFormIncomplete={state.isIncomplete}
-                  handleSubmit={state.handleLogIn}>
+            <Form submitButtonText="Log in" state={state}>
                 <UserNameField state={state}/>
                 <PasswordField passwordType={PasswordType.Normal} state={state} field="password"/>
             </Form>

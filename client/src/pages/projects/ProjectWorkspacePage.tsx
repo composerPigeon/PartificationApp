@@ -1,6 +1,6 @@
 import {Box, Container, Stack} from '@mui/material'
 import {useProject} from '../../hooks/project';
-import {useWorkspacePaging} from '../../hooks/workspace';
+import {useWorkspacePaging} from '../../hooks/project/workspace';
 import {ProjectSaveStatus} from '../../components/projects/ProjectSaveStatus';
 import {WorkspaceProvider} from '../../components/projects/WorkspaceProvider';
 import {ScorePageWorkSpace} from '../../components/projects/drawing/ScorePageWorkSpace.tsx'

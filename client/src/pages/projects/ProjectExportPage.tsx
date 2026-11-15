@@ -8,7 +8,7 @@ import {ExportPageNavigation} from '../../components/projects/PageNavigation';
 import {ProjectPage} from '../../components/projects/ProjectPage.tsx'
 import {ExportPdfViewer} from '../../components/projects/ExportPdfViewer.tsx'
 import {exportPdfService} from '../../services'
-import {useExport} from '../../hooks/export';
+import {useExport} from '../../hooks/project/export';
 import {ExportProvider} from '../../components/projects/ExportProvider';
 import {ExportUnsavedChangesDialog} from '../../components/projects/UnsavedChangesDialog.tsx';
 

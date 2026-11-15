@@ -1,7 +1,7 @@
 import {useTheme} from '@mui/material'
 import {Line} from 'react-konva'
 import type {StaffDivider} from '../../../domain';
-import {useStaffDragging} from '../../../hooks/workspace/scorePage';
+import {useStaffDragging} from '../../../hooks/project/workspace/scorePage';
 
 interface StaffDividerLineProps {
     divider: StaffDivider

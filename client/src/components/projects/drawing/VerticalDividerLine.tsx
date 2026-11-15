@@ -1,4 +1,4 @@
-import {useStaffDragging, useScorePageDomain} from '../../../hooks/workspace/scorePage';
+import {useStaffDragging, useScorePageDomain} from '../../../hooks/project/workspace/scorePage';
 import {useTheme} from '@mui/material'
 import {Line} from 'react-konva'
 import type {VerticalDivider} from '../../../domain';

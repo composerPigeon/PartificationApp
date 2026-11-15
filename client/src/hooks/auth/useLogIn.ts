@@ -3,7 +3,8 @@ import {useState, type SubmitEvent} from "react";
 import {serverProxy} from "../../services";
 import {useAuthState} from './useAuthState';
 import type {LogInState} from './states';
-import {useInitFormBase, useInitViewState} from '..';
+import {useView} from '../useView';
+import {useSubmitting} from '../form';
 
 
 export function useLogIn(): LogInState {
@@ -11,15 +12,16 @@ export function useLogIn(): LogInState {
     const navigate = useNavigate()
     const [userName, setUserName] = useState('')
     const [password, setPassword] = useState('')
-    const form = useInitFormBase(useInitViewState(), !userName.trim() || !password)
+    const view = useView()
+    const submitting = useSubmitting()
 
-    async function handleLogIn(event: SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
-        await form.submit(async () => {
+        await submitting.submit(async () => {
             const result = await serverProxy.executeLogin(userName.trim().toLowerCase(), password)
 
             if (!result.ok) {
-                form.error = result.error ?? 'Unable to log in. Please try again.'
+                view.error = result.error ?? 'Unable to log in. Please try again.'
                 return
             }
 
@@ -30,15 +32,11 @@ export function useLogIn(): LogInState {
     }
 
     return {
-        get error() { return form.error; },
-        set error(value: string | null) { form.error = value; },
-        get isSubmitting() { return form.isSubmitting; },
-        set isSubmitting(value: boolean) { form.isSubmitting = value; },
-        get isIncomplete() { return form.isIncomplete; },
+        get isIncomplete() { return !userName.trim() || !password; },
         get userName() { return userName; },
         set userName(value: string) { setUserName(value); },
         get password() { return password; },
         set password(value: string) { setPassword(value); },
-        handleLogIn,
+        handleSubmit,
     }
 }

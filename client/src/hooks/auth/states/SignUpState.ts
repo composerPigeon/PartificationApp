@@ -1,12 +1,6 @@
-import type {SubmitEvent} from "react";
+import type {FormState} from '../../form/states/FormState';
 
-export interface SignUpState {
-    get error(): string | null;
-    set error(value: string | null);
-    get isSubmitting(): boolean;
-    set isSubmitting(value: boolean);
-    get isIncomplete(): boolean;
-
+export interface SignUpState extends FormState {
     get userName(): string;
     set userName(value: string);
     get email(): string;
@@ -15,6 +9,4 @@ export interface SignUpState {
     set password(value: string);
     get confirmPassword(): string;
     set confirmPassword(value: string);
-
-    handleSignUp: (event: SubmitEvent<HTMLFormElement>) => void;
 }

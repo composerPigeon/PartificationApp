@@ -1,4 +1,4 @@
-import type {ScorePage} from '../../../domain';
+import type {ScorePage} from '../../../../domain';
 
 export interface PermissionsState {
     readonly canvasError: boolean;

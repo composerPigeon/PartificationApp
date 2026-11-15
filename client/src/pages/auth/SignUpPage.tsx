@@ -1,6 +1,6 @@
+import {FormProvider} from '../../components/formComponents/FormProvider';
 import {Link} from '@tanstack/react-router'
 import {
-    Alert,
     Link as MuiLink,
     Typography,
 } from '@mui/material'
@@ -13,18 +13,16 @@ import PasswordType from "../../components/formComponents/PasswordType.ts";
 import UserNameField from "../../components/formComponents/UserNameField.tsx";
 
 function SignUpPage() {
-    var state = useSignUp()
+    return <FormProvider><SignUpContent/></FormProvider>;
+}
+
+function SignUpContent() {
+    const state = useSignUp()
 
     return (
         <FormPage title="Create new account" hideProfile>
-            {state.error && (
-                <Alert severity="error" sx={{mb: 2}}>
-                    {state.error}
-                </Alert>
-            )}
 
-            <Form submitButtonText="Create account" isBusy={state.isSubmitting}
-                  isFormIncomplete={state.isIncomplete} handleSubmit={state.handleSignUp}>
+            <Form submitButtonText="Create account" state={state}>
                 <UserNameField state={state} showHelp/>
                 <EmailField state={state}/>
                 <PasswordField passwordType={PasswordType.New} state={state} field="password"/>

@@ -1,4 +1,4 @@
-import type {Instrument, Staff, StaffDivider, VerticalDivider} from '../../../../domain';
+import type {Instrument, Staff, StaffDivider, VerticalDivider} from '../../../../../domain';
 export interface StaffResizeBounds {
     y: number;
     height: number;

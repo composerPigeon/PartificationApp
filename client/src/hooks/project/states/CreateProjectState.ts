@@ -1,12 +1,6 @@
-import type {SubmitEvent} from 'react';
+import type {FormState} from '../../form/states/FormState';
 
-export interface CreateProjectState {
-    get error(): string | null;
-    set error(value: string | null);
-    get isSubmitting(): boolean;
-    set isSubmitting(value: boolean);
-    get isIncomplete(): boolean;
-
+export interface CreateProjectState extends FormState {
     get name(): string;
     set name(value: string);
 
@@ -31,6 +25,4 @@ export interface CreateProjectState {
     get file(): File | null;
     set file(value: File | null);
     get progress(): string;
-
-    handleCreateProject: (event: SubmitEvent<HTMLFormElement>) => Promise<void>;
 }

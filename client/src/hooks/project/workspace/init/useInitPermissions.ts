@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {ScorePage} from '../../../domain';
+import type {ScorePage} from '../../../../domain';
 import type {PermissionsState} from '../states/PermissionsState';
 
 import type {InteractionActivityState} from './useInitInteractionActivity';

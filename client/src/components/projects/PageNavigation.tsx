@@ -1,5 +1,5 @@
-import {useExport} from '../../hooks/export';
-import {useWorkspacePaging} from '../../hooks/workspace';
+import {useExport} from '../../hooks/project/export';
+import {useWorkspacePaging} from '../../hooks/project/workspace';
 import {ButtonIcon} from '../buttons/ButtonIcon'
 import {Box, IconButton, Typography} from '@mui/material'
 

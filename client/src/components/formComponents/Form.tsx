@@ -1,23 +1,27 @@
-import {Box} from '@mui/material';
-import type {ReactNode, SubmitEvent} from 'react';
+import {useView} from '../../hooks/useView';
+import {useSubmitting} from '../../hooks/form';
+import {Alert, Box} from '@mui/material';
+import type {ReactNode} from 'react';
+import type {FormState} from '../../hooks/form';
 import {SubmitButton} from '../buttons/SubmitButton.tsx';
 
 interface FormProps {
     submitButtonText: string;
-    isBusy: boolean;
-    isFormIncomplete: boolean;
-    handleSubmit(event: SubmitEvent<HTMLFormElement>): void;
+    state: FormState;
     children: ReactNode;
 }
 
-function Form({submitButtonText, isBusy, isFormIncomplete, handleSubmit, children}: FormProps) {
+function Form({submitButtonText, state, children}: FormProps) {
+    const {isSubmitting} = useSubmitting();
+    const {error} = useView();
     return (
-        <Box component="form" onSubmit={handleSubmit}>
-            <Box component="fieldset" disabled={isBusy} sx={{border: 0, p: 0, m: 0, minWidth: 0}}>
+        <Box component="form" onSubmit={state.handleSubmit}>
+            {error && <Alert severity="error" sx={{mb: 2}}>{error}</Alert>}
+            <Box component="fieldset" disabled={isSubmitting} sx={{border: 0, p: 0, m: 0, minWidth: 0}}>
                 {children}
             </Box>
             <Box sx={{mt: 3}}>
-                <SubmitButton disabled={isBusy || isFormIncomplete}>
+                <SubmitButton disabled={isSubmitting || state.isIncomplete}>
                     {submitButtonText}
                 </SubmitButton>
             </Box>

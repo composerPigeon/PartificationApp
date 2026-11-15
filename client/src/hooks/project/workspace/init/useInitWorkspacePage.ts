@@ -1,5 +1,5 @@
-import type {ScorePage} from '../../../domain';
-import {useProject} from '../../project';
+import type {ScorePage} from '../../../../domain';
+import {useProject} from '../..';
 import {useWorkspace} from '../useWorkspace';
 import {useInitInteractionMode, useInitScorePageDomain, useInitStaffSelection, useInitStaffCreation, useInitStaffDragging, useInitInstrumentEditing} from '../scorePage';
 import {useInitInteractionActivity} from './useInitInteractionActivity';

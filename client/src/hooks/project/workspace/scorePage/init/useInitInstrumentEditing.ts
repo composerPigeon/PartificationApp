@@ -1,11 +1,11 @@
 import type {InteractionActivityState} from '../../init/useInitInteractionActivity';
-import type {ScorePage, Staff} from '../../../../domain';
-import type {ProjectState} from '../../../project';
+import type {ScorePage, Staff} from '../../../../../domain';
+import type {ProjectState} from '../../..';
 import type {StaffSelectionState} from '../states/StaffSelectionState';
 import type {InteractionModeState} from '../states/InteractionModeState';
 import type {ScorePageDomainState} from '../states/ScorePageDomainState';
 import type {PermissionsState} from '../../states/PermissionsState';
-import {recommendInstrument} from '../../../../services/projects/recommendInstrument';
+import {recommendInstrument} from '../../../../../services/projects/recommendInstrument';
 
 type Position = {top: number, left: number};
 

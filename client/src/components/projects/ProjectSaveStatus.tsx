@@ -1,5 +1,5 @@
 import {Alert, Button} from '@mui/material';
-import {useWorkspaceSave} from '../../hooks/workspace';
+import {useWorkspaceSave} from '../../hooks/project/workspace';
 
 export function ProjectSaveStatus() {
     const saveState = useWorkspaceSave();

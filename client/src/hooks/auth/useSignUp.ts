@@ -3,7 +3,8 @@ import type {SignUpState} from './states';
 import {serverProxy} from "../../services";
 import {useNavigate} from "@tanstack/react-router";
 import {useState, type SubmitEvent} from "react";
-import {useInitFormBase, useInitViewState} from '..';
+import {useView} from '../useView';
+import {useSubmitting} from '../form';
 
 export function useSignUp(): SignUpState {
     const navigate = useNavigate()
@@ -11,18 +12,19 @@ export function useSignUp(): SignUpState {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
-    const formState = useInitFormBase(useInitViewState(), !userName.trim() || !email.trim() || !password || !confirmPassword)
+    const view = useView()
+    const submitting = useSubmitting()
 
-    async function handleSignUp(event: SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault()
-        await formState.submit(async () => {
+        await submitting.submit(async () => {
             const form = event.currentTarget
             if (!form.checkValidity()) {
                 form.reportValidity()
                 return
             }
             if (password !== confirmPassword) {
-                formState.error = 'Passwords do not match.'
+                view.error = 'Passwords do not match.'
                 return
             }
 
@@ -33,7 +35,7 @@ export function useSignUp(): SignUpState {
             )
 
             if (!result.ok) {
-                formState.error = result.error ?? 'Unable to create your account.'
+                view.error = result.error ?? 'Unable to create your account.'
                 return
             }
 
@@ -42,11 +44,7 @@ export function useSignUp(): SignUpState {
     }
 
     return {
-        get error() { return formState.error; },
-        set error(value: string | null) { formState.error = value; },
-        get isSubmitting() { return formState.isSubmitting; },
-        set isSubmitting(value: boolean) { formState.isSubmitting = value; },
-        get isIncomplete() { return formState.isIncomplete; },
+        get isIncomplete() { return !userName.trim() || !email.trim() || !password || !confirmPassword; },
         get userName() { return userName; },
         set userName(value: string) { setUserName(value); },
         get email() { return email; },
@@ -55,6 +53,6 @@ export function useSignUp(): SignUpState {
         set password(value: string) { setPassword(value); },
         get confirmPassword() { return confirmPassword; },
         set confirmPassword(value: string) { setConfirmPassword(value); },
-        handleSignUp
+        handleSubmit
     }
 }

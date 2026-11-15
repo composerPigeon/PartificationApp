@@ -1,5 +1,5 @@
-import {useInitViewState, usePaging} from '../..';
-import {useProject, useInitProjectSave} from '../../project';
+import {useInitViewState, usePaging} from '../../..';
+import {useProject, useInitProjectSave} from '../..';
 import {useInitWorkspacePaging} from './useInitWorkspacePaging';
 import type {WorkspaceState} from '../states/WorkspaceState';
 
