@@ -43,7 +43,7 @@ export class Project implements ProjectScoreDetails {
     exports: ExportContext[] = [];
 
     @JsonProperty({type: Array, elementType: StaffSystem})
-    systems: StaffSystem[] = [new StaffSystem(0, [], true)];
+    systems: StaffSystem[] = [];
 
     constructor(projectId: string = "", projectName: string = "", directoryName: string = "",
                 pageCount: number = 0, instruments: Instrument[] = []) {

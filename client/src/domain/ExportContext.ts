@@ -14,6 +14,9 @@ export class ExportContext {
     @JsonProperty({path: 'between_system_spacing', default: 18})
     betweenSystemSpacing: number = 18;
 
+    @JsonProperty({path: 'is_shortcuts_visible', default: true})
+    isShortcutsVisible: boolean = true;
+
     constructor(instrumentIds: string[] = []) {
         this.instrumentIds = [...new Set(instrumentIds)].sort();
         this.id = this.instrumentIds.join('_');

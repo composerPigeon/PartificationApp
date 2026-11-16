@@ -31,6 +31,7 @@ export function useInitExportPreview({project}: ProjectState, save: ProjectSaveS
             const signature = JSON.stringify([
                 project.title, project.subtitle, project.author, project.authorDate,
                 exportContext.withinSystemSpacing, exportContext.betweenSystemSpacing,
+                exportContext.isShortcutsVisible,
                 instruments.map(instrument => [instrument.id, instrument.title, instrument.shortcut]),
             ]);
             if (save.hasChanges) previews.current = new WeakMap();
@@ -52,8 +53,10 @@ export function useInitExportPreview({project}: ProjectState, save: ProjectSaveS
                 spacingMaximum = maximum;
                 if (!signal.aborted) setSpacingLimit({project, contextId: exportContext.id, maximum});
             });
-            previews.current.set(exportContext, {project, signature, pdf, maximum: spacingMaximum});
-            if (!signal.aborted) setResult({project, selectedIds, settingsRevision, pdf, generating: false});
+            if (!signal.aborted) {
+                previews.current.set(exportContext, {project, signature, pdf, maximum: spacingMaximum});
+                setResult({project, selectedIds, settingsRevision, pdf, generating: false});
+            }
         } catch (error) {
             if (!signal.aborted) {
                 view.error = error instanceof Error ? error.message : 'Unable to generate PDF preview.';
@@ -80,6 +83,14 @@ export function useInitExportPreview({project}: ProjectState, save: ProjectSaveS
             setSettingsRevision(revision => revision + 1);
         },
         maxSpacing: spacingLimit?.project === project && spacingLimit.contextId === contextId ? spacingLimit.maximum : null,
+        setShortcutsVisible(visible: boolean) {
+            if (!instruments.length) return;
+            const context = project.getOrCreateExportContext(instruments);
+            if (context.isShortcutsVisible === visible) return;
+            context.isShortcutsVisible = visible;
+            dirtyContexts.current.add(context);
+            setSettingsRevision(revision => revision + 1);
+        },
         setSpacing(setting: 'withinSystemSpacing' | 'betweenSystemSpacing', value: number) {
             if (!instruments.length || !Number.isFinite(value) || value < 0) return;
             const context = project.getOrCreateExportContext(instruments);

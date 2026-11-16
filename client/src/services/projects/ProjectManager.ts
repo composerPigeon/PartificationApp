@@ -15,6 +15,7 @@ import {StoredScorePage} from "./StoredScorePage.ts";
 export interface StaffImage {
     blob: Blob;
     instrument: Instrument;
+    periodIndex: number;
 }
 
 export interface IProjectManager {
@@ -40,7 +41,6 @@ export class ProjectManager implements IProjectManager {
     private storage: StorageService = browserStorage;
     private pagesConverter: IConvertPdfPagesService = new ConvertPdfPagesService();
     private staffImageService: IStaffImageService = new StaffImageService();
-
     useBrowserStorage(): void {
         this.type = StorageType.Browser;
         this.storage = browserStorage;
@@ -152,13 +152,22 @@ export class ProjectManager implements IProjectManager {
     async *loadStaffImages(project: Project, instruments: readonly Instrument[]): AsyncIterableIterator<StaffImage> {
         const selectedInstruments = new Map(instruments.map(instrument => [instrument.id, instrument]));
         const pages = await this.storage.loadPages(project.id);
+        const periodInstrumentIds = new Set<string>();
+        let periodIndex = 0;
         for (const page of pages.sort((a, b) => a.number - b.number)) {
             const staves = Object.entries(page.metadata.instruments).sort(([a], [b]) => Number(a) - Number(b));
             for (const [order, instrumentId] of staves) {
+                // Detect periods before filtering so any selected subset preserves their boundaries.
+                if (periodInstrumentIds.has(instrumentId)) {
+                    periodIndex++;
+                    periodInstrumentIds.clear();
+                }
+                periodInstrumentIds.add(instrumentId);
                 const instrument = selectedInstruments.get(instrumentId);
                 if (instrument) yield {
                     blob: await this.storage.loadStaffImage(project.id, page.number, Number(order)),
                     instrument,
+                    periodIndex,
                 };
             }
         }

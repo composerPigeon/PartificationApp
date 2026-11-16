@@ -1,7 +1,7 @@
 import {PDFDocument, PageSizes, StandardFonts} from 'pdf-lib';
 import type {PDFFont, PDFPage, PDFImage} from 'pdf-lib';
 import type {Project, Instrument, ExportContext} from '../../../domain';
-import type {IProjectManager} from '../../projects/ProjectManager.ts';
+import type {StaffImage, IProjectManager} from '../../projects/ProjectManager.ts';
 import appIconUrl from '../../../../public/icons/app-icon.svg?url';
 
 const PAGE_MARGIN = 40;
@@ -33,6 +33,12 @@ interface PreparedStaff {
     width: number;
     height: number;
     rowHeight: number;
+}
+
+interface StaffLayout {
+    left: number;
+    width: number;
+    showShortcuts: boolean;
 }
 
 function titleLines(title: string, font: PDFFont, width: number, size = TITLE_SIZE): string[] {
@@ -155,81 +161,102 @@ export class ExportPdfService implements IExportPdfService {
 
     private async drawStaves(context: PdfRenderContext, project: Project, instruments: readonly Instrument[],
                              exportContext: ExportContext): Promise<number> {
-        const {labelFont, pageWidth} = context;
-        const showShortcuts = instruments.length > 1;
-        const shortcutWidth = showShortcuts
-            ? Math.max(...instruments.map(instrument => labelFont.widthOfTextAtSize(instrument.shortcut, SHORTCUT_SIZE)))
-            : 0;
-        const staffLeft = PAGE_MARGIN + (showShortcuts ? shortcutWidth + SHORTCUT_GAP : 0);
-        const staffWidth = pageWidth - PAGE_MARGIN - staffLeft;
-        if (staffWidth <= 0) throw new Error('Instrument shortcuts are too long to fit on the page.');
-        let count = 0;
-        let previousHeight = 0;
-        let previousAvailableHeight = context.contentHeight;
-        let spacingLimit = 0;
-        let group: PreparedStaff[] = [];
-        const periodInstrumentIds = new Set<string>();
-        for await (const {blob, instrument} of this.projectManager.loadStaffImages(project, instruments)) {
-            // A repeated instrument starts the next root-system period.
-            if (periodInstrumentIds.has(instrument.id)) {
-                this.drawRootSystem(context, group, staffLeft, staffWidth, showShortcuts, exportContext, count > group.length);
-                group = [];
-                periodInstrumentIds.clear();
-            }
-            periodInstrumentIds.add(instrument.id);
-            const image = await context.document.embedPng(await blob.arrayBuffer());
-            const scale = Math.min(staffWidth / image.width, context.contentHeight / image.height);
-            const width = image.width * scale;
-            const height = image.height * scale;
-            const rowHeight = Math.max(height, showShortcuts ? SHORTCUT_SIZE : 0);
-            if (count > 0) {
-                // Equality still fits, so the limit is the next whole point.
-                spacingLimit = Math.max(spacingLimit, Math.floor(previousAvailableHeight - previousHeight - rowHeight) + 1);
-            }
-            previousHeight = rowHeight;
-            previousAvailableHeight = count === 0
-                ? (rowHeight > context.top - PAGE_MARGIN ? context.contentHeight : context.top - PAGE_MARGIN)
-                : context.contentHeight;
-            group.push({image, instrument, width, height, rowHeight});
-            count++;
+        const layout = this.createStaffLayout(context, instruments, exportContext.isShortcutsVisible);
+        const periods = await this.loadInstrumentPeriods(context, project, instruments, layout);
+        const spacingLimit = this.calculateSpacingLimit(context, periods);
+        for (let index = 0; index < periods.length; index++) {
+            this.drawPeriod(context, periods[index], layout, exportContext, index > 0);
         }
-        if (!count) throw new Error('No saved staves were found for the selected instruments.');
-        this.drawRootSystem(context, group, staffLeft, staffWidth, showShortcuts, exportContext, count > group.length);
         return spacingLimit;
     }
 
-    private drawRootSystem(context: PdfRenderContext, staves: PreparedStaff[], staffLeft: number,
-                           staffWidth: number, showShortcut: boolean, exportContext: ExportContext,
-                           hasPreviousSystem: boolean): void {
-        const naturalHeight = staves.reduce((height, staff) => height + staff.rowHeight, 0)
-            + (staves.length - 1) * exportContext.withinSystemSpacing;
+    private createStaffLayout(context: PdfRenderContext, instruments: readonly Instrument[], showShortcuts: boolean): StaffLayout {
+        const shortcutWidth = showShortcuts
+            ? Math.max(...instruments.map(instrument => context.labelFont.widthOfTextAtSize(instrument.shortcut, SHORTCUT_SIZE)))
+            : 0;
+        const left = PAGE_MARGIN + (showShortcuts ? shortcutWidth + SHORTCUT_GAP : 0);
+        const width = context.pageWidth - PAGE_MARGIN - left;
+        if (width <= 0) throw new Error('Instrument shortcuts are too long to fit on the page.');
+        return {left, width, showShortcuts};
+    }
+
+    private async loadInstrumentPeriods(context: PdfRenderContext, project: Project,
+                                        instruments: readonly Instrument[], layout: StaffLayout): Promise<PreparedStaff[][]> {
+        const periods: PreparedStaff[][] = [];
+        let previousPeriod: number | undefined;
+        for await (const staff of this.projectManager.loadStaffImages(project, instruments)) {
+            if (staff.periodIndex !== previousPeriod || !periods.length) periods.push([]);
+            periods[periods.length - 1].push(await this.prepareStaff(context, staff, layout));
+            previousPeriod = staff.periodIndex;
+        }
+        if (!periods.length) throw new Error('No saved staves were found for the selected instruments.');
+        return periods;
+    }
+
+    private async prepareStaff(context: PdfRenderContext, staff: StaffImage, layout: StaffLayout): Promise<PreparedStaff> {
+        const image = await context.document.embedPng(await staff.blob.arrayBuffer());
+        const scale = Math.min(layout.width / image.width, context.contentHeight / image.height);
+        const width = image.width * scale;
+        const height = image.height * scale;
+        const rowHeight = Math.max(height, layout.showShortcuts ? SHORTCUT_SIZE : 0);
+        return {image, instrument: staff.instrument, width, height, rowHeight};
+    }
+
+    private calculateSpacingLimit(context: PdfRenderContext, periods: PreparedStaff[][]): number {
+        const staves = periods.flat();
+        const firstAvailable = Math.max(context.top - PAGE_MARGIN, staves[0].rowHeight);
+        let maximum = 0;
+        for (let index = 1; index < staves.length; index++) {
+            const available = index === 1 && staves[0].rowHeight <= context.top - PAGE_MARGIN
+                ? firstAvailable : context.contentHeight;
+            // Equality still fits; the next whole point forces a page break.
+            maximum = Math.max(maximum, Math.floor(available - staves[index - 1].rowHeight - staves[index].rowHeight) + 1);
+        }
+        return maximum;
+    }
+
+    private drawPeriod(context: PdfRenderContext, staves: PreparedStaff[], layout: StaffLayout,
+                       exportContext: ExportContext, hasPreviousPeriod: boolean): void {
+        const naturalHeight = this.measurePeriod(staves, exportContext.withinSystemSpacing);
         const scale = Math.min(1, context.contentHeight / naturalHeight);
-        const height = naturalHeight * scale;
-        const gap = hasPreviousSystem ? exportContext.betweenSystemSpacing : 0;
+        const gap = hasPreviousPeriod ? exportContext.betweenSystemSpacing : 0;
+        this.reservePeriodSpace(context, naturalHeight * scale, gap);
+        for (let index = 0; index < staves.length; index++) {
+            if (index > 0) context.top -= exportContext.withinSystemSpacing * scale;
+            this.drawStaff(context, staves[index], layout, scale);
+        }
+    }
+
+    private measurePeriod(staves: PreparedStaff[], spacing: number): number {
+        return staves.reduce((height, staff) => height + staff.rowHeight, 0) + (staves.length - 1) * spacing;
+    }
+
+    private reservePeriodSpace(context: PdfRenderContext, height: number, gap: number): void {
         if (context.top - gap - height < PAGE_MARGIN) {
             context.page = context.document.addPage(PageSizes.A4);
             context.top = context.pageHeight - PAGE_MARGIN;
         } else {
             context.top -= gap;
         }
-        for (let index = 0; index < staves.length; index++) {
-            const staff = staves[index];
-            if (index > 0) context.top -= exportContext.withinSystemSpacing * scale;
-            const width = staff.width * scale;
-            const height = staff.height * scale;
-            if (showShortcut) {
-                const fontSize = SHORTCUT_SIZE * scale;
-                const textHeight = context.labelFont.heightAtSize(fontSize, {descender: false});
-                context.page.drawText(staff.instrument.shortcut, {
-                    font: context.labelFont, size: fontSize,
-                    x: PAGE_MARGIN, y: context.top - height / 2 - textHeight / 2,
-                });
-            }
-            context.page.drawImage(staff.image, {
-                x: staffLeft + (staffWidth - width) / 2, y: context.top - height, width, height,
-            });
-            context.top -= staff.rowHeight * scale;
-        }
+    }
+
+    private drawStaff(context: PdfRenderContext, staff: PreparedStaff, layout: StaffLayout, scale: number): void {
+        const width = staff.width * scale;
+        const height = staff.height * scale;
+        if (layout.showShortcuts) this.drawShortcut(context, staff.instrument, height, scale);
+        context.page.drawImage(staff.image, {
+            x: layout.left + (layout.width - width) / 2, y: context.top - height, width, height,
+        });
+        context.top -= staff.rowHeight * scale;
+    }
+
+    private drawShortcut(context: PdfRenderContext, instrument: Instrument, staffHeight: number, scale: number): void {
+        const fontSize = SHORTCUT_SIZE * scale;
+        const textHeight = context.labelFont.heightAtSize(fontSize, {descender: false});
+        context.page.drawText(instrument.shortcut, {
+            font: context.labelFont, size: fontSize,
+            x: PAGE_MARGIN, y: context.top - staffHeight / 2 - textHeight / 2,
+        });
     }
 
     private async serializeDocument(document: PDFDocument): Promise<Blob> {
