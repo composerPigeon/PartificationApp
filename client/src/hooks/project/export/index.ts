@@ -6,3 +6,5 @@ export {useInstrumentSelection} from './useInstrumentSelection';
 export {useExportPreview} from './useExportPreview';
 export {useBrowserPreview} from './useBrowserPreview';
 export {useGoToWorkspace} from './useGoToWorkspace';
+export {useExportInteractionMode} from './useExportInteractionMode';
+export type {ExportInteractionMode, ExportInteractionModeState} from './states/ExportInteractionModeState';

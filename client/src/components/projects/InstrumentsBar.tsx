@@ -10,7 +10,7 @@ export function InstrumentsBar() {
         <Paper component="aside" aria-label="Project instruments" elevation={5}
                sx={theme => ({
                    position: 'fixed', right: {xs: 8, sm: 16}, top: '50%', transform: 'translateY(-50%)',
-                   width: 280, maxWidth: 'calc(100vw - 72px)', minWidth: 0, maxHeight: 'calc(100svh - 160px)',
+                   width: 'min(280px, 24vw)', minWidth: 0, maxHeight: 'calc(100svh - 160px)',
                    display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 10,
                    borderRadius: 3, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.15),
                })}>

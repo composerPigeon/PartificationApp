@@ -18,19 +18,15 @@ function ExportContent() {
     const {project} = useProject();
     return <ProjectPage sectionNavigation={<ExportSectionNavigation/>} navigation={<ExportPageNavigation color="secondary"/>} title="Export" projectTitle={project.projectName}>
         <ExportUnsavedChangesDialog/>
-        <Box sx={{flex: 1, py: 1, px: {xs: '64px', sm: '88px'}}}>
+        <Box sx={{flex: 1, minWidth: 0, py: 1, px: {xs: 'calc(24vw + 72px)', sm: 'calc(min(280px, 24vw) + 104px)'}}}>
             <ExportToolBar/>
-            <Container maxWidth="lg" disableGutters>
-                <Box sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
-                    <Box sx={{width: '100%', maxWidth: 1104, display: 'grid', gridTemplateColumns: 'clamp(64px, 12vw, 144px) minmax(0, 800px) clamp(64px, 12vw, 144px)', gap: 1}}>
-                        <Box component="section" aria-label="Export PDF viewer" data-editing-mode="select"
-                             sx={{gridColumn: 2, gridRow: 1, minWidth: 0, display: 'grid', alignContent: 'start', justifyItems: 'center'}}>
-                            <ExportPreview/>
-                        </Box>
-                        <InstrumentsBar/>
-                    </Box>
+            <Container maxWidth="lg" disableGutters sx={{display: 'flex', justifyContent: 'center', pb: 2}}>
+                <Box component="section" aria-label="Export PDF viewer"
+                     sx={{width: '100%', maxWidth: 800, minWidth: 0, display: 'grid', alignContent: 'start', justifyItems: 'center'}}>
+                    <ExportPreview/>
                 </Box>
             </Container>
+            <InstrumentsBar/>
         </Box>
     </ProjectPage>;
 }

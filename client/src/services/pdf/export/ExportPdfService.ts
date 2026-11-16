@@ -85,7 +85,6 @@ export class ExportPdfService implements IExportPdfService {
             x: APP_ICON_MARGIN, y: context.pageHeight - APP_ICON_MARGIN - APP_ICON_SIZE,
             width: APP_ICON_SIZE, height: APP_ICON_SIZE,
         });
-        context.top -= APP_ICON_SIZE + 12;
     }
 
     private async createDocument(project: Project): Promise<ExportContext> {
