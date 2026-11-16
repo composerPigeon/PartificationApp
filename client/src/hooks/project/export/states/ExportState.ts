@@ -12,4 +12,6 @@ export interface ExportState {
     instrumentSelection: InstrumentSelectionState;
     preview: ExportPreviewState;
     browserPreview: BrowserPreviewState;
+    deleteExport(exportId: string): Promise<void>;
+    deletingExport: boolean;
 }

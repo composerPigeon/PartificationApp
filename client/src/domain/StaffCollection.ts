@@ -61,6 +61,12 @@ export class StaffCollection implements Iterable<Staff> {
         return true;
     }
 
+    deleteInstrument(instrumentId: string): boolean {
+        const ids = [...this].filter(staff => staff.instrument.id === instrumentId).map(staff => staff.id);
+        for (const id of ids) this.delete(id);
+        return ids.length > 0;
+    }
+
     move(staffId: number, y: number): boolean {
         const node = this.nodes.get(staffId);
         if (!node) return false;

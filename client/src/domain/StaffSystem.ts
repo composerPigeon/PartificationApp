@@ -6,20 +6,28 @@ export class StaffSystem {
     @JsonProperty()
     id: number;
 
+    @JsonProperty({path: 'is_root_system', default: false})
+    isRootSystem: boolean = false;
+
     @JsonProperty({path: "staves"})
     staffCode: string = "";
 
     minStaffId: number;
     staves: Map<number, Staff>;
 
-    constructor(id: number, staves: Staff[]) {
+    constructor(id: number = 0, staves: Staff[] = [], isRootSystem: boolean = false) {
         this.id = id;
+        this.isRootSystem = isRootSystem;
         this.staves = new Map(staves.map(s => [s.id, s]));
-        this.minStaffId = Math.min(...staves.map(s => s.id));
+        this.minStaffId = staves.length ? Math.min(...staves.map(s => s.id)) : 0;
         this.updateStaffCode()
     }
 
     private updateStaffCode() {
+        if (!this.staves.size) {
+            this.staffCode = '';
+            return;
+        }
         this.staffCode = `${this.minStaffId}-${this.minStaffId + this.staves.size}`
     }
 

@@ -1,11 +1,10 @@
 import {PDFDocument, PageSizes, StandardFonts} from 'pdf-lib';
-import type {PDFFont, PDFPage} from 'pdf-lib';
-import type {Project, Instrument} from '../../../domain';
+import type {PDFFont, PDFPage, PDFImage} from 'pdf-lib';
+import type {Project, Instrument, ExportContext} from '../../../domain';
 import type {IProjectManager} from '../../projects/ProjectManager.ts';
 import appIconUrl from '../../../../public/icons/app-icon.svg?url';
 
 const PAGE_MARGIN = 40;
-const STAFF_SPACING = 18;
 const TITLE_SIZE = 28;
 const TITLE_LINE_HEIGHT = 36;
 const TITLE_SPACING = 24;
@@ -16,7 +15,7 @@ const SHORTCUT_GAP = 10;
 const APP_ICON_SIZE = 24;
 const APP_ICON_MARGIN = 16;
 
-interface ExportContext {
+interface PdfRenderContext {
     document: PDFDocument;
     font: PDFFont;
     labelFont: PDFFont;
@@ -26,6 +25,14 @@ interface ExportContext {
     pageHeight: number;
     contentWidth: number;
     contentHeight: number;
+}
+
+interface PreparedStaff {
+    image: PDFImage;
+    instrument: Instrument;
+    width: number;
+    height: number;
+    rowHeight: number;
 }
 
 function titleLines(title: string, font: PDFFont, width: number, size = TITLE_SIZE): string[] {
@@ -43,7 +50,7 @@ function titleLines(title: string, font: PDFFont, width: number, size = TITLE_SI
 }
 
 export interface IExportPdfService {
-    createPdf(project: Project, instruments: readonly Instrument[]): Promise<Blob>;
+    createPdf(project: Project, exportContext: ExportContext, onSpacingLimit?: (maximum: number) => void): Promise<Blob>;
 }
 
 export class ExportPdfService implements IExportPdfService {
@@ -53,24 +60,18 @@ export class ExportPdfService implements IExportPdfService {
         this.projectManager = projectManager;
     }
 
-    async createPdf(project: Project, instruments: readonly Instrument[]): Promise<Blob> {
-        this.validateInstruments(project, instruments);
-        const context = await this.createDocument(project);
-        await this.drawAppIcon(context);
-        this.drawHeading(context, project, instruments);
-        await this.drawStaves(context, project, instruments);
-        return this.serializeDocument(context.document);
+    async createPdf(project: Project, exportContext: ExportContext, onSpacingLimit?: (maximum: number) => void): Promise<Blob> {
+        const instruments = project.resolveInstruments(exportContext);
+
+        const documentContext = await this.createDocument(project);
+        await this.drawAppIcon(documentContext);
+        this.drawHeading(documentContext, project, instruments);
+        const spacingLimit = await this.drawStaves(documentContext, project, instruments, exportContext);
+        onSpacingLimit?.(spacingLimit);
+        return this.serializeDocument(documentContext.document);
     }
 
-    private validateInstruments(project: Project, instruments: readonly Instrument[]): void {
-        if (!instruments.length) throw new Error('Select at least one instrument to preview.');
-        const projectIds = new Set(project.instruments.map(instrument => instrument.id));
-        if (instruments.some(instrument => !projectIds.has(instrument.id))) {
-            throw new Error('Selected instruments must belong to the current project.');
-        }
-    }
-
-    private async drawAppIcon(context: ExportContext): Promise<void> {
+    private async drawAppIcon(context: PdfRenderContext): Promise<void> {
         const image = new Image();
         image.src = appIconUrl;
         await image.decode();
@@ -87,7 +88,7 @@ export class ExportPdfService implements IExportPdfService {
         });
     }
 
-    private async createDocument(project: Project): Promise<ExportContext> {
+    private async createDocument(project: Project): Promise<PdfRenderContext> {
         const document = await PDFDocument.create();
         document.setTitle(project.title);
         document.setAuthor(project.author);
@@ -103,7 +104,7 @@ export class ExportPdfService implements IExportPdfService {
         };
     }
 
-    private drawHeading(context: ExportContext, project: Project, instruments: readonly Instrument[]): void {
+    private drawHeading(context: PdfRenderContext, project: Project, instruments: readonly Instrument[]): void {
         this.drawHeadingText(context, project.title, context.font, TITLE_SIZE, TITLE_LINE_HEIGHT);
         this.drawHeadingText(context, project.subtitle, context.labelFont, SUBTITLE_SIZE, SUBTITLE_LINE_HEIGHT);
         const columnWidth = (context.contentWidth - TITLE_SPACING) / 2;
@@ -135,7 +136,7 @@ export class ExportPdfService implements IExportPdfService {
         context.top -= TITLE_SPACING;
     }
 
-    private drawHeadingText(context: ExportContext, text: string, font: PDFFont, size: number,
+    private drawHeadingText(context: PdfRenderContext, text: string, font: PDFFont, size: number,
                             lineHeight: number): void {
         for (const line of titleLines(text, font, context.contentWidth, size)) {
             if (context.top - lineHeight < PAGE_MARGIN) {
@@ -152,7 +153,8 @@ export class ExportPdfService implements IExportPdfService {
         }
     }
 
-    private async drawStaves(context: ExportContext, project: Project, instruments: readonly Instrument[]): Promise<void> {
+    private async drawStaves(context: PdfRenderContext, project: Project, instruments: readonly Instrument[],
+                             exportContext: ExportContext): Promise<number> {
         const {labelFont, pageWidth} = context;
         const showShortcuts = instruments.length > 1;
         const shortcutWidth = showShortcuts
@@ -162,34 +164,72 @@ export class ExportPdfService implements IExportPdfService {
         const staffWidth = pageWidth - PAGE_MARGIN - staffLeft;
         if (staffWidth <= 0) throw new Error('Instrument shortcuts are too long to fit on the page.');
         let count = 0;
+        let previousHeight = 0;
+        let previousAvailableHeight = context.contentHeight;
+        let spacingLimit = 0;
+        let group: PreparedStaff[] = [];
+        const periodInstrumentIds = new Set<string>();
         for await (const {blob, instrument} of this.projectManager.loadStaffImages(project, instruments)) {
-            await this.drawStaff(context, blob, instrument, staffLeft, staffWidth, showShortcuts);
+            // A repeated instrument starts the next root-system period.
+            if (periodInstrumentIds.has(instrument.id)) {
+                this.drawRootSystem(context, group, staffLeft, staffWidth, showShortcuts, exportContext, count > group.length);
+                group = [];
+                periodInstrumentIds.clear();
+            }
+            periodInstrumentIds.add(instrument.id);
+            const image = await context.document.embedPng(await blob.arrayBuffer());
+            const scale = Math.min(staffWidth / image.width, context.contentHeight / image.height);
+            const width = image.width * scale;
+            const height = image.height * scale;
+            const rowHeight = Math.max(height, showShortcuts ? SHORTCUT_SIZE : 0);
+            if (count > 0) {
+                // Equality still fits, so the limit is the next whole point.
+                spacingLimit = Math.max(spacingLimit, Math.floor(previousAvailableHeight - previousHeight - rowHeight) + 1);
+            }
+            previousHeight = rowHeight;
+            previousAvailableHeight = count === 0
+                ? (rowHeight > context.top - PAGE_MARGIN ? context.contentHeight : context.top - PAGE_MARGIN)
+                : context.contentHeight;
+            group.push({image, instrument, width, height, rowHeight});
             count++;
         }
         if (!count) throw new Error('No saved staves were found for the selected instruments.');
+        this.drawRootSystem(context, group, staffLeft, staffWidth, showShortcuts, exportContext, count > group.length);
+        return spacingLimit;
     }
 
-    private async drawStaff(context: ExportContext, blob: Blob, instrument: Instrument,
-                            staffLeft: number, staffWidth: number, showShortcut: boolean): Promise<void> {
-        const {document, labelFont, pageHeight, contentHeight} = context;
-        let {page, top} = context;
-        const image = await document.embedPng(await blob.arrayBuffer());
-        const scale = Math.min(staffWidth / image.width, contentHeight / image.height);
-        const width = image.width * scale;
-        const height = image.height * scale;
-        const rowHeight = Math.max(height, showShortcut ? SHORTCUT_SIZE : 0);
-        if (top - rowHeight < PAGE_MARGIN) {
-            page = document.addPage(PageSizes.A4);
-            top = pageHeight - PAGE_MARGIN;
+    private drawRootSystem(context: PdfRenderContext, staves: PreparedStaff[], staffLeft: number,
+                           staffWidth: number, showShortcut: boolean, exportContext: ExportContext,
+                           hasPreviousSystem: boolean): void {
+        const naturalHeight = staves.reduce((height, staff) => height + staff.rowHeight, 0)
+            + (staves.length - 1) * exportContext.withinSystemSpacing;
+        const scale = Math.min(1, context.contentHeight / naturalHeight);
+        const height = naturalHeight * scale;
+        const gap = hasPreviousSystem ? exportContext.betweenSystemSpacing : 0;
+        if (context.top - gap - height < PAGE_MARGIN) {
+            context.page = context.document.addPage(PageSizes.A4);
+            context.top = context.pageHeight - PAGE_MARGIN;
+        } else {
+            context.top -= gap;
         }
-        if (showShortcut) {
-            const textHeight = labelFont.heightAtSize(SHORTCUT_SIZE, {descender: false});
-            page.drawText(instrument.shortcut, {font: labelFont, size: SHORTCUT_SIZE,
-                x: PAGE_MARGIN, y: top - height / 2 - textHeight / 2});
+        for (let index = 0; index < staves.length; index++) {
+            const staff = staves[index];
+            if (index > 0) context.top -= exportContext.withinSystemSpacing * scale;
+            const width = staff.width * scale;
+            const height = staff.height * scale;
+            if (showShortcut) {
+                const fontSize = SHORTCUT_SIZE * scale;
+                const textHeight = context.labelFont.heightAtSize(fontSize, {descender: false});
+                context.page.drawText(staff.instrument.shortcut, {
+                    font: context.labelFont, size: fontSize,
+                    x: PAGE_MARGIN, y: context.top - height / 2 - textHeight / 2,
+                });
+            }
+            context.page.drawImage(staff.image, {
+                x: staffLeft + (staffWidth - width) / 2, y: context.top - height, width, height,
+            });
+            context.top -= staff.rowHeight * scale;
         }
-        page.drawImage(image, {x: staffLeft + (staffWidth - width) / 2, y: top - height, width, height});
-        context.page = page;
-        context.top = top - rowHeight - STAFF_SPACING;
     }
 
     private async serializeDocument(document: PDFDocument): Promise<Blob> {

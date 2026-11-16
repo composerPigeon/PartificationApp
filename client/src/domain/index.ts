@@ -1,4 +1,5 @@
 export { Project } from './Project.ts';
+export { ExportContext } from './ExportContext.ts';
 export type { ProjectScoreDetails } from './ProjectScoreDetails.ts';
 export { ScorePage } from './ScorePage.ts';
 export { Account } from './Account.ts';

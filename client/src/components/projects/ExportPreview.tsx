@@ -15,7 +15,7 @@ export function ExportPreview() {
         <Stack spacing={2} sx={{alignItems: 'center'}}>
             {generating && <CircularProgress aria-label="Generating PDF"/>}
             <Typography variant="body2" sx={{color: 'text.secondary', textAlign: 'center'}}>
-                {generating ? 'Building your score…' : 'Select instruments to preview the PDF.'}
+                {generating ? 'Building your score…' : 'Select instruments and confirm to preview the PDF.'}
             </Typography>
         </Stack>
     </Box>;

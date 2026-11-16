@@ -1,5 +1,7 @@
 import {JsonProperty, Serializable} from "ts-jackson";
 import {Instrument} from "./Instrument.ts";
+import {ExportContext} from './ExportContext.ts';
+import {StaffSystem} from './StaffSystem.ts';
 import type {ProjectScoreDetails} from './ProjectScoreDetails.ts';
 
 @Serializable()
@@ -34,8 +36,14 @@ export class Project implements ProjectScoreDetails {
     @JsonProperty({path: 'allow_layout_model_training'})
     allowLayoutModelTraining: boolean = false;
 
-    @JsonProperty({path: "instruments"})
+    @JsonProperty({path: "instruments", type: Array, elementType: Instrument})
     private readonly _instruments: Instrument[];
+
+    @JsonProperty({path: 'exports', type: Array, elementType: ExportContext})
+    exports: ExportContext[] = [];
+
+    @JsonProperty({type: Array, elementType: StaffSystem})
+    systems: StaffSystem[] = [new StaffSystem(0, [], true)];
 
     constructor(projectId: string = "", projectName: string = "", directoryName: string = "",
                 pageCount: number = 0, instruments: Instrument[] = []) {
@@ -50,6 +58,16 @@ export class Project implements ProjectScoreDetails {
         if (!this._instruments.find(existing => existing.id === instrument.id)) {
             this._instruments.push(instrument);
         }
+    }
+
+    public deleteInstrument(instrumentId: string): boolean {
+        const index = this._instruments.findIndex(instrument => instrument.id === instrumentId);
+        if (index < 0) return false;
+        this._instruments.splice(index, 1);
+        for (const context of [...this.exports]) {
+            if (context.instrumentIds.includes(instrumentId)) this.deleteExportContext(context.id);
+        }
+        return true;
     }
 
     public getInstrument(instrumentTitle: string): Instrument | undefined {
@@ -69,17 +87,26 @@ export class Project implements ProjectScoreDetails {
         return this._instruments;
     }
 
-    /** Browser history preserves data but removes class prototypes and getters. */
-    public static fromSnapshot(data: Project): Project {
-        const project = new Project(data.id, data.projectName, data.directoryName, data.pageCount,
-            (data._instruments ?? data.instruments ?? []).map(instrument =>
-                new Instrument(instrument.title, instrument.shortcut)));
-        project.title = data.title ?? '';
-        project.subtitle = data.subtitle ?? '';
-        project.author = data.author ?? '';
-        project.authorDate = data.authorDate ?? '';
-        project.genre = data.genre ?? '';
-        project.allowLayoutModelTraining = data.allowLayoutModelTraining === true;
-        return project;
+    public getOrCreateExportContext(instruments: readonly Instrument[]): ExportContext {
+        const context = new ExportContext(instruments.map(instrument => instrument.id));
+        const existing = this.exports.find(existing => existing.id === context.id);
+        if (existing) return existing;
+        this.exports.push(context);
+        return context;
     }
+
+    public deleteExportContext(exportId: string): boolean {
+        if (!this.exports.some(context => context.id === exportId)) return false;
+        this.exports = this.exports.filter(context => context.id !== exportId);
+        return true;
+    }
+
+    public resolveInstruments(context: ExportContext): Instrument[] {
+        if (!this.exports.find(ex => ex.id === context.id))
+            return [];
+
+        const instrumentIds = new Set(context.instrumentIds);
+        return this._instruments.filter(instrument => instrumentIds.has(instrument.id));
+    }
+
 }
